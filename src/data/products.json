@@ -5,8 +5,7 @@
         "keywords": [],
         "title": "🏕️ 撿便宜營位",
         "items": [
-            { "name": "Klook 露營專區", "price": "95折起", "link": "https://www.klook.com/zh-TW/activity/list/?keywords=露營", "desc": "輸入代碼 CAMP2026 再折$100", "cta": "查詢空位" },
-            { "name": "AsiaYo 露營通", "price": "獨家位", "link": "https://asiayo.com/zh-tw/", "desc": "整合全台免裝備露營、露營車", "cta": "比價去" }
+            { "name": "Klook 露營專區", "price": "95折起", "link": "https://www.klook.com/zh-TW/activity/list/?keywords=露營", "desc": "輸入代碼 CAMP2026 再折$100", "cta": "查詢空位" }
         ]
     },
     {
