@@ -12,7 +12,7 @@
     {
         "id": "cooking-king",
         "tags": ["cooking"],
-        "keywords": ["烤肉", "野炊", "煮食", "BBQ", "食材", "快炒", "晚餐", "吃飯"],
+        "keywords": ["烤肉", "野炊", "烹飪", "開伙", "BBQ", "瓦斯爐", "廚房", "美食"],
         "title": "🔥 露營界兩大廚神",
         "items": [
             { "name": "岩谷 4.1kW 黑武士", "price": "$1,980", "link": "https://shopee.tw/search?keyword=岩谷4.1", "desc": "抗風力強！大火快炒唯一指定", "cta": "查看優惠" },
@@ -23,7 +23,7 @@
     {
         "id": "sleeping-comfort",
         "tags": ["general"],
-        "keywords": ["睡覺", "過夜", "舒適", "床", "好睡", "失眠"],
+        "keywords": ["睡覺", "過夜", "舒適", "床墊", "好眠", "寢具", "安靜", "好睡"],
         "title": "💤 像在家一樣好睡",
         "items": [
             { "name": "ATC 組合式充氣床", "price": "$4,280", "link": "https://shopee.tw/search?keyword=ATC充氣床", "desc": "翻身零干擾，網友公認最好睡", "cta": "看評價" },
@@ -33,7 +33,7 @@
     {
         "id": "summer-must",
         "tags": ["general"],
-        "keywords": ["熱", "夏天", "避暑", "悶熱", "低海拔", "流汗", "電扇"],
+        "keywords": ["夏天", "炎熱", "避暑", "蚊蟲", "小黑蚊", "電扇", "悶熱", "透氣"],
         "title": "❄️ 夏日涼感神物",
         "items": [
             { "name": "Claymore V600+ 風扇", "price": "$1,680", "link": "https://shopee.tw/search?keyword=Claymore風扇", "desc": "露營界Dyson！美型、無線、大風量", "cta": "手刀搶購" },
@@ -44,7 +44,7 @@
     {
         "id": "winter-warmth",
         "tags": ["high_altitude"],
-        "keywords": ["高海拔", "冷", "寒流", "保暖", "5度", "暖爐", "冬天"],
+        "keywords": ["高海拔", "寒流", "保暖", "低溫", "日夜溫差", "暖爐", "冬天", "雲海"],
         "title": "🔥 冬季保暖三寶",
         "items": [
             { "name": "Toyotomi 彩虹暖爐", "price": "$8,900", "link": "https://shopee.tw/search?keyword=Toyotomi暖爐", "desc": "不只暖還很美，七彩光圈氛圍感", "cta": "查看現貨" },
@@ -55,7 +55,7 @@
     {
         "id": "glamping-style",
         "tags": ["glamping"],
-        "keywords": ["豪華", "網美", "拍照", "風格", "儀式感", "佈置", "燈"],
+        "keywords": ["豪華", "網美", "打卡", "風格", "儀式感", "佈置", "氣氛", "美學"],
         "title": "✨ 提升質感的風格小物",
         "items": [
             { "name": "Barebones 鐵道燈", "price": "$2,300", "link": "https://shopee.tw/search?keyword=Barebones營燈", "desc": "復古美學教科書，點燈即氛圍", "cta": "挑選款式" },
@@ -66,7 +66,7 @@
     {
         "id": "furniture-relax",
         "tags": ["general"],
-        "keywords": ["椅子", "桌子", "發呆", "放鬆", "甚至", "休息"],
+        "keywords": ["椅子", "放空", "放鬆", "悠閒", "星空", "景觀", "休憩", "裝備"],
         "title": "🪑 坐下就不想起來",
         "items": [
             { "name": "Helinox Chair One", "price": "$3,600", "link": "https://shopee.tw/search?keyword=Helinox椅子", "desc": "世界級輕量椅，包覆性滿分", "cta": "體驗舒適" },
@@ -76,7 +76,7 @@
     {
         "id": "family-play",
         "tags": ["family"],
-        "keywords": ["親子", "小孩", "兒童", "玩水", "草地", "放電"],
+        "keywords": ["親子", "小孩", "兒童", "玩水", "草地", "放電", "沙坑", "遊戲"],
         "title": "👨‍👩‍👧‍👦 小孩放電神器",
         "items": [
             { "name": "自動泡泡相機", "price": "$199", "link": "https://shopee.tw/search?keyword=泡泡機", "desc": "按一下滿天泡泡，拍照超夢幻", "cta": "哄娃必備" },
