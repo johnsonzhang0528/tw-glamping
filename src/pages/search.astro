@@ -14,6 +14,7 @@ type Campground = {
 	area: string;
 	description: string;
 	tags: string[];
+    elevation: number;
 	features: {
 		has_glamping: boolean;
 		pet_friendly: boolean;
@@ -41,25 +42,50 @@ type Campground = {
 						/>
 					</div>
 
-					{/* Filters */}
-					<div class="md:col-span-12 flex flex-wrap gap-4 pt-2 border-t border-stone-100 mt-2">
-                        <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none">
-                            <input type="checkbox" id="filter-high-altitude" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-                            <span class="text-sm font-medium text-stone-700">高海拔 (>1000m)</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none">
-                            <input type="checkbox" id="filter-glamping" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-                            <span class="text-sm font-medium text-stone-700">豪華露營</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none">
-                            <input type="checkbox" id="filter-pet" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-                            <span class="text-sm font-medium text-stone-700">寵物友善</span>
-                        </label>
-					</div>
+                    {/* Advanced Filters Row */}
+                    <div class="md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {/* City Filter */}
+                        <div>
+                            <label class="block text-xs font-bold text-stone-500 mb-1">區域縣市</label>
+                            <select id="filter-city" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-stone-50">
+                                <option value="">所有縣市</option>
+                                {cities.map(city => (
+                                    <option value={city}>{city}</option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        {/* Sort Order */}
+                        <div>
+                            <label class="block text-xs font-bold text-stone-500 mb-1">排序方式</label>
+                            <select id="sort-order" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-stone-50">
+                                <option value="default">預設排序</option>
+                                <option value="elevation-desc">海拔：由高到低</option>
+                                <option value="elevation-asc">海拔：由低到高</option>
+                            </select>
+                        </div>
+
+                         {/* Checkbox Group - Took up remaining space */}
+                         <div class="col-span-2 flex flex-wrap gap-2 items-end">
+                            <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none flex-grow justify-center">
+                                <input type="checkbox" id="filter-high-altitude" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
+                                <span class="text-sm font-medium text-stone-700">高海拔</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none flex-grow justify-center">
+                                <input type="checkbox" id="filter-glamping" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
+                                <span class="text-sm font-medium text-stone-700">豪華露營</span>
+                            </label>
+                             <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none flex-grow justify-center">
+                                <input type="checkbox" id="filter-pet" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
+                                <span class="text-sm font-medium text-stone-700">寵物友善</span>
+                            </label>
+                        </div>
+                    </div>
 				</div>
                 
-                <div class="mt-4 text-xs text-stone-500 text-right">
-                    顯示 <span id="count-display" class="font-bold text-stone-800">{campgrounds.length}</span> 筆結果
+                <div class="mt-4 flex justify-between items-center text-xs text-stone-500">
+                    <button id="clear-filters" class="text-emerald-600 hover:underline hidden">清除所有條件</button>
+                    <span>顯示 <span id="count-display" class="font-bold text-stone-800">{campgrounds.length}</span> 筆結果</span>
                 </div>
 			</div>
 		</div>
@@ -74,6 +100,7 @@ type Campground = {
                     data-city={camp.city}
                     data-area={camp.area}
                     data-tags={camp.tags.join(',')}
+                    data-elevation={camp.elevation}
                     data-high-altitude={camp.features.high_altitude}
                     data-glamping={camp.features.has_glamping}
                     data-pet={camp.features.pet_friendly}
@@ -100,9 +127,12 @@ type Campground = {
     // ...existing code...
     // Variables that need to be refreshed on page navigation
     let searchInput: HTMLInputElement;
+    let filterCity: HTMLSelectElement;
+    let sortOrder: HTMLSelectElement;
     let filterHighAlt: HTMLInputElement;
     let filterGlamping: HTMLInputElement;
     let filterPet: HTMLInputElement;
+    let clearBtn: HTMLElement | null;
     let resultsGrid: HTMLElement | null;
     let noResults: HTMLElement | null;
     let countDisplay: HTMLElement | null;
@@ -112,19 +142,60 @@ type Campground = {
     function initFromURL() {
         const params = new URLSearchParams(window.location.search);
         const query = params.get('q');
-        if (query && searchInput) {
-            searchInput.value = query;
-            filterCamps();
+        const city = params.get('city');
+        const tag = params.get('tag');
+
+        if (query && searchInput) searchInput.value = query;
+        if (city && filterCity) filterCity.value = city;
+        
+        // Handle Tag shortcuts from FilterBar
+        if (tag) {
+            if (tag === 'High Altitude' && filterHighAlt) filterHighAlt.checked = true;
+            if (tag === 'Glamping' && filterGlamping) filterGlamping.checked = true;
+            // Add more mappings if needed
         }
+
+        filterCamps();
+    }
+
+    function sortCamps() {
+        if (!resultsGrid || !sortOrder) return;
+        const order = sortOrder.value;
+        const itemArray = Array.from(items) as HTMLElement[];
+
+        if (order === 'default') {
+             // Basic randomized or original sort (could implement shuffle if needed)
+             // For now we just revert to DOM order if possible, or just leave as is
+             // Better implementation: keep original index in data attribute if strict reset needed
+             itemArray.sort((a, b) => {
+                 return (a.dataset.name || '').localeCompare(b.dataset.name || '');
+             });
+        } else if (order === 'elevation-desc') {
+            itemArray.sort((a, b) => {
+                return Number(b.dataset.elevation) - Number(a.dataset.elevation);
+            });
+        } else if (order === 'elevation-asc') {
+            itemArray.sort((a, b) => {
+                return Number(a.dataset.elevation) - Number(b.dataset.elevation);
+            });
+        }
+
+        // Re-append to grid
+        itemArray.forEach(item => resultsGrid?.appendChild(item));
     }
 
     function filterCamps() {
         if (!searchInput) return;
         
         const term = searchInput.value.toLowerCase();
+        const cityFilter = filterCity?.value || '';
         const requireHighAlt = filterHighAlt?.checked || false;
         const requireGlamping = filterGlamping?.checked || false;
         const requirePet = filterPet?.checked || false;
+
+        // Show/Hide Clear Button
+        const hasFilters = term || cityFilter || requireHighAlt || requireGlamping || requirePet;
+        if (clearBtn) clearBtn.classList.toggle('hidden', !hasFilters);
 
         let visibleCount = 0;
 
@@ -145,6 +216,9 @@ type Campground = {
                                   city.includes(term) || 
                                   area.includes(term) ||
                                   tags.includes(term);
+            
+            // City Match
+            const matchesCity = cityFilter === '' || city === cityFilter;
 
             // Special keyword mapping for features (ensures FilterBar works for features not in tags)
             if (!matchesSearch) {
@@ -157,7 +231,7 @@ type Campground = {
                                    (!requireGlamping || isGlamping) &&
                                    (!requirePet || isPet);
 
-            if (matchesSearch && matchesFilters) {
+            if (matchesSearch && matchesCity && matchesFilters) {
                 el.style.display = 'block';
                 visibleCount++;
             } else {
@@ -174,7 +248,18 @@ type Campground = {
         } else {
             resultsGrid?.classList.remove('hidden');
             noResults?.classList.add('hidden');
+            sortCamps(); // Re-sort visible items
         }
+    }
+
+    function clearFilters() {
+        if(searchInput) searchInput.value = '';
+        if(filterCity) filterCity.value = '';
+        if(filterHighAlt) filterHighAlt.checked = false;
+        if(filterGlamping) filterGlamping.checked = false;
+        if(filterPet) filterPet.checked = false;
+        if(sortOrder) sortOrder.value = 'default';
+        filterCamps();
     }
 
     // Debounce for better performance
@@ -188,9 +273,14 @@ type Campground = {
     function init() {
          // Re-query DOM elements because they might be new after a transition
         searchInput = document.getElementById('search-input') as HTMLInputElement;
+        filterCity = document.getElementById('filter-city') as HTMLSelectElement;
+        sortOrder = document.getElementById('sort-order') as HTMLSelectElement;
+        
         filterHighAlt = document.getElementById('filter-high-altitude') as HTMLInputElement;
         filterGlamping = document.getElementById('filter-glamping') as HTMLInputElement;
         filterPet = document.getElementById('filter-pet') as HTMLInputElement;
+        
+        clearBtn = document.getElementById('clear-filters');
         resultsGrid = document.getElementById('results-grid');
         noResults = document.getElementById('no-results');
         countDisplay = document.getElementById('count-display');
@@ -198,9 +288,14 @@ type Campground = {
 
         // Attach listeners again
         if (searchInput) searchInput.addEventListener('input', handleInput);
+        if (filterCity) filterCity.addEventListener('change', filterCamps);
+        if (sortOrder) sortOrder.addEventListener('change', sortCamps);
+        
         if (filterHighAlt) filterHighAlt.addEventListener('change', filterCamps);
         if (filterGlamping) filterGlamping.addEventListener('change', filterCamps);
         if (filterPet) filterPet.addEventListener('change', filterCamps);
+        
+        if (clearBtn) clearBtn.addEventListener('click', clearFilters);
 
         initFromURL();
     }
