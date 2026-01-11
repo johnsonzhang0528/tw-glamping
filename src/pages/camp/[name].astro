@@ -24,15 +24,71 @@ const shouldIndex = isReleased || import.meta.env.DEV; // Always index in dev fo
 // Affiliate Logic Helpers
 const isHighAltitude = camp.elevation > 1000;
 const isGlamping = camp.features.has_glamping;
+const isTraditional = !isGlamping; // Helper for Traditional Camps
+
+// 🟢 [Configuration] 請在此填入您的通路王 Klook 推廣連結結構
+// 格式: https://product.mchannles.com/redirect_wa.php?k={您的K值}&tourl=
+const ICHANNELS_PREFIX = "https://product.mchannles.com/redirect_wa.php?k=3P17C&tourl="; 
+
+const KLOOK_SEARCH_BASE = "https://www.klook.com/zh-TW/activity/list/?keywords=";
+const ASIAYO_SEARCH_BASE = "https://asiayo.com/zh-tw/search/?keyword=";
 
 // Generate product recommendations based on tags/features AND content keywords
 const getAffiliateProducts = () => {
     // Combine all text for keyword search
     const fullText = (camp.description + camp.tags.join(' ')).toLowerCase();
 
-    return productData.filter(group => {
-        // ALWAYS SHOW
-        if (group.tags.includes('always_show')) return true;
+    // Deep clone the data to avoid modifying the original source reference
+    const recommendations = JSON.parse(JSON.stringify(productData));
+
+    const filteredGroups = recommendations.filter(group => {
+        // 🔮 策略：針對訂房連結 (Booking) 進行動態優化
+        if (group.id === 'booking-always') {
+             group.items.forEach(item => {
+                let targetUrl = item.link;
+                
+                // Klook Strategy
+                if (item.name.includes("Klook")) {
+                    if (isTraditional) {
+                        // 👑 策略一：改推「地區性替代方案」 (轉化意圖)
+                        // 既然無法訂這間，就讓他訂「同一區」的其他營位
+                        const cityKeywords = `${camp.city} 露營`;
+                        targetUrl = `${KLOOK_SEARCH_BASE}${encodeURIComponent(cityKeywords)}`;
+                        
+                        item.name = `搜尋${camp.city}熱門營位`;
+                        item.desc = `此營區目前無法線上預訂，看看${camp.city}其他空位`;
+                        item.cta = "查空房";
+                    } else {
+                        // 豪華露營：嘗試精準搜尋 (通常 Klook 會有)
+                        targetUrl = `${KLOOK_SEARCH_BASE}${encodeURIComponent(camp.name)}`;
+                        item.desc = `立即查詢「${camp.name}」優惠價格`;
+                        item.cta = "查優惠";
+                    }
+                }
+
+                // AsiaYo Strategy
+                if (item.name.includes("AsiaYo")) {
+                     if (isTraditional) {
+                        // 傳統營地：改推該地區的「免裝備/露營車」體驗
+                        targetUrl = `${ASIAYO_SEARCH_BASE}${encodeURIComponent(camp.city)}`; 
+                        item.desc = `不想搭帳棚？找找${camp.city}的露營車`;
+                        item.cta = "比價去";
+                     } else {
+                        // 豪華露營：精準搜尋
+                        targetUrl = `${ASIAYO_SEARCH_BASE}${encodeURIComponent(camp.name)}`;
+                        item.desc = `搜尋「${camp.name}」最新報價`;
+                     }
+                }
+
+                // 3. 包裝分潤連結 (最後一步)
+                if (ICHANNELS_PREFIX) {
+                    item.link = `${ICHANNELS_PREFIX}${encodeURIComponent(targetUrl)}`;
+                } else {
+                    item.link = targetUrl;
+                }
+            });
+            return true;
+        }
         
         // 1. Tag/Feature Matching
         if (group.tags.includes('high_altitude') && isHighAltitude) return true;
@@ -47,6 +103,18 @@ const getAffiliateProducts = () => {
 
         return false;
     });
+
+    // 👑 策略二：全力轉攻「裝備導購」 (Gear First Strategy)
+    // 如果是傳統營地 (Traditional)，將「訂房連結」移到最後面，優先展示「裝備」
+    if (isTraditional) {
+        const bookingGroupIndex = filteredGroups.findIndex(g => g.id === 'booking-always');
+        if (bookingGroupIndex > -1) {
+            const [bookingGroup] = filteredGroups.splice(bookingGroupIndex, 1);
+            filteredGroups.push(bookingGroup); // Move to bottom
+        }
+    }
+
+    return filteredGroups;
 };
 
 const recommendations = getAffiliateProducts();
