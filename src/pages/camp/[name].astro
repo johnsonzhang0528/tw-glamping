@@ -32,6 +32,62 @@ const ICHANNELS_PREFIX = "https://product.mchannles.com/redirect_wa.php?k=3F8Gh&
 
 const KLOOK_SEARCH_BASE = "https://www.klook.com/zh-TW/search/result/?query=";
 
+// 🏕️ Facilities & Features Configuration
+const FACILITIES_MAPPING = [
+    // Hardware / Equipment (Infer from Description or Tags)
+    { key: "fridge", keywords: ["冰箱", "冷藏", "冷凍"], icon: "❄️", label: "提供冰箱" },
+    { key: "water_dispenser", keywords: ["飲水機"], icon: "💧", label: "飲水機" },
+    { key: "wifi", keywords: ["wifi", "網路", "訊號", "4G", "5G"], icon: "📶", label: "Wifi/訊號" },
+    { key: "power", keywords: ["供電", "插座", "電源"], icon: "⚡", label: "營位供電" },
+    { key: "bathroom", keywords: ["衛浴", "廁所", "淋浴", "吹風機"], icon: "🚿", label: "衛浴/吹風機" },
+    { key: "parking", keywords: ["停車"], icon: "🅿️", label: "停車場" },
+
+    // Camp Type / Environment (From Tags)
+    { key: "roof", keywords: ["雨棚"], icon: "🏠", label: "雨棚營位" },
+    { key: "deck", keywords: ["棧板"], icon: "🪵", label: "棧板營位" },
+    { key: "grass", keywords: ["草地", "草皮"], icon: "🌱", label: "草地營位" },
+    { key: "gravel", keywords: ["碎石"], icon: "🪨", label: "碎石營位" },
+    { key: "forest", keywords: ["森林", "樹林"], icon: "🌲", label: "森林系" },
+    { key: "stream", keywords: ["溪流", "玩水", "戲水"], icon: "🌊", label: "戲水/溪流" },
+    
+    // Activities / Vibe (From Tags)
+    { key: "firefly", keywords: ["螢火蟲"], icon: "✨", label: "螢火蟲季節" },
+    { key: "sakura", keywords: ["櫻花"], icon: "🌸", label: "櫻花季節" },
+    { key: "cloud", keywords: ["雲海"], icon: "☁️", label: "雲海景觀" },
+    { key: "night_view", keywords: ["夜景"], icon: "🌃", label: "百萬夜景" },
+    { key: "stars", keywords: ["星空", "觀星"], icon: "✨", label: "觀星" },
+    { key: "sand", keywords: ["沙坑"], icon: "🏖️", label: "兒童沙坑" },
+];
+
+// Helper to determine active facilities
+const getFacilities = () => {
+    const activeFacilities = [];
+    const searchContext = (camp.description + camp.tags.join(' ')).toLowerCase();
+
+    // 1. Check Keywords
+    FACILITIES_MAPPING.forEach(fac => {
+        if (fac.keywords.some(k => searchContext.includes(k.toLowerCase()))) {
+            activeFacilities.push(fac);
+        }
+    });
+
+    // 2. Add Explicit Feature Flags if not already present
+    if (camp.features.pet_friendly && !activeFacilities.find(f => f.label === "寵物友善")) {
+        activeFacilities.push({ icon: "🐾", label: "寵物友善" });
+    }
+    if (camp.features.high_altitude && !activeFacilities.find(f => f.label.includes("海拔"))) {
+        activeFacilities.push({ icon: "🏔️", label: "高海拔" });
+    }
+     if (camp.features.has_glamping && !activeFacilities.find(f => f.label === "豪華露營")) {
+        activeFacilities.push({ icon: "⛺", label: "豪華露營" });
+    }
+
+    // Deduplicate by label
+    return [...new Map(activeFacilities.map(item => [item.label, item])).values()];
+};
+
+const campFacilities = getFacilities();
+
 
 // Generate product recommendations based on tags/features AND content keywords
 const getAffiliateProducts = () => {
@@ -184,6 +240,23 @@ const schemaData = {
                             </span>
                         ))}
                     </div>
+
+                    {/* ✨ New Section: Camp Facilities & Features */}
+                    {campFacilities.length > 0 && (
+                        <div class="mt-10 p-6 bg-stone-50 rounded-2xl border border-stone-200">
+                            <h3 class="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+                                <span>🏕️</span> 營區特色與設備
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {campFacilities.map(fac => (
+                                    <div class="flex items-center gap-2 text-stone-700 bg-white px-3 py-2 rounded-lg border border-stone-100 shadow-sm">
+                                        <span class="text-lg">{fac.icon}</span>
+                                        <span class="font-medium">{fac.label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </article>
 
                 {/* Info Cards */}
