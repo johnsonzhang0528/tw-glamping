@@ -14,6 +14,13 @@ export async function getStaticPaths() {
 
 const { camp } = Astro.props;
 
+// Release Date Logic (PSEO Drip Feed)
+// If release_date is in the future, we show the page but tell Google NOINDEX.
+const today = new Date();
+const releaseDate = camp.release_date ? new Date(camp.release_date) : new Date('2000-01-01');
+const isReleased = releaseDate <= today;
+const shouldIndex = isReleased || import.meta.env.DEV; // Always index in dev for testing
+
 // Affiliate Logic Helpers
 const isHighAltitude = camp.elevation > 1000;
 const isGlamping = camp.features.has_glamping;
@@ -62,6 +69,9 @@ const schemaData = {
 
 <Layout title={`${camp.name} - ${camp.city}${camp.area}露營區推薦 | 台灣露營地圖`} description={camp.description.substring(0, 150) + '...'}>
     <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData)}></script>
+    
+    {/* PSEO Drip Feed Control */}
+    {!shouldIndex && <meta name="robots" content="noindex, nofollow" slot="head" />}
 
     {/* Hero Section - Mobile First Design */}
     <div class="bg-stone-100 border-b border-stone-200">
