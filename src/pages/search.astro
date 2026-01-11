@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import CampgroundCard from '../components/CampgroundCard.astro';
-import FilterBar from '../components/FilterBar.astro';
 import campgrounds from '../data/campgrounds_enriched.json';
 
 // Get unique cities for filter dropdown
@@ -22,24 +21,80 @@ type Campground = {
 	};
 };
 
-// Define advanced filters for checkboxes
-const advancedFilters = [
-    { id: 'filter-high-altitude', label: '高海拔', icon: '⛰️', type: 'feature', key: 'high_altitude' },
-    { id: 'filter-glamping', label: '豪華露營', icon: '✨', type: 'feature', key: 'glamping' },
-    { id: 'filter-pet', label: '寵物友善', icon: '🐾', type: 'feature', key: 'pet_friendly' },
-    { id: 'filter-power', label: '提供電源', icon: '⚡', type: 'tag', key: '供電' }, // Matches '提供電源' or '供電'
-    { id: 'filter-fridge', label: '有冰箱', icon: '❄️', type: 'tag', key: '冰箱' },
-    { id: 'filter-dryer', label: '吹風機', icon: '🚿', type: 'tag', key: '吹風機' },
-    { id: 'filter-car', label: '可車露', icon: '🚙', type: 'tag', key: '車露' },
-    { id: 'filter-sakura', label: '櫻花', icon: '🌸', type: 'tag', key: '櫻花' },
-    { id: 'filter-small-zone', label: '小包區', icon: '🏕️', type: 'tag', key: '包區' },
-    { id: 'filter-cloud', label: '雲海', icon: '☁️', type: 'tag', key: '雲海' },
-    { id: 'filter-firefly', label: '螢火蟲', icon: '✨', type: 'tag', key: '螢火蟲' },
+// Define grouped filters
+const filterGroups = [
+    {
+        title: '地區與位置',
+        icon: '📍',
+        items: [
+            { label: '苗栗', key: '苗栗', type: 'location' },
+            { label: '新竹', key: '新竹', type: 'location' },
+            { label: '南投', key: '南投', type: 'location' },
+            { label: '五峰', key: '五峰', type: 'location' },
+            { label: '泰安', key: '泰安', type: 'location' },
+            { label: '尖石', key: '尖石', type: 'location' },
+            { label: '阿里山', key: '阿里山', type: 'location' },
+        ]
+    },
+    {
+        title: '自然景觀',
+        icon: '🌲',
+        items: [
+            { id: 'filter-high-altitude', label: '高海拔', icon: '⛰️', type: 'feature', key: 'high_altitude' }, // Kept existing feature
+            { label: '雲海', key: '雲海', type: 'tag' },
+            { label: '螢火蟲', key: '螢火蟲', type: 'tag' },
+            { label: '櫻花', key: '櫻花', type: 'tag' },
+            { label: '夜景', key: '夜景', type: 'tag' },
+            { label: '溪流', key: '溪流', type: 'tag' },
+            { label: '森林系', key: '森林系', type: 'tag' },
+            { label: '落羽松', key: '落羽松', type: 'tag' },
+        ]
+    },
+    {
+        title: '營地設施',
+        icon: '⛺',
+        items: [
+            { id: 'filter-glamping', label: '豪華露營', icon: '✨', type: 'feature', key: 'glamping' }, // Kept existing feature
+            { label: '有冰箱', key: '有冰箱/冰箱', type: 'tag' }, // Handle slight variations if needed
+            { label: '有冷凍', key: '有冷凍', type: 'tag' },
+            { label: '飲水機', key: '飲水機', type: 'tag' },
+            { label: '提供電源', key: '提供電源', type: 'tag' },
+            { label: '吹風機', key: '吹風機', type: 'tag' },
+            { label: '雨棚', key: '雨棚', type: 'tag' },
+            { label: '室內營位', key: '室內營位', type: 'tag' },
+            { label: '包區', key: '包區', type: 'tag' },
+            { label: '小包區', key: '小包區', type: 'tag' },
+            { label: '少帳包區', key: '少帳包區', type: 'tag' },
+            { label: '車露', key: '車露', type: 'tag' },
+            { label: '可停露營拖車', key: '可停露營拖車', type: 'tag' },
+            { label: '部份區域可車露', key: '部份區域可車露', type: 'tag' },
+        ]
+    },
+    {
+        title: '親子與活動',
+        icon: '👨‍👩‍👧‍👦',
+        items: [
+            { id: 'filter-pet', label: '寵物友善', icon: '🐾', type: 'feature', key: 'pet_friendly' }, // Kept existing feature
+            { label: '親子', key: '親子', type: 'tag' },
+            { label: '沙坑', key: '沙坑', type: 'tag' },
+            { label: '戲水池', key: '戲水池', type: 'tag' },
+            { label: '溜滑梯', key: '溜滑梯', type: 'tag' },
+            { label: '烤肉', key: '烤肉', type: 'tag' },
+        ]
+    },
+    {
+        title: '便利性',
+        icon: '📶',
+        items: [
+            { label: 'WIFI', key: 'WIFI', type: 'tag' },
+            { label: '3G/4G訊號', key: '3G/4G訊號', type: 'tag' },
+            { label: '裝備租借', key: '裝備租借', type: 'tag' },
+        ]
+    }
 ];
 ---
 
 <Layout title="全台露營區搜尋 | 台灣露營地圖">
-	<FilterBar />
 	<div class="bg-stone-100 py-6 md:py-12 border-b border-stone-200">
 		<div class="container mx-auto px-4">
 			<h1 class="text-2xl md:text-3xl font-bold text-stone-900 mb-4 md:mb-6 text-center">尋找理想營區</h1>
@@ -81,23 +136,30 @@ const advancedFilters = [
                         </div>
                     </div>
 
-                    {/* Checkbox Group - Full width */}
-                     <div class="md:col-span-12 mt-2">
-                        <label class="block text-xs font-bold text-stone-500 mb-2">進階篩選</label>
-                        <div class="flex flex-wrap gap-2 md:gap-3">
-                            {advancedFilters.map(filter => (
-                                <label class="flex items-center gap-1.5 cursor-pointer bg-white px-3 py-2 rounded-lg border border-stone-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition select-none">
-                                    <input 
-                                        type="checkbox" 
-                                        id={filter.id} 
-                                        data-type={filter.type} 
-                                        data-key={filter.key}
-                                        class="filter-checkbox w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-stone-300" 
-                                    />
-                                    <span class="text-sm font-medium text-stone-700">{filter.icon} {filter.label}</span>
-                                </label>
-                            ))}
-                        </div>
+                    {/* Advanced Filters Groups */}
+                    <div class="md:col-span-12 mt-4 space-y-6">
+                        {filterGroups.map(group => (
+                            <div>
+                                <h3 class="flex items-center gap-2 text-sm font-bold text-stone-600 mb-3 pb-1 border-b border-stone-100">
+                                    <span class="text-base">{group.icon}</span>
+                                    {group.title}
+                                </h3>
+                                <div class="flex flex-wrap gap-2">
+                                    {group.items.map(filter => (
+                                        <label class="flex items-center gap-1.5 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition select-none group">
+                                            <input 
+                                                type="checkbox" 
+                                                id={filter.id || `filter-${filter.key}`}
+                                                data-type={filter.type} 
+                                                data-key={filter.key}
+                                                class="filter-checkbox w-3.5 h-3.5 text-emerald-600 rounded focus:ring-emerald-500 border-stone-300" 
+                                            />
+                                            <span class="text-sm text-stone-700 group-hover:text-emerald-700">{filter.icon ? filter.icon + ' ' : ''}{filter.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
 				</div>
                 
@@ -245,14 +307,21 @@ const advancedFilters = [
             // 3. Advanced Checkbox Filters
             const matchesAdvanced = activeCheckboxes.every(cb => {
                 const type = cb.dataset.type;
-                const key = cb.dataset.key || '';
+                const rawKey = cb.dataset.key || '';
+                const keys = rawKey.split('/'); // Support aliases like "有冰箱/冰箱"
 
                 if (type === 'feature') {
-                    if (key === 'high_altitude') return isHighAlt;
-                    if (key === 'glamping') return isGlamping;
-                    if (key === 'pet_friendly') return isPet;
+                    if (rawKey === 'high_altitude') return isHighAlt;
+                    if (rawKey === 'glamping') return isGlamping;
+                    if (rawKey === 'pet_friendly') return isPet;
                 } else if (type === 'tag') {
-                    return tags.includes(key); // Check if data-tags contains this specific keyword
+                    return keys.some(k => tags.includes(k));
+                } else if (type === 'location') {
+                     return keys.some(k => 
+                        city.includes(k) || 
+                        area.includes(k) || 
+                        tags.includes(k)
+                     );
                 }
                 return true;
             });
