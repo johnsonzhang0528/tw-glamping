@@ -105,21 +105,13 @@ const getAffiliateProducts = () => {
                 
                 // Klook Strategy
                 if (item.name.includes("Klook")) {
-                    if (isTraditional) {
-                        // 👑 策略一：改推「地區性替代方案」 (轉化意圖)
-                        // 既然無法訂這間，就讓他訂「同一區」的其他營位
-                        const cityKeywords = `${camp.city} 露營`;
-                        targetUrl = `${KLOOK_SEARCH_BASE}${cityKeywords}`;
-                        
-                        item.name = `搜尋${camp.city}熱門營位`;
-                        item.desc = `此營區目前無法線上預訂，看看${camp.city}其他空位`;
-                        item.cta = "查空房";
-                    } else {
-                        // 豪華露營：嘗試精準搜尋 (通常 Klook 會有)
-                        targetUrl = `${KLOOK_SEARCH_BASE}${camp.name}`;
-                        item.desc = `立即查詢「${camp.name}」優惠價格`;
-                        item.cta = "查優惠";
-                    }
+                    // 👑 策略變更：一律改推「地區性替代方案」 (確保有搜尋結果，不再針對豪華露營做精準搜尋)
+                    const cityKeywords = `${camp.city} 露營`;
+                    targetUrl = `${KLOOK_SEARCH_BASE}${cityKeywords}`;
+                    
+                    item.name = `搜尋${camp.city}熱門營位`;
+                    item.desc = `查看${camp.city}更多優質露營區與優惠`;
+                    item.cta = "查空房";
                 }
 
                 // 3. 包裝分潤連結 (最後一步)
