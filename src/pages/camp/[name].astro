@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import CampMap from '../../components/CampMap.astro';
 import campgrounds from '../../data/campgrounds_enriched.json';
+import productData from '../../data/products.json';
 
 export async function getStaticPaths() {
   return campgrounds.map((camp) => ({
@@ -19,47 +20,50 @@ const isGlamping = camp.features.has_glamping;
 
 // Generate product recommendations based on tags/features
 const getAffiliateProducts = () => {
-    let products = [];
-    
-    // High Altitude Gear
-    if (isHighAltitude) {
-        products.push({
-            title: "高海拔保暖必備",
-            items: [
-                { name: "黑冰信封睡袋", price: "$2,680", link: "#", desc: "抗寒-5度C，高山露營首選" },
-                { name: "岩谷黑武士暖爐", price: "$4,200", link: "#", desc: "高海拔燃燒效率佳" }
-            ]
-        });
-    }
+    return productData.filter(group => {
+        // Always show these recommendations
+        if (group.tags.includes('always_show')) return true;
+        
+        // Conditional logic based on Camp properties
+        if (group.tags.includes('high_altitude') && isHighAltitude) return true;
+        if (group.tags.includes('glamping') && isGlamping) return true;
+        
+        // General matching (can be randomized or always shown as fallback)
+        if (group.tags.includes('general')) return true;
 
-    // Glamping Vibes
-    if (isGlamping) {
-        products.push({
-            title: "豪華露營氛圍升級",
-            items: [
-                { name: "復古LED露營燈", price: "$890", link: "#", desc: "打造溫馨帳內氛圍" },
-                { name: "Marshall 藍牙喇叭", price: "$5,900", link: "#", desc: "沈浸式聽覺享受" }
-            ]
-        });
-    }
-
-    // General
-    products.push({
-        title: "露營新手入門",
-        items: [
-            { name: "Klook 營位預訂", price: "95折起", link: "#", desc: "輸入代碼 CAMP2026 再折$100" },
-            { name: "迪卡儂充氣床墊", price: "$1,299", link: "#", desc: "高CP值好睡首選" }
-        ]
+        return false;
     });
-
-    return products;
 };
 
 const recommendations = getAffiliateProducts();
+
+const schemaData = {
+  "@context": "https://schema.org",
+  "@type": "Campground",
+  "name": camp.name,
+  "description": camp.description,
+  "telephone": camp.phone,
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": camp.address,
+    "addressLocality": camp.area,
+    "addressRegion": camp.city,
+    "addressCountry": "TW"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": camp.lat,
+    "longitude": camp.lng
+  },
+  "elevation": camp.elevation,
+  "priceRange": "$$"
+};
 ---
 
-<Layout title={`${camp.name} - ${camp.city}${camp.area}露營區推薦 | 台灣露營地圖`} description={camp.description}>
-    {/* Breadcrumb */}
+<Layout title={`${camp.name} - ${camp.city}${camp.area}露營區推薦 | 台灣露營地圖`} description={camp.description.substring(0, 150) + '...'}>
+    <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData)}></script>
+
+    {/* Hero Section - Mobile First Design */}
     <div class="bg-stone-100 border-b border-stone-200">
         <div class="container mx-auto px-4 py-3 text-sm text-stone-500">
             <a href="/" class="hover:text-emerald-700">首頁</a> &rsaquo; 

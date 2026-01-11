@@ -41,6 +41,8 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content={socialImageURL} />
 
+		<slot name="head" />
+
 		<!-- Mobile Theme Color -->
 		<meta name="theme-color" content="#ffffff" />
 		

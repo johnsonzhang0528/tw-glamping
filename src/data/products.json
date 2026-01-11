@@ -1,0 +1,37 @@
+[
+    {
+        "id": "high-altitude-gear",
+        "tags": ["high_altitude"],
+        "title": "高海拔保暖必備",
+        "items": [
+            { "name": "黑冰信封睡袋", "price": "$2,680", "link": "https://shopee.tw/search?keyword=黑冰睡袋", "desc": "抗寒-5度C，高山露營首選" },
+            { "name": "岩谷黑武士暖爐", "price": "$4,200", "link": "https://shopee.tw/search?keyword=岩谷暖爐", "desc": "高海拔燃燒效率佳" }
+        ]
+    },
+    {
+        "id": "glamping-vibes",
+        "tags": ["glamping"],
+        "title": "豪華露營氛圍升級",
+        "items": [
+            { "name": "復古LED露營燈", "price": "$890", "link": "https://shopee.tw/search?keyword=復古露營燈", "desc": "打造溫馨帳內氛圍" },
+            { "name": "Marshall 藍牙喇叭", "price": "$5,900", "link": "https://shopee.tw/search?keyword=Marshall音響", "desc": "沈浸式聽覺享受" }
+        ]
+    },
+    {
+        "id": "cooking",
+        "tags": ["general"],
+        "title": "野炊神器推薦",
+        "items": [
+            { "name": "SOTO 蜘蛛爐", "price": "$2,200", "link": "https://shopee.tw/search?keyword=SOTO蜘蛛爐", "desc": "輕量化登山露營兩用" },
+            { "name": "Snow Peak 鈦杯", "price": "$900", "link": "https://shopee.tw/search?keyword=SnowPeak鈦杯", "desc": "極致輕量，露營儀式感" }
+        ]
+    },
+    {
+        "id": "booking",
+        "tags": ["always_show"],
+        "title": "立即預訂行程",
+        "items": [
+            { "name": "Klook 營位預訂", "price": "95折起", "link": "https://www.klook.com/zh-TW/activity/list/?keywords=露營", "desc": "輸入代碼 CAMP2026 再折$100" }
+        ]
+    }
+]
