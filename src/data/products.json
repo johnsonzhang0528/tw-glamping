@@ -1,37 +1,86 @@
 [
     {
-        "id": "high-altitude-gear",
-        "tags": ["high_altitude"],
-        "title": "高海拔保暖必備",
-        "items": [
-            { "name": "黑冰信封睡袋", "price": "$2,680", "link": "https://shopee.tw/search?keyword=黑冰睡袋", "desc": "抗寒-5度C，高山露營首選" },
-            { "name": "岩谷黑武士暖爐", "price": "$4,200", "link": "https://shopee.tw/search?keyword=岩谷暖爐", "desc": "高海拔燃燒效率佳" }
-        ]
-    },
-    {
-        "id": "glamping-vibes",
-        "tags": ["glamping"],
-        "title": "豪華露營氛圍升級",
-        "items": [
-            { "name": "復古LED露營燈", "price": "$890", "link": "https://shopee.tw/search?keyword=復古露營燈", "desc": "打造溫馨帳內氛圍" },
-            { "name": "Marshall 藍牙喇叭", "price": "$5,900", "link": "https://shopee.tw/search?keyword=Marshall音響", "desc": "沈浸式聽覺享受" }
-        ]
-    },
-    {
-        "id": "cooking",
-        "tags": ["general"],
-        "title": "野炊神器推薦",
-        "items": [
-            { "name": "SOTO 蜘蛛爐", "price": "$2,200", "link": "https://shopee.tw/search?keyword=SOTO蜘蛛爐", "desc": "輕量化登山露營兩用" },
-            { "name": "Snow Peak 鈦杯", "price": "$900", "link": "https://shopee.tw/search?keyword=SnowPeak鈦杯", "desc": "極致輕量，露營儀式感" }
-        ]
-    },
-    {
-        "id": "booking",
+        "id": "booking-always",
         "tags": ["always_show"],
-        "title": "立即預訂行程",
+        "keywords": [],
+        "title": "🏕️ 撿便宜營位",
         "items": [
-            { "name": "Klook 營位預訂", "price": "95折起", "link": "https://www.klook.com/zh-TW/activity/list/?keywords=露營", "desc": "輸入代碼 CAMP2026 再折$100" }
+            { "name": "Klook 露營專區", "price": "95折起", "link": "https://www.klook.com/zh-TW/activity/list/?keywords=露營", "desc": "輸入代碼 CAMP2026 再折$100", "cta": "查詢空位" },
+            { "name": "AsiaYo 露營通", "price": "獨家位", "link": "https://asiayo.com/zh-tw/", "desc": "整合全台免裝備露營、露營車", "cta": "比價去" }
+        ]
+    },
+    {
+        "id": "cooking-king",
+        "tags": ["cooking"],
+        "keywords": ["烤肉", "野炊", "煮食", "BBQ", "食材", "快炒", "晚餐", "吃飯"],
+        "title": "🔥 露營界兩大廚神",
+        "items": [
+            { "name": "岩谷 4.1kW 黑武士", "price": "$1,980", "link": "https://shopee.tw/search?keyword=岩谷4.1", "desc": "抗風力強！大火快炒唯一指定", "cta": "查看優惠" },
+            { "name": "SOTO ST-310 蜘蛛爐", "price": "$2,260", "link": "https://shopee.tw/search?keyword=SOTO蜘蛛爐", "desc": "日本製造，收納後比手掌還小", "cta": "前往購買" },
+            { "name": "Uniflame 不沾荷蘭鍋", "price": "$3,900", "link": "https://shopee.tw/search?keyword=Uniflame荷蘭鍋", "desc": "燉肉神器，也可用於炭火", "cta": "查看詳情" }
+        ]
+    },
+    {
+        "id": "sleeping-comfort",
+        "tags": ["general"],
+        "keywords": ["睡覺", "過夜", "舒適", "床", "好睡", "失眠"],
+        "title": "💤 像在家一樣好睡",
+        "items": [
+            { "name": "ATC 組合式充氣床", "price": "$4,280", "link": "https://shopee.tw/search?keyword=ATC充氣床", "desc": "翻身零干擾，網友公認最好睡", "cta": "看評價" },
+            { "name": "Naturehike 雲尚帳篷", "price": "$3,500", "link": "https://shopee.tw/search?keyword=Naturehike帳篷", "desc": "高CP值，新手入門輕量首選", "cta": "前往網站" }
+        ]
+    },
+    {
+        "id": "summer-must",
+        "tags": ["general"],
+        "keywords": ["熱", "夏天", "避暑", "悶熱", "低海拔", "流汗", "電扇"],
+        "title": "❄️ 夏日涼感神物",
+        "items": [
+            { "name": "Claymore V600+ 風扇", "price": "$1,680", "link": "https://shopee.tw/search?keyword=Claymore風扇", "desc": "露營界Dyson！美型、無線、大風量", "cta": "手刀搶購" },
+            { "name": "Stanley 冰桶 15L", "price": "$2,980", "link": "https://shopee.tw/search?keyword=Stanley冰桶", "desc": "保冰三天，啤酒快樂水必備", "cta": "選顏色" },
+            { "name": "森林系艾草蚊香", "price": "$150", "link": "https://shopee.tw/search?keyword=艾草蚊香", "desc": "天然無毒，小黑蚊剋星", "cta": "囤貨去" }
+        ]
+    },
+    {
+        "id": "winter-warmth",
+        "tags": ["high_altitude"],
+        "keywords": ["高海拔", "冷", "寒流", "保暖", "5度", "暖爐", "冬天"],
+        "title": "🔥 冬季保暖三寶",
+        "items": [
+            { "name": "Toyotomi 彩虹暖爐", "price": "$8,900", "link": "https://shopee.tw/search?keyword=Toyotomi暖爐", "desc": "不只暖還很美，七彩光圈氛圍感", "cta": "查看現貨" },
+            { "name": "黑冰 Z400 睡袋", "price": "$2,680", "link": "https://shopee.tw/search?keyword=黑冰睡袋", "desc": "羽絨填充，抗寒0度C的高CP值王者", "cta": "前往購買" },
+            { "name": "韓國甲珍電熱毯", "price": "$1,200", "link": "https://shopee.tw/search?keyword=甲珍電熱毯", "desc": "恆溫省電，睡袋內的發熱源", "cta": "查看詳情" }
+        ]
+    },
+    {
+        "id": "glamping-style",
+        "tags": ["glamping"],
+        "keywords": ["豪華", "網美", "拍照", "風格", "儀式感", "佈置", "燈"],
+        "title": "✨ 提升質感的風格小物",
+        "items": [
+            { "name": "Barebones 鐵道燈", "price": "$2,300", "link": "https://shopee.tw/search?keyword=Barebones營燈", "desc": "復古美學教科書，點燈即氛圍", "cta": "挑選款式" },
+            { "name": "Marshall Emberton II", "price": "$5,900", "link": "https://shopee.tw/search?keyword=Marshall音響", "desc": "露營桌上的精品，音質沒話說", "cta": "查看優惠" },
+            { "name": "Snow Peak 鈦金屬杯", "price": "$980", "link": "https://shopee.tw/search?keyword=SnowPeak鈦杯", "desc": "裝水都好喝，露營人的信仰", "cta": "入手信仰" }
+        ]
+    },
+    {
+        "id": "furniture-relax",
+        "tags": ["general"],
+        "keywords": ["椅子", "桌子", "發呆", "放鬆", "甚至", "休息"],
+        "title": "🪑 坐下就不想起來",
+        "items": [
+            { "name": "Helinox Chair One", "price": "$3,600", "link": "https://shopee.tw/search?keyword=Helinox椅子", "desc": "世界級輕量椅，包覆性滿分", "cta": "體驗舒適" },
+            { "name": "Coleman 蝴蝶桌", "price": "$4,500", "link": "https://shopee.tw/search?keyword=Coleman蝴蝶桌", "desc": "三段高度調整，穩固又好開", "cta": "查看詳情" }
+        ]
+    },
+    {
+        "id": "family-play",
+        "tags": ["family"],
+        "keywords": ["親子", "小孩", "兒童", "玩水", "草地", "放電"],
+        "title": "👨‍👩‍👧‍👦 小孩放電神器",
+        "items": [
+            { "name": "自動泡泡相機", "price": "$199", "link": "https://shopee.tw/search?keyword=泡泡機", "desc": "按一下滿天泡泡，拍照超夢幻", "cta": "哄娃必備" },
+            { "name": "迪卡儂 兒童弓箭", "price": "$1,249", "link": "https://shopee.tw/search?keyword=迪卡儂弓箭", "desc": "安全性高，全家都能玩的吸盤弓箭", "cta": "前往官網" }
         ]
     }
 ]
