@@ -53,14 +53,14 @@ const getAffiliateProducts = () => {
                         // 👑 策略一：改推「地區性替代方案」 (轉化意圖)
                         // 既然無法訂這間，就讓他訂「同一區」的其他營位
                         const cityKeywords = `${camp.city} 露營`;
-                        targetUrl = `${KLOOK_SEARCH_BASE}${encodeURIComponent(cityKeywords)}`;
+                        targetUrl = `${KLOOK_SEARCH_BASE}${cityKeywords}`;
                         
                         item.name = `搜尋${camp.city}熱門營位`;
                         item.desc = `此營區目前無法線上預訂，看看${camp.city}其他空位`;
                         item.cta = "查空房";
                     } else {
                         // 豪華露營：嘗試精準搜尋 (通常 Klook 會有)
-                        targetUrl = `${KLOOK_SEARCH_BASE}${encodeURIComponent(camp.name)}`;
+                        targetUrl = `${KLOOK_SEARCH_BASE}${camp.name}`;
                         item.desc = `立即查詢「${camp.name}」優惠價格`;
                         item.cta = "查優惠";
                     }
@@ -70,12 +70,12 @@ const getAffiliateProducts = () => {
                 if (item.name.includes("AsiaYo")) {
                      if (isTraditional) {
                         // 傳統營地：改推該地區的「免裝備/露營車」體驗
-                        targetUrl = `${ASIAYO_SEARCH_BASE}${encodeURIComponent(camp.city)}`; 
+                        targetUrl = `${ASIAYO_SEARCH_BASE}${camp.city}`; 
                         item.desc = `不想搭帳棚？找找${camp.city}的露營車`;
                         item.cta = "比價去";
                      } else {
                         // 豪華露營：精準搜尋
-                        targetUrl = `${ASIAYO_SEARCH_BASE}${encodeURIComponent(camp.name)}`;
+                        targetUrl = `${ASIAYO_SEARCH_BASE}${camp.name}`;
                         item.desc = `搜尋「${camp.name}」最新報價`;
                      }
                 }
