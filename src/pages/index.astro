@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CampgroundCard from '../components/CampgroundCard.astro';
+import campgrounds from '../data/campgrounds_enriched.json';
+
+// Simple types for the dataset
+type Campground = {
+	name: string;
+	city: string;
+	area: string;
+	phone: string;
+	elevation: number;
+	description: string;
+	tags: string[];
+	features: {
+		has_glamping: boolean;
+		pet_friendly: boolean;
+		high_altitude: boolean;
+	};
+};
+
+const camps = campgrounds as Campground[];
+---
+
+<Layout title="台灣露營地圖 | Taiwan Glamping">
+	<div class="container mx-auto px-4 py-12">
+		<section class="text-center mb-16">
+			<h1 class="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6 tracking-tight">
+				發現你的下一個<br/><span class="text-emerald-600">戶外冒險</span>
+			</h1>
+			<p class="text-lg text-stone-600 max-w-2xl mx-auto mb-8">
+				收錄全台 {camps.length} 個精選露營區，即時海拔資訊、特色標籤篩選，
+				<br class="hidden md:inline"/>讓找營位變得前所未有的簡單。
+			</p>
+			<div class="flex justify-center gap-4">
+				<button class="bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20">
+					開始探索
+				</button>
+			</div>
+		</section>
+
+		<section>
+			<div class="flex items-center justify-between mb-8">
+				<h2 class="text-2xl font-bold text-stone-800">熱門精選營區</h2>
+				<a href="/search" class="text-emerald-600 font-medium hover:underline">查看全部 &rarr;</a>
+			</div>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				{camps.slice(0, 9).map((camp) => (
+					<CampgroundCard camp={camp} />
+				))}
+			</div>
+		</section>
+	</div>
+</Layout>
+</Layout>

@@ -1,0 +1,171 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CampMap from '../../components/CampMap.astro';
+import campgrounds from '../../data/campgrounds_enriched.json';
+
+export async function getStaticPaths() {
+  return campgrounds.map((camp) => ({
+    params: { name: camp.name },
+    props: { camp },
+  }));
+}
+
+
+const { camp } = Astro.props;
+
+// Affiliate Logic Helpers
+const isHighAltitude = camp.elevation > 1000;
+const isGlamping = camp.features.has_glamping;
+
+// Generate product recommendations based on tags/features
+const getAffiliateProducts = () => {
+    let products = [];
+    
+    // High Altitude Gear
+    if (isHighAltitude) {
+        products.push({
+            title: "高海拔保暖必備",
+            items: [
+                { name: "黑冰信封睡袋", price: "$2,680", link: "#", desc: "抗寒-5度C，高山露營首選" },
+                { name: "岩谷黑武士暖爐", price: "$4,200", link: "#", desc: "高海拔燃燒效率佳" }
+            ]
+        });
+    }
+
+    // Glamping Vibes
+    if (isGlamping) {
+        products.push({
+            title: "豪華露營氛圍升級",
+            items: [
+                { name: "復古LED露營燈", price: "$890", link: "#", desc: "打造溫馨帳內氛圍" },
+                { name: "Marshall 藍牙喇叭", price: "$5,900", link: "#", desc: "沈浸式聽覺享受" }
+            ]
+        });
+    }
+
+    // General
+    products.push({
+        title: "露營新手入門",
+        items: [
+            { name: "Klook 營位預訂", price: "95折起", link: "#", desc: "輸入代碼 CAMP2026 再折$100" },
+            { name: "迪卡儂充氣床墊", price: "$1,299", link: "#", desc: "高CP值好睡首選" }
+        ]
+    });
+
+    return products;
+};
+
+const recommendations = getAffiliateProducts();
+---
+
+<Layout title={`${camp.name} - ${camp.city}${camp.area}露營區推薦 | 台灣露營地圖`} description={camp.description}>
+    {/* Breadcrumb */}
+    <div class="bg-stone-100 border-b border-stone-200">
+        <div class="container mx-auto px-4 py-3 text-sm text-stone-500">
+            <a href="/" class="hover:text-emerald-700">首頁</a> &rsaquo; 
+            <span class="mx-1">{camp.city}</span> &rsaquo; 
+            <span class="mx-1">{camp.area}</span> &rsaquo; 
+            <span class="text-stone-800 font-medium">{camp.name}</span>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+            
+            {/* Main Content (Left Column) */}
+            <div class="lg:col-span-2">
+                <header class="mb-8">
+                    <div class="flex flex-wrap items-center gap-3 mb-3">
+                        {camp.features.high_altitude && <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">高海拔 {camp.elevation}m</span>}
+                        {camp.features.has_glamping && <span class="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded">豪華露營</span>}
+                        {camp.features.pet_friendly && <span class="bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded">寵物友善</span>}
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-stone-900 mb-2">{camp.name}</h1>
+                    <div class="flex items-center text-stone-600 text-sm md:text-base gap-4">
+                        <span class="flex items-center gap-1"><span class="text-xl">📍</span> {camp.address}</span>
+                    </div>
+                {/* Map Component */}
+                <div class="bg-stone-200 rounded-2xl h-64 md:h-96 w-full mb-8 relative border border-stone-300 overflow-hidden shadow-inner">
+                   <CampMap lat={camp.lat} lng={camp.lng} name={camp.name} />
+                </div>
+
+                {/* Description */}
+
+                {/* Description */}
+                <article class="prose prose-stone max-w-none mb-12">
+                    <h2 class="text-2xl font-bold text-stone-800 mb-4 border-l-4 border-emerald-500 pl-4">營區介紹</h2>
+                    <p class="text-lg leading-relaxed text-stone-700">{camp.description}</p>
+                    
+                    <div class="mt-8 flex flex-wrap gap-2">
+                        {camp.tags.map(tag => (
+                            <span class="bg-stone-100 text-stone-600 px-3 py-1.5 rounded-full text-sm border border-stone-200">
+                                #{tag}
+                            </span>
+                        ))}
+                    </div>
+                </article>
+
+                {/* Info Cards */}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+                    <div class="bg-emerald-50 p-6 rounded-xl border border-emerald-100">
+                        <h3 class="font-bold text-emerald-800 mb-4 flex items-center gap-2">
+                            <span>📞</span> 聯絡資訊
+                        </h3>
+                        <p class="text-emerald-900 font-medium text-lg mb-2">{camp.phone || "未提供電話"}</p>
+                        <p class="text-sm text-emerald-700">建議預訂前先致電確認營況</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                        <h3 class="font-bold text-blue-800 mb-4 flex items-center gap-2">
+                            <span>⛰️</span> 地理環境
+                        </h3>
+                        <div class="flex justify-between items-center border-b border-blue-200 pb-2 mb-2">
+                            <span class="text-blue-700">海拔高度</span>
+                            <span class="font-bold text-blue-900">{camp.elevation} 公尺</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-700">所在區域</span>
+                            <span class="font-bold text-blue-900">{camp.city} {camp.area}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Sidebar (Right Column - Monetization) */}
+            <div class="lg:col-span-1">
+                <div class="sticky top-24 space-y-8">
+                    
+                   {/* Contextual Ads / Recommendations */}
+                   {recommendations.map((rec, idx) => (
+                       <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                           <div class="bg-stone-50 p-4 border-b border-stone-100">
+                               <h3 class="font-bold text-stone-800 text-lg">{rec.title}</h3>
+                           </div>
+                           <div class="p-4 space-y-4">
+                               {rec.items.map(item => (
+                                   <div class="group block relative">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <h4 class="font-medium text-stone-900 group-hover:text-emerald-600 transition">{item.name}</h4>
+                                            <span class="text-red-600 font-bold text-sm bg-red-50 px-2 py-0.5 rounded">{item.price}</span>
+                                        </div>
+                                        <p class="text-xs text-stone-500 mb-2">{item.desc}</p>
+                                        <a href={item.link} target="_blank" class="block w-full text-center bg-stone-100 hover:bg-emerald-600 hover:text-white text-stone-600 text-sm font-semibold py-2 rounded transition">
+                                            立即查看
+                                        </a>
+                                   </div>
+                               ))}
+                           </div>
+                       </div>
+                   ))}
+
+                    {/* Google Ads Placeholder */}
+                   <div class="bg-stone-100 rounded-xl h-64 flex flex-col items-center justify-center text-stone-400 border border-stone-200 border-dashed">
+                       <span class="text-sm font-semibold">廣告版位</span>
+                       <span class="text-xs">(Google AdSense)</span>
+                   </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</Layout>

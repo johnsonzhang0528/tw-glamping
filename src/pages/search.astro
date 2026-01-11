@@ -1,0 +1,166 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CampgroundCard from '../components/CampgroundCard.astro';
+import campgrounds from '../data/campgrounds_enriched.json';
+
+// Get unique cities for filter dropdown
+const cities = [...new Set(campgrounds.map(c => c.city))].sort();
+
+// Simple types for the dataset
+type Campground = {
+	name: string;
+	city: string;
+	area: string;
+	description: string;
+	tags: string[];
+	features: {
+		has_glamping: boolean;
+		pet_friendly: boolean;
+		high_altitude: boolean;
+	};
+};
+---
+
+<Layout title="全台露營區搜尋 | 台灣露營地圖">
+	<div class="bg-stone-100 py-12 border-b border-stone-200">
+		<div class="container mx-auto px-4">
+			<h1 class="text-3xl font-bold text-stone-900 mb-6 text-center">尋找理想營區</h1>
+			
+			<div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-stone-200" id="search-controls">
+				<div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+					{/* Search Input */}
+					<div class="md:col-span-12">
+						<label class="block text-sm font-semibold text-stone-700 mb-1">關鍵字搜尋</label>
+						<input 
+							type="text" 
+							id="search-input" 
+							placeholder="輸入營區名稱、地區 (例如: 苗栗、五峰)..." 
+							class="w-full px-4 py-3 rounded-lg border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
+						/>
+					</div>
+
+					{/* Filters */}
+					<div class="md:col-span-12 flex flex-wrap gap-4 pt-2 border-t border-stone-100 mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none">
+                            <input type="checkbox" id="filter-high-altitude" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
+                            <span class="text-sm font-medium text-stone-700">高海拔 (>1000m)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none">
+                            <input type="checkbox" id="filter-glamping" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
+                            <span class="text-sm font-medium text-stone-700">豪華露營</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none">
+                            <input type="checkbox" id="filter-pet" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
+                            <span class="text-sm font-medium text-stone-700">寵物友善</span>
+                        </label>
+					</div>
+				</div>
+                
+                <div class="mt-4 text-xs text-stone-500 text-right">
+                    顯示 <span id="count-display" class="font-bold text-stone-800">{campgrounds.length}</span> 筆結果
+                </div>
+			</div>
+		</div>
+	</div>
+
+	<div class="container mx-auto px-4 py-12">
+		<div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+			{campgrounds.map((camp) => (
+				<div 
+                    class="camp-item opacity-100 transition-opacity duration-300"
+                    data-name={camp.name.toLowerCase()}
+                    data-city={camp.city}
+                    data-area={camp.area}
+                    data-tags={camp.tags.join(',')}
+                    data-high-altitude={camp.features.high_altitude}
+                    data-glamping={camp.features.has_glamping}
+                    data-pet={camp.features.pet_friendly}
+                >
+					<CampgroundCard camp={camp as Campground} />
+				</div>
+			))}
+		</div>
+
+        {/* No Results Message */}
+        <div id="no-results" class="hidden text-center py-20">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-bold text-stone-800 mb-2">找不到符合條件的營區</h3>
+            <p class="text-stone-500">試著減少篩選條件，或搜尋其他關鍵字</p>
+        </div>
+	</div>
+</Layout>
+
+<script>
+    // Client-side filtering logic
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const filterHighAlt = document.getElementById('filter-high-altitude') as HTMLInputElement;
+    const filterGlamping = document.getElementById('filter-glamping') as HTMLInputElement;
+    const filterPet = document.getElementById('filter-pet') as HTMLInputElement;
+    const resultsGrid = document.getElementById('results-grid');
+    const noResults = document.getElementById('no-results');
+    const countDisplay = document.getElementById('count-display');
+    const items = document.querySelectorAll('.camp-item');
+
+    function filterCamps() {
+        const term = searchInput.value.toLowerCase();
+        const requireHighAlt = filterHighAlt.checked;
+        const requireGlamping = filterGlamping.checked;
+        const requirePet = filterPet.checked;
+
+        let visibleCount = 0;
+
+        items.forEach((item) => {
+            const el = item as HTMLElement;
+            const name = el.dataset.name || '';
+            const city = el.dataset.city || '';
+            const area = el.dataset.area || '';
+            const tags = el.dataset.tags || '';
+            
+            const isHighAlt = el.dataset.highAltitude === 'true';
+            const isGlamping = el.dataset.glamping === 'true';
+            const isPet = el.dataset.pet === 'true';
+
+            // Check Matches
+            const matchesSearch = term === '' || 
+                                  name.includes(term) || 
+                                  city.includes(term) || 
+                                  area.includes(term) ||
+                                  tags.includes(term);
+            
+            const matchesFilters = (!requireHighAlt || isHighAlt) &&
+                                   (!requireGlamping || isGlamping) &&
+                                   (!requirePet || isPet);
+
+            if (matchesSearch && matchesFilters) {
+                el.style.display = 'block';
+                visibleCount++;
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // Update UI State
+        if (countDisplay) countDisplay.textContent = visibleCount.toString();
+        
+        if (visibleCount === 0) {
+            resultsGrid?.classList.add('hidden');
+            noResults?.classList.remove('hidden');
+        } else {
+            resultsGrid?.classList.remove('hidden');
+            noResults?.classList.add('hidden');
+        }
+    }
+
+    // Debounce for better performance
+    let debounceTimer: ReturnType<typeof setTimeout>;
+    function handleInput() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(filterCamps, 150);
+    }
+
+    // Event Listeners
+    searchInput?.addEventListener('input', handleInput);
+    filterHighAlt?.addEventListener('change', filterCamps);
+    filterGlamping?.addEventListener('change', filterCamps);
+    filterPet?.addEventListener('change', filterCamps);
+</script>

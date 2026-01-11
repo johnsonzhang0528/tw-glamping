@@ -1,0 +1,70 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "全台最詳盡的露營區指南，結合 AI 智能推薦" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-TW">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body class="bg-stone-50 min-h-screen text-stone-800 font-sans flex flex-col">
+		<header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+			<div class="container mx-auto px-4 h-16 flex items-center justify-between">
+				<a href="/" class="text-2xl font-bold text-emerald-700 tracking-tight flex items-center gap-2">
+					<span>🏕️</span> 台灣露營地圖
+				</a>
+				<nav class="hidden md:flex gap-6 text-sm font-medium text-stone-600">
+					<a href="/search" class="hover:text-emerald-600 transition">營區搜尋</a>
+					<a href="/topic/glamping" class="hover:text-emerald-600 transition">豪華露營</a>
+					<a href="/topic/high-altitude" class="hover:text-emerald-600 transition">高海拔</a>
+				</nav>
+			</div>
+		</header>
+
+		<main class="flex-grow">
+			<slot />
+		</main>
+
+		<footer class="bg-stone-900 text-stone-400 py-12 mt-20">
+			<div class="container mx-auto px-4">
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+					<div>
+						<h3 class="text-white font-bold text-lg mb-4">關於本站</h3>
+						<p class="text-sm leading-relaxed">
+							台灣露營地圖致力於提供最透明、最準確的露營區資訊。
+							結合 AI 技術，為您分析海拔氣候與設施特色。
+						</p>
+					</div>
+					<div>
+						<h3 class="text-white font-bold text-lg mb-4">熱門連結</h3>
+						<ul class="space-y-2 text-sm">
+							<li><a href="/topic/high-altitude" class="hover:text-white transition">高海拔避暑</a></li>
+							<li><a href="/topic/glamping" class="hover:text-white transition">豪華露營</a></li>
+							<li><a href="/search" class="hover:text-white transition">全台營區搜尋</a></li>
+						</ul>
+					</div>
+					<div>
+						<h3 class="text-white font-bold text-lg mb-4">免責聲明</h3>
+						<p class="text-xs leading-relaxed">
+							本站資訊由 AI 輔助整理，實際狀況請以營區官方公告為準。
+							部分連結可能包含合作推廣內容。
+						</p>
+					</div>
+				</div>
+				<div class="border-t border-stone-800 mt-8 pt-8 text-center text-xs">
+					&copy; {new Date().getFullYear()} Taiwan Glamping Map. All rights reserved.
+				</div>
+			</div>
+		</footer>
+	</body>
+</html>
