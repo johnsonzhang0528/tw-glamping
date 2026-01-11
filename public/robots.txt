@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /
+
+Sitemap: https://tw-glamping.com/sitemap-index.xml

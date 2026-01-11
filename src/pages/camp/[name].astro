@@ -69,12 +69,12 @@ const recommendations = getAffiliateProducts();
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-8 md:py-12">
+    <div class="container mx-auto px-4 py-8 md:py-12 pb-24 md:pb-12">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             
             {/* Main Content (Left Column) */}
             <div class="lg:col-span-2">
-                <header class="mb-8">
+                <header class="mb-6 md:mb-8">
                     <div class="flex flex-wrap items-center gap-3 mb-3">
                         {camp.features.high_altitude && <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">高海拔 {camp.elevation}m</span>}
                         {camp.features.has_glamping && <span class="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded">豪華露營</span>}
@@ -84,21 +84,27 @@ const recommendations = getAffiliateProducts();
                     <div class="flex items-center text-stone-600 text-sm md:text-base gap-4">
                         <span class="flex items-center gap-1"><span class="text-xl">📍</span> {camp.address}</span>
                     </div>
-                {/* Map Component */}
-                <div class="bg-stone-200 rounded-2xl h-64 md:h-96 w-full mb-8 relative border border-stone-300 overflow-hidden shadow-inner">
+                </header>
+
+                {/* Map Component - Full width on mobile, top position */}
+                <div class="bg-stone-200 rounded-2xl h-64 md:h-96 w-full mb-8 relative border border-stone-300 overflow-hidden shadow-inner group">
                    <CampMap lat={camp.lat} lng={camp.lng} name={camp.name} />
+                   <a href={`https://www.google.com/maps/search/?api=1&query=${camp.lat},${camp.lng}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg text-sm font-bold text-emerald-700 hover:bg-emerald-50 transition flex items-center gap-2 z-[400] active:scale-95">
+                        <span>🧭</span> Google 導航
+                   </a>
                 </div>
 
-                {/* Description */}
-
-                {/* Description */}
-                <article class="prose prose-stone max-w-none mb-12">
+                {/* Description - Enhanced Typography */}
+                <article class="prose prose-stone prose-lg md:prose-xl max-w-none mb-12 prose-headings:font-bold prose-p:text-stone-700 prose-a:text-emerald-600">
                     <h2 class="text-2xl font-bold text-stone-800 mb-4 border-l-4 border-emerald-500 pl-4">營區介紹</h2>
-                    <p class="text-lg leading-relaxed text-stone-700">{camp.description}</p>
+                    <p class="text-lg md:text-xl leading-relaxed text-stone-700 tracking-wide">{camp.description}</p>
                     
-                    <div class="mt-8 flex flex-wrap gap-2">
+                    <div class="mt-8 flex flex-wrap gap-2 not-prose">
                         {camp.tags.map(tag => (
-                            <span class="bg-stone-100 text-stone-600 px-3 py-1.5 rounded-full text-sm border border-stone-200">
+                            <span class="bg-stone-100 text-stone-600 px-3 py-1.5 rounded-full text-base border border-stone-200">
                                 #{tag}
                             </span>
                         ))}
@@ -166,6 +172,19 @@ const recommendations = getAffiliateProducts();
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    {/* Sticky Bottom Bar for Mobile Conversion */}
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 pb-safe z-50 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div class="grid grid-cols-5 gap-4 items-center h-12">
+            <div class="col-span-2 text-xs text-stone-500">
+                <p>每晚參考價</p>
+                <p class="text-lg font-bold text-red-600">NT$ 1200 <span class="text-xs font-normal text-stone-400">起</span></p>
+            </div>
+            <a href="#" class="col-span-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg h-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
+                前往預訂 / 查看優惠
+            </a>
         </div>
     </div>
 </Layout>

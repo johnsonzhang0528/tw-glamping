@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import CampgroundCard from '../components/CampgroundCard.astro';
+import FilterBar from '../components/FilterBar.astro';
 import campgrounds from '../data/campgrounds_enriched.json';
 
 // Get unique cities for filter dropdown
@@ -22,11 +23,12 @@ type Campground = {
 ---
 
 <Layout title="全台露營區搜尋 | 台灣露營地圖">
-	<div class="bg-stone-100 py-12 border-b border-stone-200">
+	<FilterBar />
+	<div class="bg-stone-100 py-6 md:py-12 border-b border-stone-200">
 		<div class="container mx-auto px-4">
-			<h1 class="text-3xl font-bold text-stone-900 mb-6 text-center">尋找理想營區</h1>
+			<h1 class="text-2xl md:text-3xl font-bold text-stone-900 mb-4 md:mb-6 text-center">尋找理想營區</h1>
 			
-			<div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-stone-200" id="search-controls">
+			<div class="max-w-4xl mx-auto bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-stone-200" id="search-controls">
 				<div class="grid grid-cols-1 md:grid-cols-12 gap-4">
 					{/* Search Input */}
 					<div class="md:col-span-12">
@@ -64,7 +66,7 @@ type Campground = {
 	</div>
 
 	<div class="container mx-auto px-4 py-12">
-		<div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+		<div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
 			{campgrounds.map((camp) => (
 				<div 
                     class="camp-item opacity-100 transition-opacity duration-300"
@@ -92,20 +94,37 @@ type Campground = {
 
 <script>
     // Client-side filtering logic
-    const searchInput = document.getElementById('search-input') as HTMLInputElement;
-    const filterHighAlt = document.getElementById('filter-high-altitude') as HTMLInputElement;
-    const filterGlamping = document.getElementById('filter-glamping') as HTMLInputElement;
-    const filterPet = document.getElementById('filter-pet') as HTMLInputElement;
-    const resultsGrid = document.getElementById('results-grid');
-    const noResults = document.getElementById('no-results');
-    const countDisplay = document.getElementById('count-display');
-    const items = document.querySelectorAll('.camp-item');
+    const searchInputEl = document.getElementById('search-input') as HTMLInputElement;
+    const filterHighAltEl = document.getElementById('filter-high-altitude') as HTMLInputElement;
+    const filterGlampingEl = document.getElementById('filter-glamping') as HTMLInputElement;
+    // ...existing code...
+    // Variables that need to be refreshed on page navigation
+    let searchInput: HTMLInputElement;
+    let filterHighAlt: HTMLInputElement;
+    let filterGlamping: HTMLInputElement;
+    let filterPet: HTMLInputElement;
+    let resultsGrid: HTMLElement | null;
+    let noResults: HTMLElement | null;
+    let countDisplay: HTMLElement | null;
+    let items: NodeListOf<Element>;
+
+    // Parse URL URLSearchParameters to autofill search
+    function initFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const query = params.get('q');
+        if (query && searchInput) {
+            searchInput.value = query;
+            filterCamps();
+        }
+    }
 
     function filterCamps() {
+        if (!searchInput) return;
+        
         const term = searchInput.value.toLowerCase();
-        const requireHighAlt = filterHighAlt.checked;
-        const requireGlamping = filterGlamping.checked;
-        const requirePet = filterPet.checked;
+        const requireHighAlt = filterHighAlt?.checked || false;
+        const requireGlamping = filterGlamping?.checked || false;
+        const requirePet = filterPet?.checked || false;
 
         let visibleCount = 0;
 
@@ -121,11 +140,18 @@ type Campground = {
             const isPet = el.dataset.pet === 'true';
 
             // Check Matches
-            const matchesSearch = term === '' || 
+            let matchesSearch = term === '' || 
                                   name.includes(term) || 
                                   city.includes(term) || 
                                   area.includes(term) ||
                                   tags.includes(term);
+
+            // Special keyword mapping for features (ensures FilterBar works for features not in tags)
+            if (!matchesSearch) {
+                if (term.includes('豪華') && isGlamping) matchesSearch = true;
+                if (term.includes('高海拔') && isHighAlt) matchesSearch = true;
+                if (term.includes('寵物') && isPet) matchesSearch = true;
+            }
             
             const matchesFilters = (!requireHighAlt || isHighAlt) &&
                                    (!requireGlamping || isGlamping) &&
@@ -158,9 +184,28 @@ type Campground = {
         debounceTimer = setTimeout(filterCamps, 150);
     }
 
-    // Event Listeners
-    searchInput?.addEventListener('input', handleInput);
-    filterHighAlt?.addEventListener('change', filterCamps);
-    filterGlamping?.addEventListener('change', filterCamps);
-    filterPet?.addEventListener('change', filterCamps);
+    // Main initialization function
+    function init() {
+         // Re-query DOM elements because they might be new after a transition
+        searchInput = document.getElementById('search-input') as HTMLInputElement;
+        filterHighAlt = document.getElementById('filter-high-altitude') as HTMLInputElement;
+        filterGlamping = document.getElementById('filter-glamping') as HTMLInputElement;
+        filterPet = document.getElementById('filter-pet') as HTMLInputElement;
+        resultsGrid = document.getElementById('results-grid');
+        noResults = document.getElementById('no-results');
+        countDisplay = document.getElementById('count-display');
+        items = document.querySelectorAll('.camp-item');
+
+        // Attach listeners again
+        if (searchInput) searchInput.addEventListener('input', handleInput);
+        if (filterHighAlt) filterHighAlt.addEventListener('change', filterCamps);
+        if (filterGlamping) filterGlamping.addEventListener('change', filterCamps);
+        if (filterPet) filterPet.addEventListener('change', filterCamps);
+
+        initFromURL();
+    }
+    
+    // Astro View Transitions Events
+    // Runs on initial load AND after every navigation
+    document.addEventListener('astro:page-load', init);
 </script>

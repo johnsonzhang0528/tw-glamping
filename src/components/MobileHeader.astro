@@ -1,0 +1,40 @@
+---
+---
+<!-- Sticky Header with Backdrop Blur and Mobile-First Design -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 transition-all duration-300 supports-[backdrop-filter]:bg-white/60">
+  <div class="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between gap-3 md:gap-8">
+    
+    <!-- Left: Logo (Icon only on mobile, Full on desktop) -->
+    <a href="/" class="flex-shrink-0 flex items-center gap-2 group" aria-label="回首頁">
+      <span class="text-2xl transform group-hover:scale-110 transition-transform duration-200">🏕️</span>
+      <span class="hidden md:block text-xl font-bold text-emerald-700 tracking-tight">台灣露營地圖</span>
+    </a>
+
+    <!-- Center: Search Bar (Prominent and Full-Width on Mobile) -->
+    <div class="flex-grow max-w-2xl">
+      <form action="/search" method="GET" class="relative group">
+        <div class="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-stone-400 group-focus-within:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+        <!-- UX: text-base prevents iOS zoom on focus (16px), md:text-sm for desktop elegance -->
+        <input 
+            type="search" 
+            name="q"
+            placeholder="搜尋營區、海拔、特色..." 
+            class="block w-full pl-10 md:pl-12 pr-4 py-2.5 md:py-3 border border-stone-200 rounded-full leading-5 bg-stone-100/50 hover:bg-white focus:bg-white placeholder-stone-400 text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-base md:text-sm transition-all shadow-sm group-hover:shadow-md appearance-none"
+            autocomplete="off"
+        />
+      </form>
+    </div>
+
+    <!-- Right: Desktop Nav Links -->
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600 flex-shrink-0">
+      <a href="/search" class="hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-lg transition-colors">營區搜尋</a>
+      <a href="/topic/glamping" class="hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-lg transition-colors">豪華露營</a>
+      <a href="/topic/high-altitude" class="hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-lg transition-colors">高海拔</a>
+    </nav>
+    
+  </div>
+</header>
