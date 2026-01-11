@@ -12,12 +12,12 @@
     {
         "id": "cooking-king",
         "tags": ["cooking"],
-        "keywords": ["烤肉", "野炊", "烹飪", "開伙", "BBQ", "瓦斯爐", "廚房", "美食"],
-        "title": "🔥 露營界兩大廚神",
+        "keywords": ["烤肉", "野炊", "烹飪", "開伙", "BBQ", "瓦斯爐", "廚房", "美食", "咖啡", "早餐"],
+        "title": "🔥 廚房與咖啡儀式",
         "items": [
             { "name": "岩谷 4.1kW 黑武士", "price": "$1,980", "link": "https://shopee.tw/search?keyword=岩谷4.1", "desc": "抗風力強！大火快炒唯一指定", "cta": "查看優惠" },
             { "name": "SOTO ST-310 蜘蛛爐", "price": "$2,260", "link": "https://shopee.tw/search?keyword=SOTO蜘蛛爐", "desc": "日本製造，收納後比手掌還小", "cta": "前往購買" },
-            { "name": "Uniflame 不沾荷蘭鍋", "price": "$3,900", "link": "https://shopee.tw/search?keyword=Uniflame荷蘭鍋", "desc": "燉肉神器，也可用於炭火", "cta": "查看詳情" }
+            { "name": "Snow Peak 手沖壺", "price": "$3,200", "link": "https://shopee.tw/search?keyword=SnowPeak手沖壺", "desc": "清晨一杯咖啡，是露營的靈魂", "cta": "品味生活" }
         ]
     },
     {
@@ -74,13 +74,14 @@
         ]
     },
     {
-        "id": "family-play",
-        "tags": ["family"],
-        "keywords": ["親子", "小孩", "兒童", "玩水", "草地", "放電", "沙坑", "遊戲"],
-        "title": "👨‍👩‍👧‍👦 小孩放電神器",
+        "id": "storage-power",
+        "tags": ["general"],
+        "keywords": ["收納", "搬運", "推車", "充電", "電源", "插座", "裝備", "整理", "雷"],
+        "title": "⚡️ 收納與電力神隊友",
         "items": [
-            { "name": "自動泡泡相機", "price": "$199", "link": "https://shopee.tw/search?keyword=泡泡機", "desc": "按一下滿天泡泡，拍照超夢幻", "cta": "哄娃必備" },
-            { "name": "迪卡儂 兒童弓箭", "price": "$1,249", "link": "https://shopee.tw/search?keyword=迪卡儂弓箭", "desc": "安全性高，全家都能玩的吸盤弓箭", "cta": "前往官網" }
+            { "name": "Coleman 露營推車", "price": "$3,980", "link": "https://shopee.tw/search?keyword=Coleman推車", "desc": "露營界國民手推車，耐重好拖", "cta": "查看優惠" },
+            { "name": "Thor 工業風收納箱", "price": "$1,580", "link": "https://shopee.tw/search?keyword=Thor收納箱", "desc": "不只是箱子，堆疊起來就是桌子", "cta": "選顏色" },
+            { "name": "EcoFlow 戶外電源", "price": "$12,000", "link": "https://shopee.tw/search?keyword=EcoFlow電源", "desc": "吹風機也能用！實現用電自由", "cta": "查看規格" }
         ]
     }
 ]
