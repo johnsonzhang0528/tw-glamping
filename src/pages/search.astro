@@ -21,6 +21,21 @@ type Campground = {
 		high_altitude: boolean;
 	};
 };
+
+// Define advanced filters for checkboxes
+const advancedFilters = [
+    { id: 'filter-high-altitude', label: '高海拔', icon: '⛰️', type: 'feature', key: 'high_altitude' },
+    { id: 'filter-glamping', label: '豪華露營', icon: '✨', type: 'feature', key: 'glamping' },
+    { id: 'filter-pet', label: '寵物友善', icon: '🐾', type: 'feature', key: 'pet_friendly' },
+    { id: 'filter-power', label: '提供電源', icon: '⚡', type: 'tag', key: '供電' }, // Matches '提供電源' or '供電'
+    { id: 'filter-fridge', label: '有冰箱', icon: '❄️', type: 'tag', key: '冰箱' },
+    { id: 'filter-dryer', label: '吹風機', icon: '🚿', type: 'tag', key: '吹風機' },
+    { id: 'filter-car', label: '可車露', icon: '🚙', type: 'tag', key: '車露' },
+    { id: 'filter-sakura', label: '櫻花', icon: '🌸', type: 'tag', key: '櫻花' },
+    { id: 'filter-small-zone', label: '小包區', icon: '🏕️', type: 'tag', key: '包區' },
+    { id: 'filter-cloud', label: '雲海', icon: '☁️', type: 'tag', key: '雲海' },
+    { id: 'filter-firefly', label: '螢火蟲', icon: '✨', type: 'tag', key: '螢火蟲' },
+];
 ---
 
 <Layout title="全台露營區搜尋 | 台灣露營地圖">
@@ -64,21 +79,24 @@ type Campground = {
                                 <option value="elevation-asc">海拔：由低到高</option>
                             </select>
                         </div>
+                    </div>
 
-                         {/* Checkbox Group - Took up remaining space */}
-                         <div class="col-span-2 flex flex-wrap gap-2 items-end">
-                            <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none flex-grow justify-center">
-                                <input type="checkbox" id="filter-high-altitude" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-                                <span class="text-sm font-medium text-stone-700">高海拔</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none flex-grow justify-center">
-                                <input type="checkbox" id="filter-glamping" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-                                <span class="text-sm font-medium text-stone-700">豪華露營</span>
-                            </label>
-                             <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border border-stone-200 hover:bg-stone-100 transition select-none flex-grow justify-center">
-                                <input type="checkbox" id="filter-pet" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-                                <span class="text-sm font-medium text-stone-700">寵物友善</span>
-                            </label>
+                    {/* Checkbox Group - Full width */}
+                     <div class="md:col-span-12 mt-2">
+                        <label class="block text-xs font-bold text-stone-500 mb-2">進階篩選</label>
+                        <div class="flex flex-wrap gap-2 md:gap-3">
+                            {advancedFilters.map(filter => (
+                                <label class="flex items-center gap-1.5 cursor-pointer bg-white px-3 py-2 rounded-lg border border-stone-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition select-none">
+                                    <input 
+                                        type="checkbox" 
+                                        id={filter.id} 
+                                        data-type={filter.type} 
+                                        data-key={filter.key}
+                                        class="filter-checkbox w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-stone-300" 
+                                    />
+                                    <span class="text-sm font-medium text-stone-700">{filter.icon} {filter.label}</span>
+                                </label>
+                            ))}
                         </div>
                     </div>
 				</div>
@@ -121,17 +139,10 @@ type Campground = {
 
 <script>
     // Client-side filtering logic
-    const searchInputEl = document.getElementById('search-input') as HTMLInputElement;
-    const filterHighAltEl = document.getElementById('filter-high-altitude') as HTMLInputElement;
-    const filterGlampingEl = document.getElementById('filter-glamping') as HTMLInputElement;
-    // ...existing code...
-    // Variables that need to be refreshed on page navigation
     let searchInput: HTMLInputElement;
     let filterCity: HTMLSelectElement;
     let sortOrder: HTMLSelectElement;
-    let filterHighAlt: HTMLInputElement;
-    let filterGlamping: HTMLInputElement;
-    let filterPet: HTMLInputElement;
+    let checkboxes: NodeListOf<HTMLInputElement>;
     let clearBtn: HTMLElement | null;
     let resultsGrid: HTMLElement | null;
     let noResults: HTMLElement | null;
@@ -143,16 +154,28 @@ type Campground = {
         const params = new URLSearchParams(window.location.search);
         const query = params.get('q');
         const city = params.get('city');
-        const tag = params.get('tag');
+        const tag = params.get('tag'); // Supports "?tag=高海拔" or "?tag=冰箱"
 
         if (query && searchInput) searchInput.value = query;
         if (city && filterCity) filterCity.value = city;
         
-        // Handle Tag shortcuts from FilterBar
+        // Handle Tag shortcuts from FilterBar or URL
+        // Tries to find a matching checkbox first
         if (tag) {
-            if (tag === 'High Altitude' && filterHighAlt) filterHighAlt.checked = true;
-            if (tag === 'Glamping' && filterGlamping) filterGlamping.checked = true;
-            // Add more mappings if needed
+             let found = false;
+             checkboxes.forEach(cb => {
+                 // Check if the label contains the tag or key matches
+                 const label = cb.parentElement?.textContent || '';
+                 if (cb.dataset.key === tag || label.includes(tag)) {
+                     cb.checked = true;
+                     found = true;
+                 }
+             });
+             
+             // If not found in checkboxes, put it in search input (fallback)
+             if (!found && !query && searchInput) {
+                 searchInput.value = tag;
+             }
         }
 
         filterCamps();
@@ -164,20 +187,12 @@ type Campground = {
         const itemArray = Array.from(items) as HTMLElement[];
 
         if (order === 'default') {
-             // Basic randomized or original sort (could implement shuffle if needed)
-             // For now we just revert to DOM order if possible, or just leave as is
-             // Better implementation: keep original index in data attribute if strict reset needed
-             itemArray.sort((a, b) => {
-                 return (a.dataset.name || '').localeCompare(b.dataset.name || '');
-             });
+             // Basic sort by name for stability
+             itemArray.sort((a, b) => (a.dataset.name || '').localeCompare(b.dataset.name || ''));
         } else if (order === 'elevation-desc') {
-            itemArray.sort((a, b) => {
-                return Number(b.dataset.elevation) - Number(a.dataset.elevation);
-            });
+            itemArray.sort((a, b) => Number(b.dataset.elevation) - Number(a.dataset.elevation));
         } else if (order === 'elevation-asc') {
-            itemArray.sort((a, b) => {
-                return Number(a.dataset.elevation) - Number(b.dataset.elevation);
-            });
+            itemArray.sort((a, b) => Number(a.dataset.elevation) - Number(b.dataset.elevation));
         }
 
         // Re-append to grid
@@ -189,12 +204,12 @@ type Campground = {
         
         const term = searchInput.value.toLowerCase();
         const cityFilter = filterCity?.value || '';
-        const requireHighAlt = filterHighAlt?.checked || false;
-        const requireGlamping = filterGlamping?.checked || false;
-        const requirePet = filterPet?.checked || false;
+        
+        // Get all active checkboxes
+        const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
 
         // Show/Hide Clear Button
-        const hasFilters = term || cityFilter || requireHighAlt || requireGlamping || requirePet;
+        const hasFilters = term || cityFilter || activeCheckboxes.length > 0;
         if (clearBtn) clearBtn.classList.toggle('hidden', !hasFilters);
 
         let visibleCount = 0;
@@ -210,28 +225,39 @@ type Campground = {
             const isGlamping = el.dataset.glamping === 'true';
             const isPet = el.dataset.pet === 'true';
 
-            // Check Matches
+            // 1. Text Search
             let matchesSearch = term === '' || 
                                   name.includes(term) || 
                                   city.includes(term) || 
                                   area.includes(term) ||
                                   tags.includes(term);
             
-            // City Match
-            const matchesCity = cityFilter === '' || city === cityFilter;
-
-            // Special keyword mapping for features (ensures FilterBar works for features not in tags)
+            // Special keyword mapping for features fallback
             if (!matchesSearch) {
                 if (term.includes('豪華') && isGlamping) matchesSearch = true;
                 if (term.includes('高海拔') && isHighAlt) matchesSearch = true;
                 if (term.includes('寵物') && isPet) matchesSearch = true;
             }
             
-            const matchesFilters = (!requireHighAlt || isHighAlt) &&
-                                   (!requireGlamping || isGlamping) &&
-                                   (!requirePet || isPet);
+            // 2. City Match
+            const matchesCity = cityFilter === '' || city === cityFilter;
 
-            if (matchesSearch && matchesCity && matchesFilters) {
+            // 3. Advanced Checkbox Filters
+            const matchesAdvanced = activeCheckboxes.every(cb => {
+                const type = cb.dataset.type;
+                const key = cb.dataset.key || '';
+
+                if (type === 'feature') {
+                    if (key === 'high_altitude') return isHighAlt;
+                    if (key === 'glamping') return isGlamping;
+                    if (key === 'pet_friendly') return isPet;
+                } else if (type === 'tag') {
+                    return tags.includes(key); // Check if data-tags contains this specific keyword
+                }
+                return true;
+            });
+
+            if (matchesSearch && matchesCity && matchesAdvanced) {
                 el.style.display = 'block';
                 visibleCount++;
             } else {
@@ -255,10 +281,8 @@ type Campground = {
     function clearFilters() {
         if(searchInput) searchInput.value = '';
         if(filterCity) filterCity.value = '';
-        if(filterHighAlt) filterHighAlt.checked = false;
-        if(filterGlamping) filterGlamping.checked = false;
-        if(filterPet) filterPet.checked = false;
         if(sortOrder) sortOrder.value = 'default';
+        checkboxes.forEach(cb => cb.checked = false);
         filterCamps();
     }
 
@@ -276,9 +300,8 @@ type Campground = {
         filterCity = document.getElementById('filter-city') as HTMLSelectElement;
         sortOrder = document.getElementById('sort-order') as HTMLSelectElement;
         
-        filterHighAlt = document.getElementById('filter-high-altitude') as HTMLInputElement;
-        filterGlamping = document.getElementById('filter-glamping') as HTMLInputElement;
-        filterPet = document.getElementById('filter-pet') as HTMLInputElement;
+        // Dynamic Checkboxes
+        checkboxes = document.querySelectorAll('.filter-checkbox');
         
         clearBtn = document.getElementById('clear-filters');
         resultsGrid = document.getElementById('results-grid');
@@ -291,9 +314,7 @@ type Campground = {
         if (filterCity) filterCity.addEventListener('change', filterCamps);
         if (sortOrder) sortOrder.addEventListener('change', sortCamps);
         
-        if (filterHighAlt) filterHighAlt.addEventListener('change', filterCamps);
-        if (filterGlamping) filterGlamping.addEventListener('change', filterCamps);
-        if (filterPet) filterPet.addEventListener('change', filterCamps);
+        checkboxes.forEach(cb => cb.addEventListener('change', filterCamps));
         
         if (clearBtn) clearBtn.addEventListener('click', clearFilters);
 

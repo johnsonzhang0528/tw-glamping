@@ -45,10 +45,10 @@ const iconMap: Record<string, string> = {
 };
 const defaultIcon = '🏷️';
 
-// 4. 选择前 15 名熱門標籤
+// 4. 选择前 5 名熱門標籤 (Reduced from 15)
 const sortedTags = Object.entries(tagCounts)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 15)
+    .slice(0, 5)
     .map(([tag]) => ({
         label: tag,
         value: tag,
