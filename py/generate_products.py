@@ -161,14 +161,30 @@ def fetch_momo_price_via_ai(url, item_name):
                 content_snippet = resp.text[:15000]
                 
             # --- 🚀 FAST PATH: Regex Extraction (Zero Token Cost) ---
-            # Momo prices usually appear as <span class="price"><b>$</b>999</span> or similar.
-            # We look for the first occurrence of "$1,234" or "$999" in the product list.
-            price_match = re.search(r'\$([0-9,]+)', content_snippet)
-            if price_match:
-                found_price = f"${price_match.group(1)}"
-                print(f"      ⚡ Fast path (Regex): found {found_price}. Skipping AI.")
-                return found_price
-                
+            # 1. Expand search window for Regex (Python regex is fast, 100k chars is fine)
+            full_search_window = resp.text[:100000] 
+            
+            # 2. Strategy A: Look for JSON data (Most reliable in Momo's current source)
+            # Pattern: "price":"3,591" or "goodsPrice":"$$3,591"
+            json_price_match = re.search(r'"price":"([0-9,]+)"', full_search_window)
+            
+            if json_price_match:
+                price_val = json_price_match.group(1)
+                # Filter out suspicious low numbers that might be ids (e.g. "1", "9")
+                # Real prices usually are > 100 or contain commas
+                if "," in price_val or (price_val.isdigit() and int(price_val) > 50):
+                    found_price = f"${price_val}"
+                    print(f"      ⚡ Fast path (JSON Regex): found {found_price}. Skipping AI.")
+                    return found_price
+
+            # 3. Strategy B: HTML structure (formatted price)
+            # <b class="price">$9,999</b> or similar
+            html_price_match = re.search(r'class="price"[^>]*>.*?\$([0-9,]+)', full_search_window)
+            if html_price_match:
+                 found_price = f"${html_price_match.group(1)}"
+                 print(f"      ⚡ Fast path (HTML Regex): found {found_price}. Skipping AI.")
+                 return found_price
+
             # --- 🐢 SLOW PATH: AI Extraction (High Token Cost) ---
             # Only use AI if Regex fails. 
             # Further reduce context to 2000 chars to save tokens if we must use AI.
