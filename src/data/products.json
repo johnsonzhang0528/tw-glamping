@@ -46,13 +46,13 @@
       },
       {
         "name": "Naturehike 雲朵800羽絨睡袋",
-        "price": "$2880起",
+        "price": "$775",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Naturehike%20羽絨睡袋&searchType=1",
         "desc": "輕量保暖，壓縮體積小，方便攜帶。",
         "cta": "查優惠"
       },
       {
-        "name": "Therm-a-Rest 探索者20度睡袋",
+        "name": "Therm-a-Rest Questar 20度睡袋",
         "price": "$4500起",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Therm-a-Rest%20睡袋&searchType=1",
         "desc": "專業登山級，極致保暖，舒適耐用。",
@@ -121,9 +121,9 @@
     "items": [
       {
         "name": "小熊牌 多功能電火鍋",
-        "price": "$1280起",
+        "price": "$990",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%B0%8F%E7%8B%9B%E7%89%88%20%E9%81%B8%E7%81%BD%E7%81%A3&searchType=1",
-        "desc": "輕巧方便，多功能烹煮，露營火鍋首選。",
+        "desc": "輕巧方便，多功能烹煮，露營必備。",
         "cta": "查優惠"
       },
       {
@@ -149,36 +149,36 @@
       "sleep"
     ],
     "keywords": [
-      "保暖內衣",
-      "發熱衣",
-      "保暖褲",
-      "刷毛衣",
-      "冬季衣物",
-      "露營衣物",
+      "保暖墊",
+      "露營保暖",
+      "地墊",
+      "防潮墊",
+      "保暖地墊",
+      "鋁箔墊",
       "保暖層",
-      "發熱衣推薦"
+      "冬季露營"
     ],
-    "title": "🧥 冬季露營保暖層：舒適度UP！",
+    "title": "🛡️ 告別寒冷地面：露營保暖墊升級",
     "items": [
       {
-        "name": "Uniqlo HEATTECH 發熱衣",
-        "price": "$790起",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Uniqlo%20HEATTECH&searchType=1",
-        "desc": "輕薄保暖，吸濕排汗，舒適透氣。",
+        "name": "Therm-a-Rest Z Lite Sol 鋁箔保暖墊",
+        "price": "$1980起",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Therm-a-Rest%20%E9%87%8F%E7%94%B5%E4%BF%92%E6%B8%9B%E5%9C%B0&searchType=1",
+        "desc": "輕量防潮，保暖隔熱，舒適露營。",
         "cta": "查優惠"
       },
       {
-        "name": "Columbia 刷毛外套",
-        "price": "$1980起",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Columbia%20%E5%88%83%E6%AF%9B%E5%A5%A5%E8%A2%A4&searchType=1",
-        "desc": "柔軟舒適，保暖透氣，戶外活動首選。",
+        "name": "Sea to Summit Comfort Plus 自充氣保暖墊",
+        "price": "$2800起",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Sea%20to%20Summit%20%E8%87%AA%E5%85%85%E6%B0%97%E4%BF%92%E6%B8%9B%E5%9C%B0&searchType=1",
+        "desc": "舒適自充氣，保暖隔熱，提升睡眠品質。",
         "cta": "看評價"
       },
       {
-        "name": "Icebreaker 美利奴羊毛內衣",
-        "price": "$2500起",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Icebreaker%20%E7%BE%8E%E5%85%8B%E7%8A%B6%E8%8F%9C%E5%86%85%E8%A2%A4&searchType=1",
-        "desc": "天然保暖，透氣排汗，舒適親膚。",
+        "name": "Coleman 防潮保暖地墊",
+        "price": "$890起",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Coleman%20%E9%98%B2%E6%B0%97%E4%BF%92%E6%B8%9B%E5%9C%B0%E7%96%BE&searchType=1",
+        "desc": "經濟實惠，防潮保暖，露營好幫手。",
         "cta": "立即選購"
       }
     ]
@@ -187,39 +187,39 @@
     "id": "category-5",
     "tags": [
       "general",
-      "cooking"
+      "sleep"
     ],
     "keywords": [
-      "露營桌椅",
-      "折疊桌",
-      "折疊椅",
-      "野餐桌",
-      "戶外桌椅",
-      "露營裝備",
-      "過年露營",
-      "野餐"
+      "保暖衣",
+      "發熱衣",
+      "刷毛衣",
+      "保暖褲",
+      "內層衣",
+      "排汗衣",
+      "冬季衣物",
+      "露營保暖"
     ],
-    "title": "🏕️ 露營生活好幫手：舒適桌椅組",
+    "title": "🧥 冬季露營暖身術：保暖內衣組",
     "items": [
       {
-        "name": "Coleman 折疊露營桌",
-        "price": "$1480起",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Coleman%20%E6%8A%98%E8%9E%8D%E9%A0%98%E6%96%87%E5%8F%B0&searchType=1",
-        "desc": "輕巧耐用，方便攜帶，露營野餐必備。",
+        "name": "Uniqlo HEATTECH 發熱衣",
+        "price": "$790起",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Uniqlo%20HEATTECH&searchType=1",
+        "desc": "輕薄保暖，排汗速乾，舒適貼身。",
         "cta": "查優惠"
       },
       {
-        "name": "Naturehike 折疊椅",
-        "price": "$880起",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Naturehike%20%E6%8A%98%E8%9E%8D%E5%B3%A0&searchType=1",
-        "desc": "舒適透氣，承重力強，輕鬆享受戶外時光。",
+        "name": "Columbia 刷毛保暖衣",
+        "price": "$1580起",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Columbia%20%E5%88%83%E6%AF%9B%E4%BF%92%E6%B8%9B%E8%A2%96&searchType=1",
+        "desc": "柔軟舒適，保暖透氣，戶外活動首選。",
         "cta": "看評價"
       },
       {
-        "name": "Helinox 露營桌椅組",
-        "price": "$3500起",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Helinox%20%E9%A0%98%E6%96%87%E5%8F%B0%E5%B3%A0%E7%B4%A0&searchType=1",
-        "desc": "輕量化設計，舒適耐用，專業露營首選。",
+        "name": "Under Armour ColdGear 保暖衣",
+        "price": "$2280起",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=Under%20Armour%20ColdGear&searchType=1",
+        "desc": "專業運動保暖，排汗速乾，極致舒適。",
         "cta": "立即選購"
       }
     ]
