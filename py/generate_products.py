@@ -47,9 +47,10 @@ def generate_trending_products():
     3. **Tags (Campground Tags)**：**非常重要**，請從以下清單中選擇最適合該商品類別的 1-2 個標籤，以便與營地進行媒合：
        [high_altitude, pet_friendly, glamping, general, cooking, sleep, play, forest, riverside]
        (例如：暖爐對應 high_altitude, 戲水玩具對應 play 或 riverside)
-    4. **商品連結 (Link)**：請使用蝦皮搜尋連結格式 `https://shopee.tw/search?keyword={{商品關鍵字}}&sortBy=sales`。
-    5. **商品描述 (Desc)**：一句話賣點，直擊痛點 (15字以內)。
-    6. **CTA**：簡短有力的行動呼籲 (例如：查優惠、看評價)。
+    3. **商品連結 (Link)**：請使用蝦皮商城搜尋連結格式 `https://shopee.tw/mall/search?keyword={{商品關鍵字}}&sortBy=sales`。
+       *(重要：務必使用 `/mall/search` 路徑，確保使用者進入蝦皮商城，因為通路王只認列商城分潤)*
+    4. **商品描述 (Desc)**：一句話賣點，直擊痛點 (15字以內)。
+    5. **CTA**：簡短有力的行動呼籲 (例如：查優惠、看評價)。
     
     【JSON 結構】
     請直接回傳一個 JSON Array，不要 Markdown code block，格式如下：
