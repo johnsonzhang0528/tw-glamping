@@ -90,19 +90,19 @@ def generate_trending_products():
         # ----------------------------------------
         # 新增流程：自動查價
         # ----------------------------------------
-        print("🕵️  開始進行即時查價 (AI Reading Momo Pages)...")
+        print("🕵️  開始進行即時查價 (Regex Only)...")
         for category in product_data:
             for item in category.get("items", []):
                 link = item.get("link", "")
                 if "momoshop.com.tw" in link:
-                    real_price = fetch_momo_price_via_ai(link, item["name"])
+                    real_price = fetch_momo_price_regex(link, item["name"])
                     if real_price:
                         print(f"   ✅ Updated: {item['name']} -> {real_price}")
                         item["price"] = real_price
                     else:
                         print(f"   ❌ Keep original: {item['name']}")
                     # 避免請求過於頻繁
-                    time.sleep(5)
+                    time.sleep(1)
         
         # 加上一個固定的置頂廣告 (Klook / 通用)
         fixed_promo = [
@@ -129,96 +129,49 @@ def generate_trending_products():
         print(f"❌ AI Analysis Failed: {e}")
         # 如果失敗，不要覆蓋舊檔案
 
-def fetch_momo_price_via_ai(url, item_name):
+def fetch_momo_price_regex(url, item_name):
     """
-    Fetches the Momo search page and uses AI to extract a realistic price range.
-    Handles Rate Limits (429) and reduces context size.
+    Fetches the Momo search page and uses Regex to extract price accurately.
+    No cost, fast, and reliable.
     """
     print(f"   🔍 Analysing price for: {item_name} ...")
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     
-    # Try up to 3 times if we hit a rate limit
-    max_retries = 3
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code != 200:
+            print(f"      HTTP {resp.status_code} - skipping.")
+            return None
+        
+        # 1. Expand search window for Regex
+        full_search_window = resp.text[:100000] 
+        
+        # 2. Strategy A: Look for JSON data (Most reliable in Momo's current source)
+        # Pattern: "price":"3,591" or "goodsPrice":"$$3,591"
+        json_price_match = re.search(r'"price":"([0-9,]+)"', full_search_window)
+        
+        if json_price_match:
+            price_val = json_price_match.group(1)
+            # Filter out suspicious low numbers that might be ids (e.g. "1", "9")
+            # Real prices usually are > 100 or contain commas
+            if "," in price_val or (price_val.isdigit() and int(price_val) > 50):
+                found_price = f"${price_val}"
+                # print(f"      ⚡ Fast path (JSON Regex): found {found_price}")
+                return found_price
+
+        # 3. Strategy B: HTML structure (formatted price)
+        # <b class="price">$9,999</b> or similar
+        html_price_match = re.search(r'class="price"[^>]*>.*?\$([0-9,]+)', full_search_window)
+        if html_price_match:
+                found_price = f"${html_price_match.group(1)}"
+                # print(f"      ⚡ Fast path (HTML Regex): found {found_price}")
+                return found_price
     
-    for attempt in range(max_retries):
-        try:
-            resp = requests.get(url, headers=headers, timeout=10)
-            if resp.status_code != 200:
-                print(f"      HTTP {resp.status_code} - skipping.")
-                return None
-            
-            # OPTIMIZATION: Target specific content area to save tokens and improve accuracy
-            # User suggested: <div class="searchPrdListArea bookList ">
-            # We search for "searchPrdListArea" to be safe and extract from there.
-            target_marker = 'searchPrdListArea'
-            start_idx = resp.text.find(target_marker)
-            
-            if start_idx != -1:
-                content_snippet = resp.text[start_idx : start_idx + 10000]
-            else:
-                content_snippet = resp.text[:15000]
-                
-            # --- 🚀 FAST PATH: Regex Extraction (Zero Token Cost) ---
-            # 1. Expand search window for Regex (Python regex is fast, 100k chars is fine)
-            full_search_window = resp.text[:100000] 
-            
-            # 2. Strategy A: Look for JSON data (Most reliable in Momo's current source)
-            # Pattern: "price":"3,591" or "goodsPrice":"$$3,591"
-            json_price_match = re.search(r'"price":"([0-9,]+)"', full_search_window)
-            
-            if json_price_match:
-                price_val = json_price_match.group(1)
-                # Filter out suspicious low numbers that might be ids (e.g. "1", "9")
-                # Real prices usually are > 100 or contain commas
-                if "," in price_val or (price_val.isdigit() and int(price_val) > 50):
-                    found_price = f"${price_val}"
-                    print(f"      ⚡ Fast path (JSON Regex): found {found_price}. Skipping AI.")
-                    return found_price
-
-            # 3. Strategy B: HTML structure (formatted price)
-            # <b class="price">$9,999</b> or similar
-            html_price_match = re.search(r'class="price"[^>]*>.*?\$([0-9,]+)', full_search_window)
-            if html_price_match:
-                 found_price = f"${html_price_match.group(1)}"
-                 print(f"      ⚡ Fast path (HTML Regex): found {found_price}. Skipping AI.")
-                 return found_price
-
-            # --- 🐢 SLOW PATH: AI Extraction (High Token Cost) ---
-            # Only use AI if Regex fails. 
-            # Further reduce context to 2000 chars to save tokens if we must use AI.
-            short_snippet = content_snippet[:2000]
-            
-            prompt = f"""
-            Identify the price for "{item_name}" from this HTML snippet.
-            Return ONLY the price string (e.g. "$1,280").
-            
-            HTML Segment:
-            {short_snippet}
-            """
-            
-            response = client.models.generate_content(
-                model=MODEL_NAME,
-                contents=prompt
-            )
-            
-            price_text = response.text.strip()
-            if "N/A" in price_text:
-                return None
-            return price_text
-            
-        except Exception as e:
-            # Check if it's a 429 Resource Exhausted error
-            error_str = str(e)
-            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
-                wait_seconds = 20 * (attempt + 1) # simple backoff: 20s, 40s, 60s
-                print(f"      ⚠️ Quota exceeded. Waiting {wait_seconds}s before retry ({attempt+1}/{max_retries})...")
-                time.sleep(wait_seconds)
-                continue
-            else:
-                print(f"   ⚠️ Price fetch failed: {e}")
-                return None
+    except Exception as e:
+        print(f"   ⚠️ Price fetch failed: {e}")
+        return None
     
     return None
 
