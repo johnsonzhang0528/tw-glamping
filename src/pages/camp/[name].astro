@@ -28,6 +28,8 @@ const isTraditional = !isGlamping; // Helper for Traditional Camps
 
 // 🟢 [Configuration] Affiliate Configuration
 const KLOOK_SEARCH_BASE = "https://www.klook.com/zh-TW/search/result/?query=";
+// iChannels 分潤連結前綴 (適用於 Klook 與 Momo)
+const ICHANNELS_PREFIX = "https://product.mchannles.com/redirect_wa.php?k=3F8Gh&tourl=";
 
 // 🏕️ Facilities & Features Configuration
 const FACILITIES_MAPPING = [
@@ -121,14 +123,13 @@ const getAffiliateProducts = () => {
                 item.cta = "查空房";
             }
 
-            // 🛠️ Strategy Update: Shopee Mall Only
-            // 強制將一般搜尋連結 (shopee.tw/search) 轉換為 商城專屬搜尋 (shopee.tw/mall/search)
-            if (targetUrl.includes('shopee.tw/search')) {
-                    targetUrl = targetUrl.replace('shopee.tw/search', 'shopee.tw/mall/search');
+            // Global Affiliate Wrapping using iChannels Prefix
+            if (ICHANNELS_PREFIX) {
+                // Encode the target URL component
+                item.link = `${ICHANNELS_PREFIX}${encodeURIComponent(targetUrl)}`;
+            } else {
+                item.link = targetUrl;
             }
-
-            // Direct link (The Auto-Link Script in Layout.astro will handle affiliate wrapping)
-            item.link = targetUrl;
         });
         return newGroup;
     });

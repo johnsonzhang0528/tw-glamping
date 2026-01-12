@@ -35,7 +35,7 @@ def generate_trending_products():
     
     prompt = f"""
     【角色設定】
-    你是一位台灣頂尖的戶外用品電商總監，精通 SEO 關鍵字佈局與消費者心理學。你非常了解蝦皮（Shopee）上最熱銷的露營商品趨勢。
+    你是一位台灣頂尖的戶外用品電商總監，精通 SEO 關鍵字佈局與消費者心理學。你非常了解 Momo 購物網上最熱銷的露營商品趨勢。
 
     【任務目標】
     請根據目前的季節情境「{season}」(參考關鍵字：{keywords})，分析並篩選出 **5 大最具有商業潛力與搜尋熱度** 的露營商品類別。
@@ -47,8 +47,8 @@ def generate_trending_products():
     3. **Tags (Campground Tags)**：**非常重要**，請從以下清單中選擇最適合該商品類別的 1-2 個標籤，以便與營地進行媒合：
        [high_altitude, pet_friendly, glamping, general, cooking, sleep, play, forest, riverside]
        (例如：暖爐對應 high_altitude, 戲水玩具對應 play 或 riverside)
-    3. **商品連結 (Link)**：請使用蝦皮商城搜尋連結格式 `https://shopee.tw/mall/search?keyword={{商品關鍵字}}&sortBy=sales`。
-       *(重要：務必使用 `/mall/search` 路徑，確保使用者進入蝦皮商城，因為通路王只認列商城分潤)*
+    3. **商品連結 (Link)**：請使用 Momo 購物網搜尋連結格式 `https://www.momoshop.com.tw/search/searchShop.jsp?keyword={{商品關鍵字}}&searchType=1`。
+       *(重要：務必使用 Momo 官方搜尋連結格式)*
     4. **商品描述 (Desc)**：一句話賣點，直擊痛點 (15字以內)。
     5. **CTA**：簡短有力的行動呼籲 (例如：查優惠、看評價)。
     
