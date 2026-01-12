@@ -11,7 +11,7 @@ import re
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_PATH = os.path.join(BASE_DIR, "..", "src", "data", "products.json")
 API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s" # 主帳號
-MODEL_NAME = "gemini-2.0-flash" # ⚡ 切換至更快速的 Flash 模型
+MODEL_NAME = "gemini-1.5-flash" # ⚡ 換回穩定且快速的 1.5 Flash
 
 client = genai.Client(api_key=API_KEY) if API_KEY else None
 
