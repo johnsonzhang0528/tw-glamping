@@ -5,10 +5,13 @@ import requests
 from datetime import datetime
 from google import genai
 
+import re
+
 # ================= 設定區 =================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_PATH = os.path.join(BASE_DIR, "..", "src", "data", "products.json")
-API_KEY = os.environ.get("GEMINI_API_KEY") 
+#API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s" # 主帳號
+API_KEY = "AIzaSyAZSMHsAtf0MA_rNpL6xfcvQ_WpC3M10Jk" # 備用帳號
 MODEL_NAME = "gemma-3-27b-it"
 
 client = genai.Client(api_key=API_KEY) if API_KEY else None
@@ -153,24 +156,30 @@ def fetch_momo_price_via_ai(url, item_name):
             start_idx = resp.text.find(target_marker)
             
             if start_idx != -1:
-                # Extract 10,000 chars starting from the product list. 
-                # This focuses the AI exactly on the search results.
-                # 10k chars is plenty for the first ~5-10 items and uses fewer tokens (~3-4k tokens).
                 content_snippet = resp.text[start_idx : start_idx + 10000]
-                # print(f"      🎯 Found product list area, analyzing segmented content.")
             else:
-                # Fallback if marker not found (structure changed?)
                 content_snippet = resp.text[:15000]
-                # print("      ⚠️ Product list area not found, using page top.")
+                
+            # --- 🚀 FAST PATH: Regex Extraction (Zero Token Cost) ---
+            # Momo prices usually appear as <span class="price"><b>$</b>999</span> or similar.
+            # We look for the first occurrence of "$1,234" or "$999" in the product list.
+            price_match = re.search(r'\$([0-9,]+)', content_snippet)
+            if price_match:
+                found_price = f"${price_match.group(1)}"
+                print(f"      ⚡ Fast path (Regex): found {found_price}. Skipping AI.")
+                return found_price
+                
+            # --- 🐢 SLOW PATH: AI Extraction (High Token Cost) ---
+            # Only use AI if Regex fails. 
+            # Further reduce context to 2000 chars to save tokens if we must use AI.
+            short_snippet = content_snippet[:2000]
             
             prompt = f"""
-            Identify the price for "{item_name}" from this HTML snippet (Momo Shopping Product List).
-            Focus on the first matching product.
-            Return ONLY the price string (e.g. "$1,280" or "$1,280起").
-            If not found, return "N/A".
+            Identify the price for "{item_name}" from this HTML snippet.
+            Return ONLY the price string (e.g. "$1,280").
             
             HTML Segment:
-            {content_snippet}
+            {short_snippet}
             """
             
             response = client.models.generate_content(
