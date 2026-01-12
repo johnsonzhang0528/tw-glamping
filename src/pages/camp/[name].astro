@@ -26,10 +26,7 @@ const isHighAltitude = camp.elevation > 1000;
 const isGlamping = camp.features.has_glamping;
 const isTraditional = !isGlamping; // Helper for Traditional Camps
 
-// 🟢 [Configuration] 請在此填入您的通路王 Klook 推廣連結結構
-// 格式: https://product.mchannles.com/redirect_wa.php?k={您的K值}&tourl=
-const ICHANNELS_PREFIX = "https://product.mchannles.com/redirect_wa.php?k=3F8Gh&tourl=";
-
+// 🟢 [Configuration] Affiliate Configuration
 const KLOOK_SEARCH_BASE = "https://www.klook.com/zh-TW/search/result/?query=";
 
 // 🏕️ Facilities & Features Configuration
@@ -124,27 +121,14 @@ const getAffiliateProducts = () => {
                 item.cta = "查空房";
             }
 
-            // Global Affiliate Wrapping (Apply to ALL links: Shopee, Klook, etc.)
-            if (ICHANNELS_PREFIX) {
-                // 🛠️ Strategy Update: Shopee Mall Only
-                // 通路王僅認列「蝦皮商城」分潤。
-                // 強制將一般搜尋連結 (shopee.tw/search) 轉換為 商城專屬搜尋 (shopee.tw/mall/search)
-                // 這樣可以確保使用者搜尋結果都是商城商品，提高分潤成功率
-                if (targetUrl.includes('shopee.tw/search')) {
-                     targetUrl = targetUrl.replace('shopee.tw/search', 'shopee.tw/mall/search');
-                }
-
-                // 🛠️ Fix for Shopee Search Deep Link:
-                // 蝦皮搜尋頁連結經過 iChannels 轉址時容易遺失參數，嘗試進行特殊編碼處理
-                // 如果這無效，請確認您的 iChannels 推廣活動是否已開通「自訂網址 (Deep Link)」權限
-                if (targetUrl.includes('shopee.tw/mall/search') || targetUrl.includes('shopee.tw/search')) {
-                    item.link = `${ICHANNELS_PREFIX}${encodeURIComponent(targetUrl)}`;
-                } else {
-                    item.link = `${ICHANNELS_PREFIX}${encodeURIComponent(targetUrl)}`;
-                }
-            } else {
-                item.link = targetUrl;
+            // 🛠️ Strategy Update: Shopee Mall Only
+            // 強制將一般搜尋連結 (shopee.tw/search) 轉換為 商城專屬搜尋 (shopee.tw/mall/search)
+            if (targetUrl.includes('shopee.tw/search')) {
+                    targetUrl = targetUrl.replace('shopee.tw/search', 'shopee.tw/mall/search');
             }
+
+            // Direct link (The Auto-Link Script in Layout.astro will handle affiliate wrapping)
+            item.link = targetUrl;
         });
         return newGroup;
     });
