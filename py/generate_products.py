@@ -99,7 +99,7 @@ def generate_trending_products():
                     else:
                         print(f"   ❌ Keep original: {item['name']}")
                     # 避免請求過於頻繁
-                    time.sleep(2)
+                    time.sleep(5)
         
         # 加上一個固定的置頂廣告 (Klook / 通用)
         fixed_promo = [
@@ -129,46 +129,59 @@ def generate_trending_products():
 def fetch_momo_price_via_ai(url, item_name):
     """
     Fetches the Momo search page and uses AI to extract a realistic price range.
+    Handles Rate Limits (429) and reduces context size.
     """
     print(f"   🔍 Analysing price for: {item_name} ...")
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    try:
-        resp = requests.get(url, headers=headers, timeout=10)
-        if resp.status_code != 200:
-            return None
-        
-        # Limit content size to avoid token overflow.
-        # Momo pages are large, but top results usually appear early in the DOM or JSON data blocks.
-        content_snippet = resp.text[:100000] 
-        
-        prompt = f"""
-        Here is the HTML source (truncated) of a search result page from Momo Shopping for query "{item_name}".
-        
-        Task:
-        1. Identify the products listed in the search results.
-        2. Find the lowest price or a representative price range for items that actually match "{item_name}".
-        3. Ignore irrelevant accessories if possible.
-        
-        Return ONLY the price string (e.g., "$1,280起" or "$990").
-        No other text.
-        
-        HTML Content:
-        {content_snippet}
-        """
-        
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt
-        )
-        
-        price_text = response.text.strip()
-        return price_text
-        
-    except Exception as e:
-        print(f"   ⚠️ Price fetch failed: {e}")
-        return None
+    
+    # Try up to 3 times if we hit a rate limit
+    max_retries = 3
+    
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(url, headers=headers, timeout=10)
+            if resp.status_code != 200:
+                print(f"      HTTP {resp.status_code} - skipping.")
+                return None
+            
+            # OPTIMIZATION: Reduce content size drastically to avoid hitting 15k token limit.
+            # 25,000 characters is roughly ~6k-8k tokens, which is safer.
+            content_snippet = resp.text[:25000] 
+            
+            prompt = f"""
+            Identify the price for "{item_name}" from this HTML snippet (Momo Shopping).
+            Return ONLY the price string (e.g. "$1,280" or "$1,280起").
+            If not found, return "N/A".
+            
+            HTML:
+            {content_snippet}
+            """
+            
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt
+            )
+            
+            price_text = response.text.strip()
+            if "N/A" in price_text:
+                return None
+            return price_text
+            
+        except Exception as e:
+            # Check if it's a 429 Resource Exhausted error
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                wait_seconds = 20 * (attempt + 1) # simple backoff: 20s, 40s, 60s
+                print(f"      ⚠️ Quota exceeded. Waiting {wait_seconds}s before retry ({attempt+1}/{max_retries})...")
+                time.sleep(wait_seconds)
+                continue
+            else:
+                print(f"   ⚠️ Price fetch failed: {e}")
+                return None
+    
+    return None
 
 if __name__ == "__main__":
     generate_trending_products()
