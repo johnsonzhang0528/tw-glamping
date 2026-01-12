@@ -10,9 +10,8 @@ import re
 # ================= 設定區 =================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_PATH = os.path.join(BASE_DIR, "..", "src", "data", "products.json")
-#API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s" # 主帳號
-API_KEY = "AIzaSyAZSMHsAtf0MA_rNpL6xfcvQ_WpC3M10Jk" # 備用帳號
-MODEL_NAME = "gemma-3-27b-it"
+API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s" # 主帳號
+MODEL_NAME = "gemini-2.0-flash" # ⚡ 切換至更快速的 Flash 模型
 
 client = genai.Client(api_key=API_KEY) if API_KEY else None
 
@@ -36,6 +35,7 @@ def generate_trending_products():
         
     season, keywords = get_current_season_context()
     print(f"🌡️ 當前情境: {season} (關鍵字: {keywords})")
+    print(f"⌛ 正在生成商品清單 ({MODEL_NAME})... 請稍候")
     
     prompt = f"""
     【角色設定】
