@@ -146,16 +146,30 @@ def fetch_momo_price_via_ai(url, item_name):
                 print(f"      HTTP {resp.status_code} - skipping.")
                 return None
             
-            # OPTIMIZATION: Reduce content size drastically to avoid hitting 15k token limit.
-            # 25,000 characters is roughly ~6k-8k tokens, which is safer.
-            content_snippet = resp.text[:25000] 
+            # OPTIMIZATION: Target specific content area to save tokens and improve accuracy
+            # User suggested: <div class="searchPrdListArea bookList ">
+            # We search for "searchPrdListArea" to be safe and extract from there.
+            target_marker = 'searchPrdListArea'
+            start_idx = resp.text.find(target_marker)
+            
+            if start_idx != -1:
+                # Extract 10,000 chars starting from the product list. 
+                # This focuses the AI exactly on the search results.
+                # 10k chars is plenty for the first ~5-10 items and uses fewer tokens (~3-4k tokens).
+                content_snippet = resp.text[start_idx : start_idx + 10000]
+                # print(f"      🎯 Found product list area, analyzing segmented content.")
+            else:
+                # Fallback if marker not found (structure changed?)
+                content_snippet = resp.text[:15000]
+                # print("      ⚠️ Product list area not found, using page top.")
             
             prompt = f"""
-            Identify the price for "{item_name}" from this HTML snippet (Momo Shopping).
+            Identify the price for "{item_name}" from this HTML snippet (Momo Shopping Product List).
+            Focus on the first matching product.
             Return ONLY the price string (e.g. "$1,280" or "$1,280起").
             If not found, return "N/A".
             
-            HTML:
+            HTML Segment:
             {content_snippet}
             """
             
