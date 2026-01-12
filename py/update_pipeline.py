@@ -12,7 +12,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RAW_DATA_PATH = os.path.join(BASE_DIR, "..", "src", "data", "icamping_raw.json")
 ENRICHED_DATA_PATH = os.path.join(BASE_DIR, "..", "src", "data", "campgrounds_enriched.json")
 
-API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s"
+#API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s" # 主帳號
+API_KEY = "AIzaSyAZSMHsAtf0MA_rNpL6xfcvQ_WpC3M10Jk" # 備用帳號
 MODEL_NAME = "gemma-3-27b-it" # 假設模型名稱
 
 client = genai.Client(api_key=API_KEY) if API_KEY else None
