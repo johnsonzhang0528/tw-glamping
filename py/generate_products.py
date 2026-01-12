@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import requests
 from datetime import datetime
 from google import genai
 
@@ -83,6 +84,23 @@ def generate_trending_products():
             
         product_data = json.loads(raw_text)
         
+        # ----------------------------------------
+        # 新增流程：自動查價
+        # ----------------------------------------
+        print("🕵️  開始進行即時查價 (AI Reading Momo Pages)...")
+        for category in product_data:
+            for item in category.get("items", []):
+                link = item.get("link", "")
+                if "momoshop.com.tw" in link:
+                    real_price = fetch_momo_price_via_ai(link, item["name"])
+                    if real_price:
+                        print(f"   ✅ Updated: {item['name']} -> {real_price}")
+                        item["price"] = real_price
+                    else:
+                        print(f"   ❌ Keep original: {item['name']}")
+                    # 避免請求過於頻繁
+                    time.sleep(2)
+        
         # 加上一個固定的置頂廣告 (Klook / 通用)
         fixed_promo = [
             {
@@ -107,6 +125,50 @@ def generate_trending_products():
     except Exception as e:
         print(f"❌ AI Analysis Failed: {e}")
         # 如果失敗，不要覆蓋舊檔案
+
+def fetch_momo_price_via_ai(url, item_name):
+    """
+    Fetches the Momo search page and uses AI to extract a realistic price range.
+    """
+    print(f"   🔍 Analysing price for: {item_name} ...")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code != 200:
+            return None
+        
+        # Limit content size to avoid token overflow.
+        # Momo pages are large, but top results usually appear early in the DOM or JSON data blocks.
+        content_snippet = resp.text[:100000] 
+        
+        prompt = f"""
+        Here is the HTML source (truncated) of a search result page from Momo Shopping for query "{item_name}".
+        
+        Task:
+        1. Identify the products listed in the search results.
+        2. Find the lowest price or a representative price range for items that actually match "{item_name}".
+        3. Ignore irrelevant accessories if possible.
+        
+        Return ONLY the price string (e.g., "$1,280起" or "$990").
+        No other text.
+        
+        HTML Content:
+        {content_snippet}
+        """
+        
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt
+        )
+        
+        price_text = response.text.strip()
+        return price_text
+        
+    except Exception as e:
+        print(f"   ⚠️ Price fetch failed: {e}")
+        return None
 
 if __name__ == "__main__":
     generate_trending_products()
