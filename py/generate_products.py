@@ -150,7 +150,12 @@ def fetch_momo_price_regex(url, item_name):
         
         # 2. Strategy A: Look for JSON data (Most reliable in Momo's current source)
         # Pattern: "price":"3,591" or "goodsPrice":"$$3,591"
-        json_price_match = re.search(r'"price":"([0-9,]+)"', full_search_window)
+        # Since response text can contain escaped JSON like \"price\":\"3,591\", handle both.
+        
+        # Try finding simplified Price model first
+        json_price_match = re.search(r'\\"price\\":\\"([0-9,]+)\\"', full_search_window)
+        if not json_price_match:
+             json_price_match = re.search(r'"price":"([0-9,]+)"', full_search_window)
         
         if json_price_match:
             price_val = json_price_match.group(1)
