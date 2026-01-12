@@ -51,8 +51,8 @@ def generate_trending_products():
     3. **Tags (Campground Tags)**：**非常重要**，請從以下清單中選擇最適合該商品類別的 1-2 個標籤，以便與營地進行媒合：
        [high_altitude, pet_friendly, glamping, general, cooking, sleep, play, forest, riverside]
        (例如：暖爐對應 high_altitude, 戲水玩具對應 play 或 riverside)
-    3. **商品連結 (Link)**：請使用 Momo 購物網搜尋連結格式 `https://www.momoshop.com.tw/search/searchShop.jsp?keyword={{商品關鍵字}}&searchType=1`。
-       *(重要：務必使用 Momo 官方搜尋連結格式)*
+    3. **商品連結 (Link)**：請使用 Momo 購物網搜尋連結格式 `https://www.momoshop.com.tw/search/searchShop.jsp?keyword={{核心關鍵字}}&searchType=1`。
+       *(重要：連結中的關鍵字請務必**寬泛且簡短**，例如用「Coleman 睡袋」而非「Coleman 2025款舒適睡袋」，以確保搜尋結果不為空)*
     4. **商品描述 (Desc)**：一句話賣點，直擊痛點 (15字以內)。
     5. **CTA**：簡短有力的行動呼籲 (例如：查優惠、看評價)。
     
@@ -145,6 +145,11 @@ def fetch_momo_price_regex(url, item_name):
             print(f"      HTTP {resp.status_code} - skipping.")
             return None
         
+        # Check for empty results
+        if "查無相關商品" in resp.text:
+            print(f"      ⚠️ No results found for query. Suggest simplifying keywords.")
+            return None
+
         # 1. Expand search window for Regex
         full_search_window = resp.text[:100000] 
         
