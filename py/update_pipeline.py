@@ -5,6 +5,8 @@ from datetime import datetime
 from google import genai
 from scrape_icamping import scrape_data  # 復用你原本的爬蟲邏輯
 
+import sys
+
 # ================= 設定區 =================
 # 取得目前腳本所在的目錄 (py/)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -83,13 +85,13 @@ def generate_coordinates(camp_name, address, city):
         return 0, 0
 
 def main():
-    print("🚀 啟動自動更新管線...")
+    print("🚀 啟動自動更新管線...", flush=True)
     
     # 1. 執行爬蟲獲取最新 Raw Data (這會更新 icamping_raw.json)
     try:
         scrape_data() 
     except Exception as e:
-        print(f"❌ 爬蟲執行失敗: {e}")
+        print(f"❌ 爬蟲執行失敗: {e}", flush=True)
         return
 
     # 2. 讀取資料
@@ -111,7 +113,7 @@ def main():
     # 建立 Enriched Data 的查找表
     enriched_map = {item["name"]: item for item in enriched_list}
     
-    print(f"📊 統計: 原始來源 {len(raw_list)} 筆, 現有資料庫 {len(enriched_list)} 筆")
+    print(f"📊 統計: 原始來源 {len(raw_list)} 筆, 現有資料庫 {len(enriched_list)} 筆", flush=True)
     
     updated_list = []
     changes_count = 0
@@ -176,9 +178,12 @@ def main():
             time.sleep(2)
             
     # 4. 存檔
-    print(f"💾 儲存中... (新增 {new_count} 筆, 總計 {len(updated_list)} 筆)")
+    print(f"💾 儲存中... (新增 {new_count} 筆, 總計 {len(updated_list)} 筆)", flush=True)
     with open(ENRICHED_DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(updated_list, f, ensure_ascii=False, indent=2)
+    
+    print("✅ 更新完成！程式結束。", flush=True)
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
