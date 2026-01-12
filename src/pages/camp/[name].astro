@@ -97,12 +97,25 @@ const getAffiliateProducts = () => {
     const filteredGroups = productData.filter(group => {
         // 1. Always show booking
         if (group.id === 'booking-always') return true;
+
+        const groupTags = group.tags || [];
         
-        // 2. Tag/Feature Matching
-        if (isHighAltitude && group.tags.includes('high_altitude')) return true;
-        if (isGlamping && group.tags.includes('glamping')) return true;
+        // 2. High Altitude Matching
+        if (isHighAltitude && groupTags.includes('high_altitude')) return true;
+
+        // 3. Glamping Matching
+        if (isGlamping && groupTags.includes('glamping')) return true;
+
+        // 4. Traditional Camping Essentials (Crucial Fix for Non-Glamping Camps)
+        // 非豪華露營通常需要自備裝備，強制顯示「通用、烹飪、睡眠、娛樂」類商品
+        if (!isGlamping) {
+            if (groupTags.includes('general')) return true;
+            if (groupTags.includes('cooking')) return true;
+            if (groupTags.includes('sleep')) return true;
+            if (groupTags.includes('play')) return true;
+        }
         
-        // 3. Keyword Matching (Automated Contextual Ads)
+        // 5. Keyword Matching (Contextual fallback for niche items)
         if (group.keywords && group.keywords.length > 0) {
             return group.keywords.some(keyword => fullText.includes(keyword.toLowerCase()));
         }
