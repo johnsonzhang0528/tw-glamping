@@ -94,48 +94,44 @@ const getAffiliateProducts = () => {
     // Combine all text for keyword search
     const fullText = (camp.description + camp.tags.join(' ')).toLowerCase();
 
-    // Deep clone the data to avoid modifying the original source reference
-    const recommendations = JSON.parse(JSON.stringify(productData));
-
-    const filteredGroups = recommendations.filter(group => {
-        // 🔮 策略：針對訂房連結 (Booking) 進行動態優化
-        if (group.id === 'booking-always') {
-             group.items.forEach(item => {
-                let targetUrl = item.link;
-                
-                // Klook Strategy
-                if (item.name.includes("Klook")) {
-                    // 👑 策略變更：一律改推「地區性替代方案」 (確保有搜尋結果，不再針對豪華露營做精準搜尋)
-                    const cityKeywords = `${camp.city} 露營`;
-                    targetUrl = `${KLOOK_SEARCH_BASE}${cityKeywords}`;
-                    
-                    item.name = `搜尋${camp.city}熱門營位`;
-                    item.desc = `查看${camp.city}更多優質露營區與優惠`;
-                    item.cta = "查空房";
-                }
-
-                // 3. 包裝分潤連結 (最後一步)
-                if (ICHANNELS_PREFIX) {
-                    item.link = `${ICHANNELS_PREFIX}${encodeURIComponent(targetUrl)}`;
-                } else {
-                    item.link = targetUrl;
-                }
-            });
-            return true;
-        }
+    // Filter & Transform Product Data
+    const filteredGroups = productData.filter(group => {
+        // 1. Always show booking
+        if (group.id === 'booking-always') return true;
         
-        // 1. Tag/Feature Matching
-        if (group.tags.includes('high_altitude') && isHighAltitude) return true;
-        if (group.tags.includes('glamping') && isGlamping) return true;
+        // 2. Tag/Feature Matching
+        if (isHighAltitude && group.tags.includes('high_altitude')) return true;
+        if (isGlamping && group.tags.includes('glamping')) return true;
         
-        // 2. Keyword Matching (Automated Contextual Ads)
+        // 3. Keyword Matching (Automated Contextual Ads)
         if (group.keywords && group.keywords.length > 0) {
-            // Check if ANY keyword exists in the description or tags
-            const hasKeyword = group.keywords.some(keyword => fullText.includes(keyword.toLowerCase()));
-            if (hasKeyword) return true;
+            return group.keywords.some(keyword => fullText.includes(keyword.toLowerCase()));
         }
-
         return false;
+    }).map(group => {
+        // Clone for safety
+        const newGroup = { ...group, items: group.items.map(i => ({...i})) };
+        
+        newGroup.items.forEach(item => {
+            let targetUrl = item.link;
+            
+            // Special Logic: Dynamic Klook Search for Booking
+            if (newGroup.id === 'booking-always' && item.name.includes("Klook")) {
+                const cityKeywords = `${camp.city} 露營`;
+                targetUrl = `${KLOOK_SEARCH_BASE}${cityKeywords}`;
+                item.name = `搜尋${camp.city}熱門營位`;
+                item.desc = `查看${camp.city}更多優質露營區與優惠`;
+                item.cta = "查空房";
+            }
+
+            // Global Affiliate Wrapping (Apply to ALL links: Shopee, Klook, etc.)
+            if (ICHANNELS_PREFIX) {
+                item.link = `${ICHANNELS_PREFIX}${encodeURIComponent(targetUrl)}`;
+            } else {
+                item.link = targetUrl;
+            }
+        });
+        return newGroup;
     });
 
     // 👑 策略二：全力轉攻「裝備導購」 (Gear First Strategy)

@@ -31,15 +31,16 @@ jobs:
         run: |
           cd py
           python update_pipeline.py
+          python generate_products.py
 
       - name: Commit and Push if changes
         run: |
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'action@github.com'
-          # 檢查是否有檔案變更
-          if [[ -n $(git status -s src/data/campgrounds_enriched.json) ]]; then
-            git add src/data/campgrounds_enriched.json src/data/icamping_raw.json
-            git commit -m "chore(data): auto-update campgrounds data [skip ci]"
+          # 檢查是否有檔案變更 (包含 products.json)
+          if [[ -n $(git status -s src/data/campgrounds_enriched.json src/data/products.json) ]]; then
+            git add src/data/campgrounds_enriched.json src/data/icamping_raw.json src/data/products.json
+            git commit -m "chore(data): auto-update with AI trends [skip ci]"
             git push
           else
             echo "No changes found"
