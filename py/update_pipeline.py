@@ -14,8 +14,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RAW_DATA_PATH = os.path.join(BASE_DIR, "..", "src", "data", "icamping_raw.json")
 ENRICHED_DATA_PATH = os.path.join(BASE_DIR, "..", "src", "data", "campgrounds_enriched.json")
 
-#API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s" # 主帳號
-API_KEY = "AIzaSyAZSMHsAtf0MA_rNpL6xfcvQ_WpC3M10Jk" # 備用帳號
+API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s" # 主帳號
 MODEL_NAME = "gemma-3-27b-it" # 假設模型名稱
 
 client = genai.Client(api_key=API_KEY) if API_KEY else None
@@ -129,7 +128,7 @@ def main():
             # === 舊資料更新 ===
             existing = enriched_map[name]
             # 檢查是否需要更新 (例如 tags 變多了)
-            existing["tags"] = list(set(existing.get("tags", []) + raw_item.get("tags", [])))
+            existing["tags"] = sorted(list(set(existing.get("tags", []) + raw_item.get("tags", []))))
             existing["phone"] = raw_item.get("phone")
             
             # Fix: 只有當新資料有座標且不為 0 時才更新，避免覆蓋既有的座標
@@ -164,7 +163,7 @@ def main():
                 "lng": lng,
                 "elevation": raw_item.get("elevation"),
                 "description": new_desc,
-                "tags": raw_item.get("tags", []),
+                "tags": sorted(raw_item.get("tags", [])),
                 "features": {
                     "has_glamping": "豪華露營" in str(raw_item.get("tags")),
                     "pet_friendly": "寵物" in str(raw_item.get("tags")),
