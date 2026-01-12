@@ -13,7 +13,9 @@ API_PARAMS = {
     "limit": 500, # 一次全拿
 }
 
-OUTPUT_FILE = "../src/data/icamping_raw.json"
+# 取得目前腳本所在的目錄，確保路徑正確
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_FILE = os.path.join(BASE_DIR, "..", "src", "data", "icamping_raw.json")
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)",

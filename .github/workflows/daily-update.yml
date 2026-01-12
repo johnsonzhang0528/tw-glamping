@@ -1,0 +1,46 @@
+name: Daily Campground Update
+
+on:
+  schedule:
+    # 每天台灣時間凌晨 4 點 (UTC 20:00) 執行
+    - cron: '0 20 * * *'
+  workflow_dispatch: # 允許手動觸發
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 必須要有寫入權限才能 commit
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r py/requirements.txt
+
+      - name: Run Update Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cd py
+          python update_pipeline.py
+
+      - name: Commit and Push if changes
+        run: |
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          # 檢查是否有檔案變更
+          if [[ -n $(git status -s src/data/campgrounds_enriched.json) ]]; then
+            git add src/data/campgrounds_enriched.json src/data/icamping_raw.json
+            git commit -m "chore(data): auto-update campgrounds data [skip ci]"
+            git push
+          else
+            echo "No changes found"
+          fi
