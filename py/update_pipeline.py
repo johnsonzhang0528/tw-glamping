@@ -13,8 +13,7 @@ RAW_DATA_PATH = os.path.join(BASE_DIR, "..", "src", "data", "icamping_raw.json")
 ENRICHED_DATA_PATH = os.path.join(BASE_DIR, "..", "src", "data", "campgrounds_enriched.json")
 
 API_KEY = "AIzaSyB2O9xhxWEVwEEt9GpOss-YhW5JQX2Hf2s"
-# MODEL_NAME = "gemma-3-27b-it"
-MODEL_NAME = "gemma-3-12b"
+MODEL_NAME = "gemma-3-27b-it" # 假設模型名稱
 
 client = genai.Client(api_key=API_KEY) if API_KEY else None
 
