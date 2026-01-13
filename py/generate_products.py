@@ -6,8 +6,30 @@ from datetime import datetime
 from google import genai
 import re
 from urllib.parse import quote
+import html
 
 # ================= 設定區 =================
+
+def safe_json_decode(text_segment):
+    """
+    Decodes a string that might contain JSON unicode escapes (e.g., \u003c).
+    Since we regex-extracted inside quotes, we wrap it in quotes and use json.loads.
+    """
+    if not text_segment:
+        return ""
+    try:
+        # 步驟 1: JSON 反序列化 (處理 \u003c, \n, \t, \" 等 JSON 標準轉義)
+        # Wrap in quotes to act as a proper JSON string literal
+        decoded_text = json.loads(f'"{text_segment}"')
+        
+        # 步驟 2: HTML Entity 解碼 (處理 &amp;, &lt;, &gt;, &nbsp; 等網頁編碼)
+        return html.unescape(decoded_text)
+    except:
+        # Fallback: basic known escapes if JSON parsing fails (e.g. broken quote structure)
+        return text_segment.replace(r'\u003c', '<').replace(r'\u003e', '>').replace(r'\/', '/')
+
+# ================= 設定區 ends =================
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 OUTPUT_PATH = os.path.join(BASE_DIR, "..", "src", "data", "products.json")
@@ -189,13 +211,17 @@ def fetch_momo_candidates(url):
                     raw_sub = m_sub.group(1) if m_sub else ""
                     raw_price = m_price.group(1)
                     
+                    # Decode unicode escapes (Fix: 亂碼 \u003c... )
+                    name_clean = safe_json_decode(raw_name)
+                    desc_clean = safe_json_decode(raw_sub)
+                    
                     # 價格清洗
                     clean_price = raw_price.replace("$$", "").replace("$", "")
                     final_price = f"${clean_price}"
                     
                     candidates.append({
-                        "name": raw_name,         # 對應 h3.prdName
-                        "desc": raw_sub,          # 對應 p.sloganTitle
+                        "name": name_clean,       # 對應 h3.prdName
+                        "desc": desc_clean,       # 對應 p.sloganTitle
                         "price": final_price      # 對應 span.price
                     })
             except Exception:
