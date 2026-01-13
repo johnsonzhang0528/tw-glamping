@@ -4,7 +4,6 @@ import time
 import requests
 from datetime import datetime
 from google import genai
-from bs4 import BeautifulSoup
 import re
 from urllib.parse import quote
 
