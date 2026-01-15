@@ -16,12 +16,16 @@ export async function getStaticPaths() {
 
 const { camp } = Astro.props;
 
-// Release Date Logic (PSEO Drip Feed)
-// If release_date is in the future, we show the page but tell Google NOINDEX.
-const today = new Date();
-const releaseDate = camp.release_date ? new Date(camp.release_date) : new Date('2000-01-01');
-const isReleased = releaseDate <= today;
-const shouldIndex = isReleased || import.meta.env.DEV; // Always index in dev for testing
+// Release Date Logic (Big Bang Launch - All Pages Live)
+// 策略調整：與其分批上線，不如一次性全量釋出，建立完整的內部連結網 (Hub & Spoke Integrity)。
+// 這也符合老域名 (Aged Domain) 回歸的訊號。
+const shouldIndex = true; 
+
+// SEO Dates Strategy
+// datePublished: 使用資料庫中的原始發布時間 (release_date)，確保 "First Seen" 時間點穩定，避免每次 Build 都改變。
+// dateModified: 使用 Build Time (new Date())，代表「最近一次驗證/更新資料」的時間，這對目錄型網站是合理的 (Verified Freshness)。
+const publishedTime = camp.release_date ? new Date(camp.release_date).toISOString() : new Date().toISOString();
+const modifiedTime = new Date().toISOString();
 
 // Affiliate Logic Helpers
 const isHighAltitude = camp.elevation > 1000;
@@ -174,7 +178,12 @@ const schemaData = {
     "longitude": camp.lng
   },
   "elevation": camp.elevation,
-  "priceRange": "$$"
+  "priceRange": "$$",
+  // SEO Strategy: 
+  // datePublished: 綁定資料原始發布日，保持歷史紀錄穩定。
+  // dateModified: 綁定最近一次網站構建日，代表內容經過系統最新驗證。
+  "datePublished": publishedTime,
+  "dateModified": modifiedTime
 };
 
 const schemas = [schemaData, breadcrumbSchema, faqSchema];

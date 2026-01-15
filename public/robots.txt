@@ -1,4 +1,4 @@
 User-agent: *
-Disallow: /
+Allow: /
 
-Sitemap: https://tw-glamping.com/sitemap-index.xml
+Sitemap: https://www.outdoorcampingworld.com/sitemap-index.xml

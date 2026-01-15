@@ -57,7 +57,7 @@ const { id } = Astro.params;
     <div class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            {/* 左側主要內容: Camp List */}
+            {/* Main Content */}
             <div class="lg:col-span-8">
                 <div class="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
                     <span class="text-stone-500 text-sm">共找到 <strong class="text-stone-800">{camps.length}</strong> 個營區</span>
@@ -71,7 +71,20 @@ const { id } = Astro.params;
                         {camps.map((camp, index) => (
                             <>
                                 <CampgroundCard camp={camp} />
-                                {/* 每 6 個營區插入一個原生廣告卡片 */}
+                                
+                                {/* 🟢 [MOBILE OPTIMIZATION] 手機版導購插入點 */}
+                                {/* 在第 2 個營區後，插入裝備推薦清單 */}
+                                {index === 1 && (
+                                    <div class="md:col-span-2 lg:hidden my-4">
+                                        <GearChecklist 
+                                            tags={checklistTags} 
+                                            elevation={checklistElevation} 
+                                            className="shadow-md ring-1 ring-stone-200"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* 原生廣告插入點 (每 6 個顯示一次) */}
                                 {(index + 1) % 6 === 0 && <NativeAdCard />}
                             </>
                         ))}
@@ -84,17 +97,16 @@ const { id } = Astro.params;
                 )}
             </div>
 
-            {/* 🟢 [NEW] 右側側邊欄: 變現引擎 (Monetization Engine) */}
-            <aside class="lg:col-span-4 space-y-8">
+            {/* 🟢 [DESKTOP SIDEBAR] 桌機版側邊欄 */}
+            {/* 加入 hidden lg:block，確保手機版隱藏，避免重複顯示 */}
+            <aside class="lg:col-span-4 space-y-8 hidden lg:block">
                 <div class="sticky top-24">
-                    {/* 1. 裝備推薦清單 (根據頁面類型自動切換內容) */}
                     <GearChecklist 
                         tags={checklistTags} 
                         elevation={checklistElevation} 
                         className="shadow-lg ring-1 ring-emerald-900/5"
                     />
                     
-                    {/* 2. 輔助導航：引導回搜尋頁 */}
                     <div class="mt-8 bg-stone-50 p-6 rounded-xl border border-stone-100 text-center">
                         <h3 class="font-bold text-stone-800 mb-2">找不到喜歡的？</h3>
                         <p class="text-sm text-stone-500 mb-4">使用我們的進階搜尋功能，依照地區、設施篩選您的理想營地。</p>

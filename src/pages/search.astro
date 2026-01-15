@@ -4,16 +4,21 @@ import CampgroundCard from '../components/CampgroundCard.astro';
 import NativeAdCard from '../components/NativeAdCard.astro';
 import campgroundsData from '../data/campgrounds_enriched.json';
 
-// 1. 在伺服器端就先依照「中文筆畫」排序，確保與前端 JS 邏輯一致
-// 使用 localeCompare('zh-TW') 進行繁體中文排序
+// 1. 伺服器端預先排序 (CLS 優化)
 const campgrounds = [...campgroundsData].sort((a, b) => 
     a.name.localeCompare(b.name, 'zh-TW')
 );
 
-// Get unique cities for filter dropdown
+// 取得唯一縣市列表
 const cities = [...new Set(campgroundsData.map(c => c.city))].sort();
 
-// Simple types for the dataset
+// 定義排序選項 (供前端渲染使用)
+const sortOptions = [
+    { value: 'default', label: '預設排序 (筆畫)' },
+    { value: 'elevation-desc', label: '海拔：由高到低' },
+    { value: 'elevation-asc', label: '海拔：由低到高' },
+];
+
 type Campground = {
 	name: string;
 	city: string;
@@ -121,27 +126,34 @@ const filterGroups = [
 							/>
 						</div>
 
-						{/* Filter & Sort Row */}
+						{/* 🟢 [NEW] Filter & Sort Buttons (Trigger Modals) */}
 						<div class="md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-							{/* City Filter */}
+							{/* City Filter Trigger */}
 							<div>
 								<label class="block text-xs font-bold text-stone-500 mb-1">區域縣市</label>
-								<select id="filter-city" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-stone-50">
-									<option value="">所有縣市</option>
-									{cities.map(city => (
-										<option value={city}>{city}</option>
-									))}
-								</select>
+                                {/* Hidden input to store value for JS logic */}
+                                <input type="hidden" id="filter-city" value="" />
+                                <button 
+                                    id="btn-city-picker"
+                                    class="w-full px-4 py-3 rounded-lg border border-stone-300 bg-stone-50 text-left text-sm text-stone-700 flex justify-between items-center hover:border-emerald-500 hover:ring-1 hover:ring-emerald-500 transition active:scale-[0.98]"
+                                >
+                                    <span class="truncate">所有縣市</span>
+                                    <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
 							</div>
 							
-							{/* Sort Order */}
+							{/* Sort Order Trigger */}
 							<div>
 								<label class="block text-xs font-bold text-stone-500 mb-1">排序方式</label>
-								<select id="sort-order" class="w-full px-3 py-2 rounded-lg border border-stone-300 text-stone-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-stone-50">
-									<option value="default">預設排序</option>
-									<option value="elevation-desc">海拔：由高到低</option>
-									<option value="elevation-asc">海拔：由低到高</option>
-								</select>
+                                {/* Hidden input to store value for JS logic */}
+                                <input type="hidden" id="sort-order" value="default" />
+                                <button 
+                                    id="btn-sort-picker"
+                                    class="w-full px-4 py-3 rounded-lg border border-stone-300 bg-stone-50 text-left text-sm text-stone-700 flex justify-between items-center hover:border-emerald-500 hover:ring-1 hover:ring-emerald-500 transition active:scale-[0.98]"
+                                >
+                                    <span class="truncate">預設排序</span>
+                                    <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
 							</div>
 						</div>
 					</div>
@@ -152,79 +164,124 @@ const filterGroups = [
                     </div>
 				</div>
 
-<div class="flex gap-3 mt-4">
-    <button 
-        id="open-filter-modal"
-        class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-stone-300 px-6 py-3 rounded-lg text-stone-700 font-bold hover:border-emerald-500 hover:text-emerald-600 transition shadow-sm"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-        </svg>
-        進階篩選
-        <span id="active-filter-count" class="hidden bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
-    </button>
+                {/* Advanced Filter Button */}
+                <div class="flex gap-3 mt-4">
+                    <button 
+                        id="open-filter-modal"
+                        class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-stone-300 px-6 py-3 rounded-lg text-stone-700 font-bold hover:border-emerald-500 hover:text-emerald-600 transition shadow-sm"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        進階篩選
+                        <span id="active-filter-count" class="hidden bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
+                    </button>
 
-    <button id="quick-clear" class="hidden text-stone-400 hover:text-red-500 text-sm font-medium px-4">
-        清除重設
-    </button>
-</div>
-
-<div id="filter-modal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" id="modal-backdrop"></div>
-
-    <div class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
-        <div class="bg-white w-full md:w-[800px] md:h-[85vh] md:rounded-2xl flex flex-col h-[90vh] rounded-t-2xl shadow-2xl pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modal-panel">
-            
-            <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-white md:rounded-t-2xl">
-                <button id="close-modal-x" class="p-2 -ml-2 text-stone-400 hover:text-stone-800 rounded-full hover:bg-stone-100 transition">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <h3 class="text-lg font-bold text-stone-800">篩選條件</h3>
-                <button id="modal-clear-btn" class="text-sm font-bold text-stone-400 hover:text-red-500 underline">重設</button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-6 bg-stone-50/50">
-                <div class="space-y-8">
-                    {filterGroups.map(group => (
-                        <div class="bg-white p-5 rounded-xl border border-stone-100 shadow-sm">
-                            <h3 class="flex items-center gap-2 text-sm font-bold text-stone-800 mb-4 uppercase tracking-wide">
-                                <span class="text-xl">{group.icon}</span>
-                                {group.title}
-                            </h3>
-                            <div class="flex flex-wrap gap-2">
-                                {group.items.map(filter => (
-                                    <label class="relative flex items-center cursor-pointer group/item select-none">
-                                        <input 
-                                            type="checkbox" 
-                                            id={`filter-${filter.key}`}
-                                            data-type={filter.type} 
-                                            data-key={filter.key}
-                                            class="peer sr-only filter-checkbox" 
-                                        />
-                                        <div class="px-3 py-2 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 text-sm font-medium transition-all
-                                            peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 peer-checked:shadow-md
-                                            group-hover/item:border-emerald-300">
-                                            {filter.label}
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
+                    <button id="quick-clear" class="hidden text-stone-400 hover:text-red-500 text-sm font-medium px-4">
+                        清除重設
+                    </button>
                 </div>
-            </div>
-
-            <div class="p-4 border-t border-stone-100 bg-white md:rounded-b-2xl pb-safe">
-                <button id="apply-filters-btn" class="w-full bg-emerald-600 text-white font-bold text-lg py-3 rounded-xl shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 active:scale-[0.98] transition-transform">
-                    顯示 <span id="modal-match-count">{campgrounds.length}</span> 個營區
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 			</div>
 		</div>
 	</div>
+
+    {/* 🟢 [NEW] Universal Picker Modal (Single Selection) */}
+    <div id="picker-modal" class="fixed inset-0 z-[110] hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" id="picker-backdrop"></div>
+        <div class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div class="bg-white w-full md:w-[400px] md:h-auto md:max-h-[80vh] md:rounded-2xl flex flex-col max-h-[70vh] rounded-t-2xl shadow-2xl pointer-events-auto transform transition-transform duration-300 translate-y-full" id="picker-panel">
+                
+                <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-white md:rounded-t-2xl">
+                    <h3 id="picker-title" class="text-lg font-bold text-stone-800">請選擇</h3>
+                    <button id="close-picker-x" class="p-2 -mr-2 text-stone-400 hover:text-stone-800 rounded-full hover:bg-stone-100 transition">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-2 bg-stone-50" id="picker-content">
+                    {/* Content will be injected dynamically or toggled */}
+                    
+                    {/* 1. City Options List */}
+                    <div id="options-city" class="hidden space-y-1">
+                        <button class="picker-option w-full text-left px-4 py-3 rounded-lg hover:bg-white hover:shadow-sm flex justify-between items-center group transition" data-value="" data-type="city">
+                            <span class="font-medium text-stone-700 group-hover:text-emerald-700">所有縣市</span>
+                            <span class="text-emerald-600 hidden check-icon">✓</span>
+                        </button>
+                        {cities.map(city => (
+                            <button class="picker-option w-full text-left px-4 py-3 rounded-lg hover:bg-white hover:shadow-sm flex justify-between items-center group transition" data-value={city} data-type="city">
+                                <span class="font-medium text-stone-700 group-hover:text-emerald-700">{city}</span>
+                                <span class="text-emerald-600 hidden check-icon">✓</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* 2. Sort Options List */}
+                    <div id="options-sort" class="hidden space-y-1">
+                        {sortOptions.map(opt => (
+                            <button class="picker-option w-full text-left px-4 py-3 rounded-lg hover:bg-white hover:shadow-sm flex justify-between items-center group transition" data-value={opt.value} data-type="sort">
+                                <span class="font-medium text-stone-700 group-hover:text-emerald-700">{opt.label}</span>
+                                <span class="text-emerald-600 hidden check-icon">✓</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {/* Original Advanced Filter Modal */}
+    <div id="filter-modal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" id="modal-backdrop"></div>
+        <div class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div class="bg-white w-full md:w-[800px] md:h-[85vh] md:rounded-2xl flex flex-col h-[90vh] rounded-t-2xl shadow-2xl pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modal-panel">
+                
+                <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-white md:rounded-t-2xl">
+                    <button id="close-modal-x" class="p-2 -ml-2 text-stone-400 hover:text-stone-800 rounded-full hover:bg-stone-100 transition">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    <h3 class="text-lg font-bold text-stone-800">篩選條件</h3>
+                    <button id="modal-clear-btn" class="text-sm font-bold text-stone-400 hover:text-red-500 underline">重設</button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6 bg-stone-50/50">
+                    <div class="space-y-8">
+                        {filterGroups.map(group => (
+                            <div class="bg-white p-5 rounded-xl border border-stone-100 shadow-sm">
+                                <h3 class="flex items-center gap-2 text-sm font-bold text-stone-800 mb-4 uppercase tracking-wide">
+                                    <span class="text-xl">{group.icon}</span>
+                                    {group.title}
+                                </h3>
+                                <div class="flex flex-wrap gap-2">
+                                    {group.items.map(filter => (
+                                        <label class="relative flex items-center cursor-pointer group/item select-none">
+                                            <input 
+                                                type="checkbox" 
+                                                id={`filter-${filter.key}`}
+                                                data-type={filter.type} 
+                                                data-key={filter.key}
+                                                class="peer sr-only filter-checkbox" 
+                                            />
+                                            <div class="px-3 py-2 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 text-sm font-medium transition-all
+                                                peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 peer-checked:shadow-md
+                                                group-hover/item:border-emerald-300">
+                                                {filter.label}
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-stone-100 bg-white md:rounded-b-2xl pb-safe">
+                    <button id="apply-filters-btn" class="w-full bg-emerald-600 text-white font-bold text-lg py-3 rounded-xl shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 active:scale-[0.98] transition-transform">
+                        顯示 <span id="modal-match-count">{campgrounds.length}</span> 個營區
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 	<div class="container mx-auto px-4 py-12">
 		<div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -264,15 +321,15 @@ const filterGroups = [
 <script>
     // Define State Variables
     let searchInput: HTMLInputElement | null;
-    let filterCity: HTMLSelectElement | null;
-    let sortOrder: HTMLSelectElement | null;
+    let filterCityInput: HTMLInputElement | null; // Changed to Hidden Input
+    let sortOrderInput: HTMLInputElement | null; // Changed to Hidden Input
     let checkboxes: NodeListOf<HTMLInputElement>;
     let resultsGrid: HTMLElement | null;
     let noResults: HTMLElement | null;
     let countDisplay: HTMLElement | null;
     let items: NodeListOf<HTMLElement>;
     
-    // Modal Elements
+    // Filter Modal Elements
     let modal: HTMLElement | null;
     let modalPanel: HTMLElement | null;
     let openModalBtn: HTMLElement | null;
@@ -284,20 +341,58 @@ const filterGroups = [
     let activeFilterCount: HTMLElement | null;
     let quickClearBtn: HTMLElement | null;
 
-    // Helper to calculate potential matches based on current DOM state of inputs
+    // 🟢 [NEW] Picker Modal Elements
+    let pickerModal: HTMLElement | null;
+    let pickerPanel: HTMLElement | null;
+    let pickerBackdrop: HTMLElement | null;
+    let pickerCloseBtn: HTMLElement | null;
+    let pickerTitle: HTMLElement | null;
+    let btnCityPicker: HTMLElement | null;
+    let btnSortPicker: HTMLElement | null;
+    let pickerOptions: NodeListOf<HTMLElement>;
+
+    // Helper to randomize ad content on client-side
+    function randomizeAdCard(adElement: Element) {
+        const article = adElement.querySelector('.js-native-ad') as HTMLElement;
+        if (!article || !article.dataset.adsPool) return;
+
+        try {
+            // 1. Get the pool
+            const ads = JSON.parse(article.dataset.adsPool);
+            // 2. Pick random
+            const ad = ads[Math.floor(Math.random() * ads.length)];
+            
+            // 3. Update DOM Elements
+            const img = article.querySelector('.js-ad-img') as HTMLImageElement;
+            const title = article.querySelector('.js-ad-title');
+            const desc = article.querySelector('.js-ad-desc');
+            const cta = article.querySelector('.js-ad-cta');
+            const link = article.querySelector('.js-ad-link') as HTMLAnchorElement;
+            const badgesContainer = article.querySelector('.js-ad-badges');
+
+            if (img) { img.src = ad.image; img.alt = ad.title; }
+            if (title) title.textContent = ad.title;
+            if (desc) desc.textContent = ad.desc;
+            if (cta) cta.textContent = ad.cta;
+            if (link) link.href = ad.link;
+
+            // 4. Update Badges (Rebuild HTML)
+            if (badgesContainer && ad.badges) {
+                badgesContainer.innerHTML = ad.badges.map((b: any) => 
+                    `<span class="${b.classString}">${b.text}</span>`
+                ).join('');
+            }
+
+        } catch (e) {
+            console.error('Failed to randomize ad', e);
+        }
+    }
+
+    // Helper to calculate potential matches
     function calculateMatches(simulateCheckboxes = false): number {
         if (!items) return 0;
-        
         const term = searchInput ? searchInput.value.toLowerCase() : '';
-        const cityFilter = filterCity?.value || '';
-        
-        // If simulating, we use the current checkbox state (which might not be 'applied' yet generally, 
-        // but in this modal design, the checkboxes ARE the state until applied/closed).
-        // Actually, we need to be careful. The checkboxes matches the DOM.
-        // When modal opens, we should reflect "Applied" state. 
-        // When user clicks checkboxes in modal, they change DOM state immediately. 
-        // So "Simulating" just means running the filter logic without hiding the real grid items yet.
-        
+        const cityFilter = filterCityInput?.value || '';
         const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
 
         let count = 0;
@@ -311,7 +406,6 @@ const filterGroups = [
             const isGlamping = el.dataset.glamping === 'true';
             const isPet = el.dataset.pet === 'true';
 
-            // Text Search
             let matchesSearch = term === '' || 
                                   name.includes(term) || 
                                   city.includes(term) || 
@@ -354,14 +448,12 @@ const filterGroups = [
         return count;
     }
 
-    // Main Render Function (Applies to main grid)
+    // Main Render Function
     function renderResults() {
-        if (!resultsGrid || !sortOrder || !items) return;
-
-        // Clean up injected ads
+        if (!resultsGrid || !sortOrderInput || !items) return;
         resultsGrid.querySelectorAll('.native-ad-injected').forEach(el => el.remove());
 
-        const order = sortOrder.value;
+        const order = sortOrderInput.value;
         const itemArray = Array.from(items);
 
         // Sort
@@ -377,14 +469,11 @@ const filterGroups = [
         let visibleCount = 0;
         const visibleElements: HTMLElement[] = [];
         
-        // Re-use logic or just rely on CSS classes? 
-        // We'll re-run logic to set display:none
-        
         const term = searchInput ? searchInput.value.toLowerCase() : '';
-        const cityFilter = filterCity?.value || '';
+        const cityFilter = filterCityInput?.value || '';
         const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
 
-        // Update Active Filter Count Badge
+        // Update UI State
         if (activeFilterCount) {
             activeFilterCount.textContent = activeCheckboxes.length.toString();
             if (activeCheckboxes.length > 0) {
@@ -392,14 +481,12 @@ const filterGroups = [
                 quickClearBtn?.classList.remove('hidden');
             } else {
                 activeFilterCount.classList.add('hidden');
-                // Only hide Main Clear if Grid Search/City is also empty
                 if (!term && !cityFilter) {
                      quickClearBtn?.classList.add('hidden');
                 }
             }
         }
         
-        // Show Quick Clear if ANY filter is active
         if (quickClearBtn) {
             if (term || cityFilter || activeCheckboxes.length > 0) {
                  quickClearBtn.classList.remove('hidden');
@@ -459,13 +546,18 @@ const filterGroups = [
         if (adTemplate && visibleElements.length > 0) {
             visibleElements.forEach((el, idx) => {
                 if ((idx + 1) % 6 === 0) {
-                     const adClone = adTemplate.content.cloneNode(true);
+                     const adClone = adTemplate.content.cloneNode(true) as HTMLElement;
+                     
+                     // 🟢 [NEW] Randomize the clone before injecting
+                     // 我們選取 clone 裡面的 wrapper div
+                     const wrapper = adClone.querySelector('.native-ad-injected');
+                     if (wrapper) randomizeAdCard(wrapper);
+
                      el.parentNode?.insertBefore(adClone, el.nextSibling); 
                 }
             });
         }
 
-        // Update Counts
         if (countDisplay) countDisplay.textContent = visibleCount.toString();
         if (visibleCount === 0) {
             resultsGrid?.classList.add('hidden');
@@ -476,26 +568,20 @@ const filterGroups = [
         }
     }
 
+    // --- Modal Logic (Advanced Filters) ---
     function openModal() {
         if (!modal) return;
         modal.classList.remove('hidden');
-        // Prevent body scroll
         document.body.style.overflow = 'hidden';
-        
-        // Slightly delay removing the translate class to trigger transition
         setTimeout(() => {
             if (modalPanel) modalPanel.classList.remove('translate-y-full');
         }, 10);
-        
         updateModalCount();
     }
 
     function closeModal() {
         if (!modal) return;
-        
         if (modalPanel) modalPanel.classList.add('translate-y-full');
-        
-        // Wait for transition (300ms) before hiding
         setTimeout(() => {
             modal.classList.add('hidden');
             document.body.style.overflow = '';
@@ -503,22 +589,96 @@ const filterGroups = [
     }
 
     function updateModalCount() {
-        const count = calculateMatches(true); // True explicitly
+        const count = calculateMatches(true);
         if (modalMatchCount) modalMatchCount.textContent = count.toString();
+    }
+
+    // --- 🟢 [NEW] Picker Logic (City & Sort) ---
+    function openPicker(type: 'city' | 'sort') {
+        if (!pickerModal) return;
+        
+        // Update Title
+        if (pickerTitle) pickerTitle.textContent = type === 'city' ? '選擇縣市' : '排序方式';
+        
+        // Toggle Content
+        const cityList = document.getElementById('options-city');
+        const sortList = document.getElementById('options-sort');
+        
+        if (type === 'city') {
+            cityList?.classList.remove('hidden');
+            sortList?.classList.add('hidden');
+        } else {
+            cityList?.classList.add('hidden');
+            sortList?.classList.remove('hidden');
+        }
+
+        // Update Active State
+        const currentValue = type === 'city' ? filterCityInput?.value : sortOrderInput?.value;
+        pickerOptions.forEach(opt => {
+            const checkIcon = opt.querySelector('.check-icon');
+            if (opt.dataset.type === type && opt.dataset.value === currentValue) {
+                opt.classList.add('bg-emerald-50');
+                checkIcon?.classList.remove('hidden');
+            } else {
+                opt.classList.remove('bg-emerald-50');
+                checkIcon?.classList.add('hidden');
+            }
+        });
+
+        // Show Modal
+        pickerModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            if (pickerPanel) pickerPanel.classList.remove('translate-y-full');
+        }, 10);
+    }
+
+    function closePicker() {
+        if (!pickerModal) return;
+        if (pickerPanel) pickerPanel.classList.add('translate-y-full');
+        setTimeout(() => {
+            pickerModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    function handlePickerSelection(el: HTMLElement) {
+        const type = el.dataset.type;
+        const value = el.dataset.value || '';
+        const label = el.querySelector('span.font-medium')?.textContent || '';
+
+        // 1. Update Hidden Input & Trigger Button Text
+        if (type === 'city') {
+            if (filterCityInput) filterCityInput.value = value;
+            if (btnCityPicker) {
+                 const span = btnCityPicker.querySelector('span');
+                 if (span) span.textContent = value === '' ? '所有縣市' : value;
+            }
+        } else if (type === 'sort') {
+            if (sortOrderInput) sortOrderInput.value = value;
+            if (btnSortPicker) {
+                 const span = btnSortPicker.querySelector('span');
+                 if (span) span.textContent = label;
+            }
+        }
+
+        // 2. Refresh Results & Close
+        renderResults();
+        closePicker();
     }
 
     function init() {
         // Elements
         searchInput = document.getElementById('search-input') as HTMLInputElement;
-        filterCity = document.getElementById('filter-city') as HTMLSelectElement;
-        sortOrder = document.getElementById('sort-order') as HTMLSelectElement;
+        filterCityInput = document.getElementById('filter-city') as HTMLInputElement;
+        sortOrderInput = document.getElementById('sort-order') as HTMLInputElement;
         checkboxes = document.querySelectorAll('.filter-checkbox');
         resultsGrid = document.getElementById('results-grid');
         noResults = document.getElementById('no-results');
         countDisplay = document.getElementById('count-display');
         items = document.querySelectorAll('.camp-item');
         
-        // Modal UI
+        // Advanced Filter Modal
         modal = document.getElementById('filter-modal');
         modalPanel = document.getElementById('modal-panel');
         openModalBtn = document.getElementById('open-filter-modal');
@@ -530,47 +690,65 @@ const filterGroups = [
         activeFilterCount = document.getElementById('active-filter-count');
         quickClearBtn = document.getElementById('quick-clear');
 
-        // Binds
-        if (searchInput) searchInput.addEventListener('input', () => {
-             renderResults(); // Immediate for text
-        });
-        if (filterCity) filterCity.addEventListener('change', renderResults);
-        if (sortOrder) sortOrder.addEventListener('change', renderResults);
+        // 🟢 [NEW] Picker Elements
+        pickerModal = document.getElementById('picker-modal');
+        pickerPanel = document.getElementById('picker-panel');
+        pickerBackdrop = document.getElementById('picker-backdrop');
+        pickerCloseBtn = document.getElementById('close-picker-x');
+        pickerTitle = document.getElementById('picker-title');
+        btnCityPicker = document.getElementById('btn-city-picker');
+        btnSortPicker = document.getElementById('btn-sort-picker');
+        pickerOptions = document.querySelectorAll('.picker-option');
+
+        // Event Listeners (Main)
+        if (searchInput) searchInput.addEventListener('input', () => { renderResults(); });
         
-        // Modal Logic
+        // Advanced Filter Events
         if (openModalBtn) openModalBtn.addEventListener('click', openModal);
-        
         if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
         if (backdrop) backdrop.addEventListener('click', closeModal);
-        
-        // Inside Modal: Checkbox changes update the number on the button only
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', () => {
-                updateModalCount();
-            });
-        });
-
-        // Inside Modal: Reset
+        checkboxes.forEach(cb => { cb.addEventListener('change', () => { updateModalCount(); }); });
         if (modalClearBtn) modalClearBtn.addEventListener('click', () => {
             checkboxes.forEach(cb => cb.checked = false);
             updateModalCount();
         });
-
-        // Apply
-        if (applyBtn) applyBtn.addEventListener('click', () => {
-            renderResults();
-            closeModal();
+        if (applyBtn) applyBtn.addEventListener('click', () => { renderResults(); closeModal(); });
+        
+        // 🟢 [NEW] Picker Events
+        if (btnCityPicker) btnCityPicker.addEventListener('click', () => openPicker('city'));
+        if (btnSortPicker) btnSortPicker.addEventListener('click', () => openPicker('sort'));
+        if (pickerCloseBtn) pickerCloseBtn.addEventListener('click', closePicker);
+        if (pickerBackdrop) pickerBackdrop.addEventListener('click', closePicker);
+        pickerOptions.forEach(opt => {
+            opt.addEventListener('click', () => handlePickerSelection(opt as HTMLElement));
         });
 
-        // Quick Clear (Main View)
+        // Quick Clear
         if (quickClearBtn) quickClearBtn.addEventListener('click', () => {
+             // 1. Reset Search Input
              if(searchInput) searchInput.value = '';
-             if(filterCity) filterCity.value = '';
+             
+             // 2. Reset City
+             if(filterCityInput) filterCityInput.value = '';
+             if(btnCityPicker) { 
+                 const s = btnCityPicker.querySelector('span'); 
+                 if(s) s.textContent = '所有縣市'; 
+             }
+
+             // 3. 🟢 [FIX] Reset Sort Order
+             if(sortOrderInput) sortOrderInput.value = 'default';
+             if(btnSortPicker) {
+                 const s = btnSortPicker.querySelector('span');
+                 if(s) s.textContent = '預設排序 (筆畫)';
+             }
+             
+             // 4. Reset Checkboxes
              checkboxes.forEach(cb => cb.checked = false);
+             
+             // 5. Re-render
              renderResults();
         });
 
-        // Init Logic
         initFromURL();
     }
 
@@ -581,7 +759,15 @@ const filterGroups = [
          const tag = params.get('tag');
 
          if (query && searchInput) searchInput.value = query;
-         if (city && filterCity) filterCity.value = city;
+         
+         // 🟢 [NEW] Init City Button Text
+         if (city && filterCityInput) {
+             filterCityInput.value = city;
+             if (btnCityPicker) {
+                 const span = btnCityPicker.querySelector('span');
+                 if (span) span.textContent = city;
+             }
+         }
 
          if (tag) {
              let found = false;
@@ -592,7 +778,6 @@ const filterGroups = [
                      found = true;
                  }
              });
-             // Fallback to text search if tag not found in checkboxes
              if (!found && !query && searchInput) {
                  searchInput.value = tag;
              }

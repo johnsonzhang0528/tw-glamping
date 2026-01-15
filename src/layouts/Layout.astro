@@ -13,7 +13,7 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 public 放置預設圖
+const socialImageURL = new URL('/social-card.webp', Astro.url); // 需要在 public 放置預設圖
 
 // 結構化資料：明確告訴 Google 品牌的歷史與權威
 const schema = JSON.stringify({
@@ -45,7 +45,15 @@ const schema = JSON.stringify({
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
 
-        <script type="application/ld+json" set:html={schema} />
+		<!-- Google Analytics 4 -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5334JZT3"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-CS5334JZT3');
+		</script>
 
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
@@ -89,7 +97,7 @@ const schema = JSON.stringify({
 			<slot />
 		</main>
 
-		<footer class="bg-stone-900 text-stone-400 py-12 mt-20 hidden md:block">
+		<footer class="bg-stone-900 text-stone-400 py-8 md:py-12 mt-12 md:mt-20">
 			<div class="container mx-auto px-4">
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 					<div>
@@ -120,7 +128,10 @@ const schema = JSON.stringify({
 						</p>
 					</div>
 				</div>
-				<div class="border-t border-stone-800 mt-8 pt-8 text-center text-xs">
+				<div class="border-t border-stone-800 mt-8 pt-8 text-center text-xs text-stone-500">
+					<p class="mb-2">
+						聯盟行銷聲明：本站部分內容包含推廣連結。當您透過這些連結購買商品時，我們可能會獲得微薄的佣金，這不會增加您的購買成本，但能支持我們持續創作優質內容。
+					</p>
 					&copy; 2004-{new Date().getFullYear()} Outdoor Camping World. All rights reserved.
 				</div>
 			</div>
@@ -156,9 +167,7 @@ const schema = JSON.stringify({
             // Domains to be wrapped (Extend list as needed)
             const TARGET_DOMAINS = [
                 "momoshop.com.tw",
-                "klook.com",
-                "kkday.com",
-                "shopee.tw",
+                "klook.com"
             ];
 
             function processAffiliateLink(anchor) {
