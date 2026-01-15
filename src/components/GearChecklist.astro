@@ -132,9 +132,9 @@ if (recommendedCategories.length === 0) {
                         >
                             <div class="flex-1 min-w-0 pr-3">
                                 <div class="flex items-start gap-2 mb-0.5">
-                                    {/* 🟢 [FIX] 對比度優化: 加深背景色，確保白字清晰 */}
-                                    {/* No.1 改用 bg-amber-600, 其他改用 bg-stone-600 (原本 stone-300 太淺) */}
-                                    <span class={`text-xs font-bold px-1.5 py-0.5 rounded text-white shrink-0 mt-0.5 ${idx === 0 ? 'bg-amber-600' : 'bg-stone-600'}`}>
+                                    {/* 🟢 [FIX] 最終對比度修正: bg-amber-600 -> bg-amber-700 */}
+                                    {/* 確保 No.1 徽章在白字下清晰可讀 */}
+                                    <span class={`text-xs font-bold px-1.5 py-0.5 rounded text-white shrink-0 mt-0.5 ${idx === 0 ? 'bg-amber-700' : 'bg-stone-600'}`}>
                                         {idx === 0 ? 'No.1' : (idx + 1)}
                                     </span>
                                     <span class="text-stone-700 font-medium text-sm line-clamp-2 group-hover/item:text-emerald-700 transition-colors leading-snug">
