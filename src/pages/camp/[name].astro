@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import CampMap from '../../components/CampMap.astro';
 import GearChecklist from '../../components/GearChecklist.astro';
+import BaseShareButtons from '../../components/ShareButtons.astro';
 import CampgroundCard from '../../components/CampgroundCard.astro';
 import campgrounds from '../../data/campgrounds_enriched.json';
 import productData from '../../data/products.json';
@@ -288,6 +289,9 @@ const relatedCamps = nearbyCamps;
                     <div class="flex items-center text-stone-600 text-sm md:text-base gap-4">
                         <span class="flex items-center gap-1"><span class="text-xl">📍</span> {camp.address}</span>
                     </div>
+
+                    {/* 🟢 [NEW] Social Share Buttons - Viral Loop */}
+                    <BaseShareButtons title={`【${camp.name}】${camp.city}${camp.area}露營區推薦`} />
                 </header>
 
                 {/* Map Component - Full width on mobile, top position */}
