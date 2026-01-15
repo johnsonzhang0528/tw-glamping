@@ -457,14 +457,18 @@ const filterGroups = [
     }
 
     // Main Render Function
+    // Main Render Function
     function renderResults() {
         if (!resultsGrid || !sortOrderInput || !items) return;
+
+        // 1. 先移除舊廣告 (Write)
         resultsGrid.querySelectorAll('.native-ad-injected').forEach(el => el.remove());
 
+        const adTemplate = document.getElementById('native-ad-template') as HTMLTemplateElement;
         const order = sortOrderInput.value;
         const itemArray = Array.from(items);
 
-        // Sort
+        // 2. 排序 (In-memory, no layout thrashing)
         if (order === 'default') {
              itemArray.sort((a, b) => (a.dataset.name || '').localeCompare(b.dataset.name || ''));
         } else if (order === 'elevation-desc') {
@@ -473,15 +477,13 @@ const filterGroups = [
             itemArray.sort((a, b) => Number(a.dataset.elevation) - Number(b.dataset.elevation));
         }
 
-        // Filter
+        // 3. 準備篩選條件
         let visibleCount = 0;
-        const visibleElements: HTMLElement[] = [];
-        
         const term = searchInput ? searchInput.value.toLowerCase() : '';
         const cityFilter = filterCityInput?.value || '';
         const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
 
-        // Update UI State
+        // 更新篩選器 UI (Write)
         if (activeFilterCount) {
             activeFilterCount.textContent = activeCheckboxes.length.toString();
             if (activeCheckboxes.length > 0) {
@@ -489,20 +491,17 @@ const filterGroups = [
                 quickClearBtn?.classList.remove('hidden');
             } else {
                 activeFilterCount.classList.add('hidden');
-                if (!term && !cityFilter) {
-                     quickClearBtn?.classList.add('hidden');
-                }
+                if (!term && !cityFilter) quickClearBtn?.classList.add('hidden');
             }
         }
-        
         if (quickClearBtn) {
-            if (term || cityFilter || activeCheckboxes.length > 0) {
-                 quickClearBtn.classList.remove('hidden');
-            } else {
-                 quickClearBtn.classList.add('hidden');
-            }
+            quickClearBtn.classList.toggle('hidden', !term && !cityFilter && activeCheckboxes.length === 0);
         }
 
+        // 4. 單次遍歷渲染 (Single Pass Rendering)
+        // 🟢 關鍵優化：在同一個迴圈內完成篩選、排序與廣告插入
+        // 避免了 Read-Write-Read-Write 的惡性循環
+        
         itemArray.forEach((el) => {
             const name = el.dataset.name || '';
             const city = el.dataset.city || '';
@@ -512,18 +511,13 @@ const filterGroups = [
             const isGlamping = el.dataset.glamping === 'true';
             const isPet = el.dataset.pet === 'true';
 
-            let matchesSearch = term === '' || 
-                                  name.includes(term) || 
-                                  city.includes(term) || 
-                                  area.includes(term) ||
-                                  tags.includes(term);
-            
+            // ... (匹配邏輯保持不變) ...
+            let matchesSearch = term === '' || name.includes(term) || city.includes(term) || area.includes(term) || tags.includes(term);
             if (!matchesSearch) {
                  if (term.includes('豪華') && isGlamping) matchesSearch = true;
                  if (term.includes('高海拔') && isHighAlt) matchesSearch = true;
                  if (term.includes('寵物') && isPet) matchesSearch = true;
             }
-            
             const matchesCity = cityFilter === '' || city === cityFilter;
             const matchesAdvanced = activeCheckboxes.every(cb => {
                 const type = cb.dataset.type;
@@ -539,33 +533,33 @@ const filterGroups = [
                 return true;
             });
 
+            // 🟢 Render Logic
             if (matchesSearch && matchesCity && matchesAdvanced) {
-                el.style.display = 'block';
+                el.style.display = 'block'; // Write
+                resultsGrid?.appendChild(el); // Write (Reorder/Move)
                 visibleCount++;
-                visibleElements.push(el);
+
+                // 🟢 立即插入廣告 (避免第二階段迴圈)
+                if (visibleCount % 6 === 0 && adTemplate) {
+                     const adClone = adTemplate.content.cloneNode(true) as HTMLElement;
+                     const wrapper = adClone.querySelector('.native-ad-injected') as HTMLElement;
+                     
+                     if (wrapper) {
+                        // 為廣告也加上效能隔離，防止廣告內容引起重排
+                        wrapper.style.contentVisibility = 'auto';
+                        wrapper.style.containIntrinsicSize = '1px 400px';
+                        randomizeAdCard(wrapper);
+                     }
+
+                     resultsGrid?.appendChild(adClone); // Write
+                }
             } else {
-                el.style.display = 'none';
+                el.style.display = 'none'; // Write
+                resultsGrid?.appendChild(el); // Write (Move hidden items to end/keep strictly sorted)
             }
-            resultsGrid?.appendChild(el);
         });
 
-        // Inject Ads
-        const adTemplate = document.getElementById('native-ad-template') as HTMLTemplateElement;
-        if (adTemplate && visibleElements.length > 0) {
-            visibleElements.forEach((el, idx) => {
-                if ((idx + 1) % 6 === 0) {
-                     const adClone = adTemplate.content.cloneNode(true) as HTMLElement;
-                     
-                     // 🟢 [NEW] Randomize the clone before injecting
-                     // 我們選取 clone 裡面的 wrapper div
-                     const wrapper = adClone.querySelector('.native-ad-injected');
-                     if (wrapper) randomizeAdCard(wrapper);
-
-                     el.parentNode?.insertBefore(adClone, el.nextSibling); 
-                }
-            });
-        }
-
+        // Update UI State (Write)
         if (countDisplay) countDisplay.textContent = visibleCount.toString();
         if (visibleCount === 0) {
             resultsGrid?.classList.add('hidden');
