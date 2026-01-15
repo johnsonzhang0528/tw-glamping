@@ -8,16 +8,20 @@ interface Props {
 title: string;
 description?: string;
 noindex?: boolean;
-    // 🟢 [NEW] 新增 LCP 圖片預載屬性
     preloadImage?: string;
+    omitSuffix?: boolean; // 🟢 [NEW] 控制是否省略標題後綴
 }
 
 const { 
 title, 
 description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。",
 noindex = false,
-    preloadImage // 解構出這個新屬性
+    preloadImage,
+    omitSuffix = false
 } = Astro.props;
+
+const pageTitle = omitSuffix ? title : `${title} | Outdoor Camping World - Since 2004`;
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL('/social-card.webp', Astro.url);
 ---
@@ -30,8 +34,8 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <meta name="generator" content={Astro.generator} />
 
-<title>{title} | Outdoor Camping World - Since 2004</title>
-<meta name="title" content={`${title} | Outdoor Camping World - Since 2004`} />
+<title>{pageTitle}</title>
+<meta name="title" content={pageTitle} />
 <meta name="description" content={description} />
 
         <link rel="preconnect" href="https://www.googletagmanager.com">
@@ -110,21 +114,19 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
 <meta property="twitter:description" content="Gear up for the great outdoors. Since 2004." />
 <meta property="twitter:image" content={socialImageURL} />
 
-<slot name="head" />
-
-<meta name="theme-color" content="#ffffff" />
-
+{/* 🟢 [RESTORED] 恢復 ClientRouter 與 分潤變數 */}
 <ClientRouter />
-
-        <script is:inline>
-var oeya_member = "3F8Gh";
-var oeya_uid1 = "";
-var oeya_uid2 = "";
-var oeya_uid3 = "";
-var oeya_uid4 = "";
-var oeya_uid5 = "";
+<script is:inline>
+    var oeya_member = "3F8Gh";
+    var oeya_uid1 = "";
+    var oeya_uid2 = "";
+    var oeya_uid3 = "";
+    var oeya_uid4 = "";
+    var oeya_uid5 = "";
 </script>
-</head>
+
+<slot name="head" />
+	</head>
 <body class="bg-stone-50 min-h-screen text-stone-800 font-sans flex flex-col pb-16 md:pb-0">
 <MobileHeader />
 

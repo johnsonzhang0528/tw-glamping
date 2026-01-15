@@ -164,6 +164,11 @@ const schemaData = {
   "@type": "Campground",
   "name": camp.name,
   "description": camp.description,
+  // 🟢 [SEO] Add explicit image property (Google Requirement for LocalBusiness)
+  "image": [
+    `https://source.unsplash.com/800x600/?camping,${camp.tags.includes('豪華露營') ? 'glamping' : 'tent'}`,
+    // In production, use real camp photos if available
+  ],
   "telephone": camp.phone,
   "address": {
     "@type": "PostalAddress",
@@ -188,22 +193,58 @@ const schemaData = {
 
 const schemas = [schemaData, breadcrumbSchema, faqSchema];
 
-// Related Camps Logic (PSEO Internal Linking)
-// 1. Same City
-const sameCityCamps = campgrounds
-    .filter(c => c.city === camp.city && c.name !== camp.name)
-    .sort(() => 0.5 - Math.random());
+// 🟢 [SEO] Optimized Page Title Logic
+// Format: [Name] - [City][Area] | [Feature1], [Feature2] | [Year]最新路況
+const currentYear = new Date().getFullYear();
+const featureList = [];
+if (camp.features.high_altitude) featureList.push(`海拔${camp.elevation}m`);
+if (camp.features.has_glamping) featureList.push("豪華露營");
+if (camp.features.pet_friendly) featureList.push("寵物友善");
+if (camp.tags.includes("雲海")) featureList.push("雲海");
+if (camp.tags.includes("櫻花")) featureList.push("櫻花季");
 
-// 2. Fallback: High Altitude or Glamping if same city is empty
-const fallbackCamps = campgrounds
-    .filter(c => (c.features.high_altitude || c.features.has_glamping) && c.name !== camp.name)
-    .sort(() => 0.5 - Math.random());
+// Add generic tags if we don't have enough features
+if (featureList.length < 2 && camp.tags.length > 0) {
+    featureList.push(camp.tags[0]);
+}
 
-const relatedCamps = [...sameCityCamps, ...fallbackCamps].slice(0, 4);
+const seoTitleFeatures = featureList.slice(0, 3).join('、');
+const seoTitle = `${camp.name} - ${camp.city}${camp.area} | ${seoTitleFeatures} | ${currentYear}最新路況`;
+
+
+// 🟢 [SEO] Internal Linking: Nearby Campgrounds (Haversine Distance)
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1); 
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+  const d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180);
+}
+
+// Calculate distance for all camps (excluding current)
+const nearbyCamps = campgrounds
+    .filter(c => c.name !== camp.name && c.lat && c.lng)
+    .map(c => ({
+        ...c,
+        distance: getDistance(camp.lat, camp.lng, c.lat, c.lng)
+    }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 6); // Take top 5 closest (6 to fill grid neatly if needed)
+
+const relatedCamps = nearbyCamps;
 
 ---
 
-<Layout title={`${camp.name} - ${camp.city}${camp.area}露營區推薦 | Outdoor Camping World`} description={camp.description.substring(0, 150) + '...'}>
+<Layout title={seoTitle} description={camp.description.substring(0, 150) + '...'}>
     <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemas)}></script>
     
     {/* PSEO Drip Feed Control */}

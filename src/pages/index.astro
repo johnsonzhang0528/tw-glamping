@@ -32,12 +32,57 @@ const popularCities = Object.entries(cityStats)
   .sort(([, countA], [, countB]) => countB - countA)
   .slice(0, 8)
   .map(([city, count]) => ({ city, count }));
+
+// 🟢 [SEO] Global Schemas (WebSite & Organization)
+const homeSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Outdoor Camping World 台灣站",
+      "url": Astro.site,
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": `${Astro.site}search?q={search_term_string}`
+        },
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "Organization",
+      "name": "Outdoor Camping World",
+      "url": Astro.site,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${Astro.site}favicon.svg`,
+        "width": 112,
+        "height": 112
+      },
+      "sameAs": [
+        "https://www.facebook.com/outdoorcampingworld", 
+        // 預留其他社群連結
+      ],
+      "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+886-2-00000000",
+          "contactType": "customer service",
+          "areaServed": "TW",
+          "availableLanguage": "Traditional Chinese"
+      }
+    }
+  ]
+};
 ---
 
 <Layout 
 	title="Outdoor Camping World 台灣站 | 終極露營指南 Since 2004"
+    omitSuffix={true}
     preloadImage="/hero-bg.webp"
 >
+    <!-- Inject Schema -->
+    <script type="application/ld+json" slot="head" set:html={JSON.stringify(homeSchema)}></script>
     
     <div class="relative bg-stone-900 -mt-[64px] pt-[64px]">
         <div class="absolute inset-0 overflow-hidden">
