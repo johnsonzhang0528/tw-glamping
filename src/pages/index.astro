@@ -66,7 +66,7 @@ const popularCities = Object.entries(cityStats)
                 <br class="hidden md:inline"/>讓每一次的紮營，都是最完美的體驗。
             </p>
             <div class="flex justify-center gap-4">
-                <a href="/search" class="w-full md:w-auto bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-900/50 active:scale-95 transform duration-100 inline-flex items-center justify-center gap-2">
+                <a href="/search" class="w-full md:w-auto bg-emerald-700 text-white px-8 py-4 rounded-xl font-bold hover:bg-emerald-600 transition shadow-lg shadow-emerald-900/50 active:scale-95 transform duration-100 inline-flex items-center justify-center gap-2">
                     <span>🔭</span> 開始探索營地
                 </a>
             </div>
@@ -78,10 +78,10 @@ const popularCities = Object.entries(cityStats)
             
             <div class="flex justify-between items-end mb-6">
                 <div>
-                    <h2 class="text-sm font-bold text-stone-500 uppercase tracking-wider">熱門露營地區</h2>
+                    <h2 class="text-sm font-bold text-stone-600 uppercase tracking-wider">熱門露營地區</h2>
                     <p class="text-2xl font-bold text-stone-800 mt-1">你想去哪裡露營？</p>
                 </div>
-                <a href="/search" class="hidden md:block text-emerald-600 text-sm font-bold hover:underline">查看全台地圖 &rarr;</a>
+                <a href="/search" class="hidden md:block text-emerald-700 text-sm font-bold hover:underline">查看全台地圖 &rarr;</a>
             </div>
             
             <div class="flex overflow-x-auto pb-4 gap-3 md:grid md:grid-cols-4 lg:grid-cols-6 md:overflow-visible md:pb-0 snap-x scrollbar-hide">
@@ -89,7 +89,7 @@ const popularCities = Object.entries(cityStats)
                     <a href={`/city/${city}`} class="snap-start shrink-0 w-[140px] md:w-auto flex flex-col items-center justify-center p-4 rounded-xl bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 group/btn border border-stone-100 hover:border-emerald-200 hover:shadow-md active:scale-95">
                         <span class="w-8 h-8 rounded-full bg-white text-lg flex items-center justify-center mb-2 shadow-sm group-hover/btn:scale-110 transition-transform">📍</span>
                         <span class="font-bold text-stone-800 group-hover/btn:text-emerald-700">{city}</span>
-                        <span class="text-xs text-stone-500 mt-1">{count} 個營區</span>
+                        <span class="text-xs text-stone-600 mt-1">{count} 個營區</span>
                     </a>
                 ))}
             </div>
@@ -97,7 +97,7 @@ const popularCities = Object.entries(cityStats)
             <div class="absolute right-0 top-20 bottom-20 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none md:hidden"></div>
             
             <div class="mt-4 md:hidden text-center border-t border-stone-100 pt-4">
-                 <a href="/search" class="text-emerald-600 text-sm font-bold flex items-center justify-center gap-1 active:opacity-70">
+                 <a href="/search" class="text-emerald-700 text-sm font-bold flex items-center justify-center gap-1 active:opacity-70">
                     查看全台地圖 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                  </a>
             </div>
