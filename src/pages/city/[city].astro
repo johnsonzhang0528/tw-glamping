@@ -1,0 +1,47 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CampgroundCard from '../../components/CampgroundCard.astro';
+import campgrounds from '../../data/campgrounds_enriched.json';
+
+export async function getStaticPaths() {
+  const cities = [...new Set(campgrounds.map((camp) => camp.city))];
+  return cities.map((city) => ({
+    params: { city },
+    props: { city },
+  }));
+}
+
+const { city } = Astro.props;
+const cityCamps = campgrounds.filter(camp => camp.city === city);
+const title = `${city}露營區推薦與景點地圖 - 共 ${cityCamps.length} 個精選營地 | Outdoor Camping World`;
+const description = `精選 ${city} 露營區推薦，包含高海拔、豪華露營、寵物友善等特色營地。提供完整的${city}露營地圖與詳細資訊。`;
+---
+
+<Layout title={title} description={description}>
+    <div class="bg-stone-100 border-b border-stone-200">
+        <div class="container mx-auto px-4 py-3 text-sm text-stone-500">
+            <a href="/" class="hover:text-emerald-700">首頁</a> &rsaquo; 
+            <span class="text-stone-800 font-medium">{city}</span>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-12">
+        <header class="mb-12 text-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-stone-900 mb-4">{city} 露營區推薦</h1>
+            <p class="text-lg text-stone-600">
+                收錄 {cityCamps.length} 個位於 {city} 的精選露營地，
+                適合親子旅遊、高山避暑或豪華露營體驗。
+            </p>
+        </header>
+
+        {cityCamps.length > 0 ? (
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {cityCamps.map(camp => (
+                    <CampgroundCard camp={camp} />
+                ))}
+            </div>
+        ) : (
+            <p class="text-center text-stone-500 py-20">目前 {city} 尚無收錄營區資料。</p>
+        )}
+    </div>
+</Layout>

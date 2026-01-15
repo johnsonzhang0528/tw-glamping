@@ -21,6 +21,18 @@ type Campground = {
 };
 
 const camps = campgrounds as Campground[];
+
+// 🟢 [NEW] 動態計算熱門縣市 (Hub & Spoke Strategy)
+// 統計每個縣市的營區數量，並取前 8 名
+const cityStats = camps.reduce((acc, camp) => {
+  acc[camp.city] = (acc[camp.city] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+
+const popularCities = Object.entries(cityStats)
+  .sort(([, countA], [, countB]) => countB - countA) // 數量多的排前面
+  .slice(0, 8)
+  .map(([city, count]) => ({ city, count }));
 ---
 
 <Layout title="Outdoor Camping World 台灣站 | 終極露營指南 Since 2004">
@@ -37,6 +49,20 @@ const camps = campgrounds as Campground[];
 				<button class="w-full md:w-auto bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20 active:scale-95 transform duration-100">
 					開始探索
 				</button>
+			</div>
+		</section>
+
+		<section class="container mx-auto px-4 -mt-8 mb-12 relative z-10">
+			<div class="bg-white rounded-xl shadow-xl p-6 border border-stone-100">
+				<h2 class="text-sm font-bold text-stone-400 uppercase tracking-wider mb-4">按地區探索 (Browse by Region)</h2>
+				<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+					{popularCities.map(({ city, count }) => (
+						<a href={`/city/${city}`} class="flex flex-col items-center justify-center p-3 rounded-lg bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 transition group border border-stone-100">
+							<span class="font-bold text-stone-800 group-hover:text-emerald-700">{city}</span>
+							<span class="text-xs text-stone-400 mt-1">{count} 個營區</span>
+						</a>
+					))}
+				</div>
 			</div>
 		</section>
 

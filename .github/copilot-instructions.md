@@ -1,6 +1,6 @@
-# Copilot Instructions for Camping tw-glamping Project
+# Copilot Instructions for Outdoor Camping World Project
 
-This project is a high-performance tw-glamping (Programmatic SEO) website for Taiwan camping grounds ("全台露營區指南").
+This project is a high-performance Outdoor Camping World Taiwan Edition website, leveraging an aged domain (est. 2004) to provide authoritative camping content.
 
 ## Project Architecture
 - **Framework**: Astro (Static Site Generation - SSG).
