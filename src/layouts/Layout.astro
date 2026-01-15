@@ -46,6 +46,10 @@ const schema = JSON.stringify({
 		<meta name="title" content={`${title} | Outdoor Camping World - Since 2004`} />
 		<meta name="description" content={description} />
 		
+        <!-- Preconnect Links (Performance) -->
+        <link rel="preconnect" href="https://www.googletagmanager.com">
+        <link rel="preconnect" href="https://www.conn.tw">
+
 		<!-- Robots & Canonical -->
 		{noindex ? (
 			<meta name="robots" content="noindex, nofollow" />
@@ -106,7 +110,7 @@ const schema = JSON.stringify({
 			<slot />
 		</main>
 
-		<footer class="bg-stone-900 text-stone-400 py-8 md:py-12 mt-12 md:mt-20">
+		<footer class="bg-stone-900 text-stone-300 py-8 md:py-12 mt-12 md:mt-20">
 			<div class="container mx-auto px-4">
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 					<div>

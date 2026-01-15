@@ -36,11 +36,17 @@ const popularCities = Object.entries(cityStats)
 
 <Layout title="Outdoor Camping World 台灣站 | 終極露營指南 Since 2004">
     
-    <div class="relative bg-stone-900 -mt-[64px] pt-[64px]"> <div class="absolute inset-0 overflow-hidden">
+    <div class="relative bg-stone-900 -mt-[64px] pt-[64px]">
+        <div class="absolute inset-0 overflow-hidden">
             <img 
                 src="/hero-bg.webp" 
                 alt="Camping Background" 
                 class="w-full h-full object-cover opacity-60"
+                fetchpriority="high"
+                loading="eager"
+                width="1920"
+                height="1080"
+                decoding="async"
             />
             <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-stone-50/10"></div>
         </div>
@@ -69,7 +75,7 @@ const popularCities = Object.entries(cityStats)
             
             <div class="flex justify-between items-end mb-6">
                 <div>
-                    <h2 class="text-sm font-bold text-stone-400 uppercase tracking-wider">熱門露營地區</h2>
+                    <h2 class="text-sm font-bold text-stone-500 uppercase tracking-wider">熱門露營地區</h2>
                     <p class="text-2xl font-bold text-stone-800 mt-1">你想去哪裡露營？</p>
                 </div>
                 <a href="/search" class="hidden md:block text-emerald-600 text-sm font-bold hover:underline">查看全台地圖 &rarr;</a>
@@ -80,7 +86,7 @@ const popularCities = Object.entries(cityStats)
                     <a href={`/city/${city}`} class="snap-start shrink-0 w-[140px] md:w-auto flex flex-col items-center justify-center p-4 rounded-xl bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 group/btn border border-stone-100 hover:border-emerald-200 hover:shadow-md active:scale-95">
                         <span class="w-8 h-8 rounded-full bg-white text-lg flex items-center justify-center mb-2 shadow-sm group-hover/btn:scale-110 transition-transform">📍</span>
                         <span class="font-bold text-stone-800 group-hover/btn:text-emerald-700">{city}</span>
-                        <span class="text-xs text-stone-400 mt-1">{count} 個營區</span>
+                        <span class="text-xs text-stone-500 mt-1">{count} 個營區</span>
                     </a>
                 ))}
             </div>

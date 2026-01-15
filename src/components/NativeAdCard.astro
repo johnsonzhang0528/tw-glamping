@@ -97,7 +97,9 @@ const selectedAd = ads[Math.floor(Math.random() * ads.length)];
   <div class="h-48 relative overflow-hidden bg-stone-200">
      <img 
         src={selectedAd.image} 
-        alt={selectedAd.title} 
+        alt={selectedAd.title}
+        width="800"
+        height="450" 
         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 js-ad-img"
      />
      <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -128,5 +130,5 @@ const selectedAd = ads[Math.floor(Math.random() * ads.length)];
     </div>
   </div>
 
-  <a href={selectedAd.link} target="_blank" rel="nofollow sponsored" class="absolute inset-0 z-0 js-ad-link"></a>
+  <a href={selectedAd.link} target="_blank" rel="nofollow sponsored" class="absolute inset-0 z-0 js-ad-link" aria-label={selectedAd.title}></a>
 </article>

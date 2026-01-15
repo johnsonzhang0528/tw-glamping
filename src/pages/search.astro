@@ -377,7 +377,10 @@ const filterGroups = [
             if (title) title.textContent = ad.title;
             if (desc) desc.textContent = ad.desc;
             if (cta) cta.textContent = ad.cta;
-            if (link) link.href = ad.link;
+            if (link) {
+                link.href = ad.link;
+                link.setAttribute('aria-label', ad.title);
+            }
 
             // 4. Update Badges (Rebuild HTML)
             if (badgesContainer && ad.badges) {
