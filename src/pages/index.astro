@@ -84,17 +84,32 @@ const popularCities = Object.entries(cityStats)
                 <a href="/search" class="hidden md:block text-emerald-700 text-sm font-bold hover:underline">探索所有地區 &rarr;</a>
             </div>
             
-            <div class="flex overflow-x-auto pb-4 gap-3 md:grid md:grid-cols-4 lg:grid-cols-6 md:overflow-visible md:pb-0 snap-x scrollbar-hide">
-                {popularCities.map(({ city, count }) => (
-                    <a href={`/city/${city}`} class="snap-start shrink-0 w-[140px] md:w-auto flex flex-col items-center justify-center p-4 rounded-xl bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 group/btn border border-stone-100 hover:border-emerald-200 hover:shadow-md active:scale-95">
-                        <span class="w-8 h-8 rounded-full bg-white text-lg flex items-center justify-center mb-2 shadow-sm group-hover/btn:scale-110 transition-transform">📍</span>
-                        <span class="font-bold text-stone-800 group-hover/btn:text-emerald-700">{city}</span>
-                        <span class="text-xs text-stone-600 mt-1">{count} 個營區</span>
+            {/* 🟢 [UX FIX] Mobile Scroll Container */}
+            <div class="relative">
+                {/* 1. 捲動容器: 改用 grid-flow-col 讓排列更整齊，並調整 gap */}
+                <div class="flex overflow-x-auto pb-4 gap-3 md:grid md:grid-cols-4 lg:grid-cols-6 md:overflow-visible md:pb-0 snap-x scrollbar-hide -mx-2 px-2 md:mx-0 md:px-0">
+                    {popularCities.map(({ city, count }) => (
+                        <a 
+                            href={`/city/${city}`} 
+                            /* 🟢 寬度優化: 手機版設為 w-[26%] (約3.5個)，讓第4個露出一半，暗示可捲動 */
+                            class="snap-start shrink-0 w-[26%] md:w-auto flex flex-col items-center justify-center p-3 md:p-4 rounded-xl bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 group/btn border border-stone-100 hover:border-emerald-200 hover:shadow-md active:scale-95"
+                        >
+                            <span class="w-8 h-8 rounded-full bg-white text-base md:text-lg flex items-center justify-center mb-2 shadow-sm group-hover/btn:scale-110 transition-transform">📍</span>
+                            <span class="font-bold text-stone-800 text-sm md:text-base group-hover/btn:text-emerald-700 whitespace-nowrap">{city}</span>
+                            <span class="text-[10px] md:text-xs text-stone-600 mt-1 whitespace-nowrap">{count} 個</span>
+                        </a>
+                    ))}
+                    
+                    {/* 查看更多的「假卡片」(Optional, 增加點擊入口) */}
+                    <a href="/search" class="snap-start shrink-0 w-[26%] md:hidden flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed border-stone-200 text-stone-400 hover:text-emerald-600 hover:border-emerald-300 transition-colors">
+                        <span class="text-xl mb-1">➔</span>
+                        <span class="text-xs font-bold">更多</span>
                     </a>
-                ))}
-            </div>
+                </div>
 
-            <div class="absolute right-0 top-20 bottom-20 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none md:hidden"></div>
+                {/* 2. 漸層遮罩 (Visual Hint): 右側淡淡的白霧，暗示還有內容 */}
+                <div class="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none md:hidden"></div>
+            </div>
             
             <div class="mt-4 md:hidden text-center border-t border-stone-100 pt-4">
                  <a href="/search" class="text-emerald-700 text-sm font-bold flex items-center justify-center gap-1 active:opacity-70">
