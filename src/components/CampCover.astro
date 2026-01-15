@@ -130,10 +130,11 @@ const glowClasses = [
       TW GLAMPING
     </span>
     
-    {/* 營區名稱 */}
-    <h3 class:list={[`font-bold tracking-wide leading-tight text-white drop-shadow-lg font-sans`, fontSize]}>
+    {/* 🟢 [FIX] SEO 優化: 將裝飾性的 h3 改為 div，避免標題層級混亂 (Heading Order) */}
+    {/* 實際的 h3 標題保留在 CampgroundCard 的文字區塊中 */}
+    <div class:list={[`font-bold tracking-wide leading-tight text-white drop-shadow-lg font-sans`, fontSize]}>
       {name}
-    </h3>
+    </div>
 
     {/* 裝飾性下標 (所在縣市) */}
     <div class="w-8 h-1 bg-white/50 rounded-full mt-2 backdrop-blur-sm shadow-sm"></div>
