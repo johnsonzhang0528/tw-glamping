@@ -108,9 +108,13 @@ const glowClasses = [
     '-bottom-12 -left-12', 
     '-bottom-12 -right-12'
 ];
+
+// 4. [SEO] 產生描述性 Aria Label
+const themeNames = ['森林', '星空', '大地', '溪流', '雲霧'];
+const coverDescription = `${name} 露營區示意封面 - ${themeNames[themeIndex]}風格`;
 ---
 
-<div class:list={[`w-full relative overflow-hidden flex flex-col items-center justify-center p-6 text-center transition-all duration-500 group-hover:scale-105`, theme.gradient, className]}>
+<div role="img" aria-label={coverDescription} class:list={[`w-full relative overflow-hidden flex flex-col items-center justify-center p-6 text-center transition-all duration-500 group-hover:scale-105`, theme.gradient, className]}>
   
   {/* Layer 1: 動態光暈 (Spotlight) - 增加深度 */}
   <div class:list={[`absolute w-64 h-64 rounded-full opacity-30 blur-3xl mix-blend-screen`, theme.accent, glowClasses[glowPos]]}></div>

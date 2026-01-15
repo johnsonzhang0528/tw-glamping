@@ -159,11 +159,42 @@ if (camp.features.high_altitude) {
     });
 }
 
+// 🟢 [SEO] Optimized Page Title Logic
+// Format: [Name] - [City][Area] | [Feature1], [Feature2] | [Year]最新路況
+const currentYear = new Date().getFullYear();
+const featureList = [];
+if (camp.features.high_altitude) featureList.push(`海拔${camp.elevation}m`);
+if (camp.features.has_glamping) featureList.push("豪華露營");
+if (camp.features.pet_friendly) featureList.push("寵物友善");
+if (camp.tags.includes("雲海")) featureList.push("雲海");
+if (camp.tags.includes("櫻花")) featureList.push("櫻花季");
+
+// Add generic tags if we don't have enough features
+if (featureList.length < 2 && camp.tags.length > 0) {
+    featureList.push(camp.tags[0]);
+}
+
+const seoTitleFeatures = featureList.slice(0, 3).join('、');
+const seoTitle = `${camp.name} - ${camp.city}${camp.area} | ${seoTitleFeatures} | ${currentYear}最新路況`;
+
+// 🟢 [SEO] Content Enrichment (Keyword Density Injector)
+// 擴寫原始描述，自然置入高權重關鍵字 (City, Area, Elevation, Features)
+const baseDesc = camp.description.replace(/\n/g, ' ');
+const keywords = [
+    `${camp.city}${camp.area}露營`,
+    camp.features.high_altitude ? `海拔${camp.elevation}公尺` : null,
+    camp.features.has_glamping ? '豪華露營(Glamping)' : '熱門露營區',
+    camp.features.pet_friendly ? '寵物友善' : null,
+    ...camp.tags.slice(0, 3)
+].filter(Boolean).join('、');
+
+const richDescription = `【${camp.name}】是位於${camp.city}${camp.area}的${camp.features.has_glamping ? '豪華露營聖地' : '推薦露營區'}。${baseDesc} 提供${keywords}等優質體驗，${currentYear}年最新路況與訂位資訊請參考詳細介紹。`;
+
 const schemaData = {
   "@context": "https://schema.org",
   "@type": "Campground",
   "name": camp.name,
-  "description": camp.description,
+  "description": richDescription,
   // 🟢 [SEO] Add explicit image property (Google Requirement for LocalBusiness)
   "image": [
     `https://source.unsplash.com/800x600/?camping,${camp.tags.includes('豪華露營') ? 'glamping' : 'tent'}`,
@@ -192,24 +223,6 @@ const schemaData = {
 };
 
 const schemas = [schemaData, breadcrumbSchema, faqSchema];
-
-// 🟢 [SEO] Optimized Page Title Logic
-// Format: [Name] - [City][Area] | [Feature1], [Feature2] | [Year]最新路況
-const currentYear = new Date().getFullYear();
-const featureList = [];
-if (camp.features.high_altitude) featureList.push(`海拔${camp.elevation}m`);
-if (camp.features.has_glamping) featureList.push("豪華露營");
-if (camp.features.pet_friendly) featureList.push("寵物友善");
-if (camp.tags.includes("雲海")) featureList.push("雲海");
-if (camp.tags.includes("櫻花")) featureList.push("櫻花季");
-
-// Add generic tags if we don't have enough features
-if (featureList.length < 2 && camp.tags.length > 0) {
-    featureList.push(camp.tags[0]);
-}
-
-const seoTitleFeatures = featureList.slice(0, 3).join('、');
-const seoTitle = `${camp.name} - ${camp.city}${camp.area} | ${seoTitleFeatures} | ${currentYear}最新路況`;
 
 
 // 🟢 [SEO] Internal Linking: Nearby Campgrounds (Haversine Distance)
@@ -244,7 +257,7 @@ const relatedCamps = nearbyCamps;
 
 ---
 
-<Layout title={seoTitle} description={camp.description.substring(0, 150) + '...'}>
+<Layout title={seoTitle} description={richDescription}>
     <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemas)}></script>
     
     {/* PSEO Drip Feed Control */}

@@ -10,20 +10,22 @@ description?: string;
 noindex?: boolean;
     preloadImage?: string;
     omitSuffix?: boolean; // 🟢 [NEW] 控制是否省略標題後綴
+    image?: string;       // 🟢 [NEW] 自訂 OG Image
 }
 
 const { 
-title, 
-description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。",
-noindex = false,
+    title, 
+    description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。",
+    noindex = false,
     preloadImage,
-    omitSuffix = false
+    omitSuffix = false,
+    image
 } = Astro.props;
 
 const pageTitle = omitSuffix ? title : `${title} | Outdoor Camping World - Since 2004`;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const socialImageURL = new URL('/social-card.webp', Astro.url);
+const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
 ---
 
 <!doctype html>
@@ -102,7 +104,7 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
 
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />
-<meta property="og:title" content={`${title} | Outdoor Camping World - Since 2004`} />
+<meta property="og:title" content={pageTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={socialImageURL} />
 <meta property="og:site_name" content="Outdoor Camping World (台灣站)" />
@@ -110,8 +112,8 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
 
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
-<meta property="twitter:title" content={`${title} | Outdoor Camping World - Since 2004`} />
-<meta property="twitter:description" content="Gear up for the great outdoors. Since 2004." />
+<meta property="twitter:title" content={pageTitle} />
+<meta property="twitter:description" content={description.substring(0, 200)} />
 <meta property="twitter:image" content={socialImageURL} />
 
 {/* 🟢 [RESTORED] 恢復 ClientRouter 與 分潤變數 */}
