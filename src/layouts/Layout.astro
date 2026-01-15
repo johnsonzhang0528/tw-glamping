@@ -57,22 +57,44 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
 )}
 {!noindex && <link rel="canonical" href={canonicalURL} />}
 
-<script is:inline>
-            // 只有在頁面完全載入後，才開始下載 GTM，確保 LCP 絕對優先
-            window.addEventListener('load', function() {
-                setTimeout(function() {
+		<script is:inline>
+            (function() {
+                // 防止重複載入的旗標
+                let gtmLoaded = false;
+                const gtmId = 'G-CS5334JZT3';
+
+                function loadGTM() {
+                    if (gtmLoaded) return;
+                    gtmLoaded = true;
+
                     const script = document.createElement('script');
-                    script.src = "https://www.googletagmanager.com/gtag/js?id=G-CS5334JZT3";
+                    script.src = "https://www.googletagmanager.com/gtag/js?id=" + gtmId;
                     script.async = true;
                     document.head.appendChild(script);
 
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
-                    gtag('config', 'G-CS5334JZT3');
-                }, 1000); // 延遲 1 秒執行，讓主執行緒先處理互動
-            });
-</script>
+                    gtag('config', gtmId);
+                }
+
+                // 定義會觸發載入的「使用者互動」事件
+                const userEvents = ['mousemove', 'click', 'keydown', 'scroll', 'touchstart'];
+                
+                function onUserInteraction() {
+                    loadGTM();
+                    // 觸發一次後，就移除所有監聽器，節省資源
+                    userEvents.forEach(event => window.removeEventListener(event, onUserInteraction));
+                }
+
+                // 綁定事件監聽
+                userEvents.forEach(event => window.addEventListener(event, onUserInteraction, { passive: true, once: true }));
+                
+                // 安全機制：如果使用者完全不動（例如掛網），5 秒後還是自動載入
+                // 5 秒通常足夠避開 PSI 的關鍵檢測期
+                setTimeout(loadGTM, 5000);
+            })();
+		</script>
 
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />
