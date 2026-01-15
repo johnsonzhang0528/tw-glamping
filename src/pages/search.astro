@@ -764,6 +764,7 @@ const filterGroups = [
          const query = params.get('q');
          const city = params.get('city');
          const tag = params.get('tag');
+         const sort = params.get('sort');
 
          if (query && searchInput) searchInput.value = query;
          
@@ -773,6 +774,19 @@ const filterGroups = [
              if (btnCityPicker) {
                  const span = btnCityPicker.querySelector('span');
                  if (span) span.textContent = city;
+             }
+         }
+
+         // 🟢 [NEW] Init Sort Order
+         if (sort && sortOrderInput) {
+             sortOrderInput.value = sort;
+             if (btnSortPicker) {
+                 const span = btnSortPicker.querySelector('span');
+                 // 找到對應的選項文字
+                 const targetOption = document.querySelector(`.picker-option[data-type="sort"][data-value="${sort}"] span.font-medium`);
+                 if (span && targetOption && targetOption.textContent) {
+                     span.textContent = targetOption.textContent;
+                 }
              }
          }
 
