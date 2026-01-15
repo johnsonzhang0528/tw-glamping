@@ -8,12 +8,15 @@ interface Props {
 title: string;
 description?: string;
 noindex?: boolean;
+    // 🟢 [NEW] 新增 LCP 圖片預載屬性
+    preloadImage?: string;
 }
 
 const { 
 title, 
 description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。",
-noindex = false
+noindex = false,
+    preloadImage // 解構出這個新屬性
 } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL('/social-card.webp', Astro.url);
@@ -34,6 +37,10 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
         <link rel="preconnect" href="https://www.googletagmanager.com">
         <link rel="preconnect" href="https://www.conn.tw">
 
+        {preloadImage && (
+            <link rel="preload" href={preloadImage} as="image" fetchpriority="high" />
+        )}
+
 {noindex ? (
 <meta name="robots" content="noindex, nofollow" />
 ) : (
@@ -41,13 +48,21 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
 )}
 {!noindex && <link rel="canonical" href={canonicalURL} />}
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5334JZT3"></script>
 <script is:inline>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
+            // 只有在頁面完全載入後，才開始下載 GTM，確保 LCP 絕對優先
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    const script = document.createElement('script');
+                    script.src = "https://www.googletagmanager.com/gtag/js?id=G-CS5334JZT3";
+                    script.async = true;
+                    document.head.appendChild(script);
 
-gtag('config', 'G-CS5334JZT3');
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', 'G-CS5334JZT3');
+                }, 1000); // 延遲 1 秒執行，讓主執行緒先處理互動
+            });
 </script>
 
 <meta property="og:type" content="website" />
@@ -117,7 +132,7 @@ Outdoor Camping World 台灣站 (Since 2004) 致力於提供最透明、最準�
 </p>
 </div>
 </div>
-<div class="border-t border-stone-800 mt-8 pt-8 text-center text-xs text-stone-500">
+<div class="border-t border-stone-800 mt-8 pt-8 text-center text-xs text-stone-400">
 <p class="mb-2">
 聯盟行銷聲明：本站部分內容包含推廣連結。當您透過這些連結購買商品時，我們可能會獲得微薄的佣金，這不會增加您的購買成本，但能支持我們持續創作優質內容。
 </p>
@@ -151,44 +166,30 @@ Outdoor Camping World 台灣站 (Since 2004) 致力於提供最透明、最準�
 
 <script>
             // 🪙 Global Affiliate Link Rewriter
-            // Automatically wraps external e-commerce links with iChannels redirection
             const ICHANNELS_PREFIX = "https://product.mchannles.com/redirect_wa.php?k=3F8Gh&tourl=";
-            // Domains to be wrapped (Extend list as needed)
-            const TARGET_DOMAINS = [
-                "momoshop.com.tw",
-                "klook.com"
-            ];
+            const TARGET_DOMAINS = ["momoshop.com.tw", "klook.com"];
             function processAffiliateLink(anchor) {
                 if (!anchor || !anchor.href) return;
                 const url = anchor.href;
-
-                // Skip if already wrapped
                 if (url.includes('product.mchannles.com')) return;
-                // Check if domain matches target list
                 const isTargetDomain = TARGET_DOMAINS.some(domain => url.includes(domain));
                 if (isTargetDomain) {
                     anchor.href = `${ICHANNELS_PREFIX}${encodeURIComponent(url)}`;
-                    // SEO Turbo: Add "nofollow sponsored" to retain Link Juice on the aged domain
                     anchor.rel = "nofollow sponsored";
                     anchor.target = "_blank";
                 }
             }
 
             function initAffiliateLinks() {
-                // Process existing links
                 document.querySelectorAll('a[href^="http"]').forEach(processAffiliateLink);
             }
 
-            // Observer for dynamic content (like Search results or Lazy loaded items)
             const adObserver = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1) { // ELEMENT_NODE
-                             const el = node; // Cast to Element
-                             // 1. Check if the element itself is a target link
+                        if (node.nodeType === 1) {
+                             const el = node; 
                              if (el.tagName === 'A') processAffiliateLink(el);
-                             
-                             // 2. Check for links inside the element
                              if (el.querySelectorAll) {
                                  el.querySelectorAll('a[href^="http"]').forEach(processAffiliateLink);
                              }
@@ -196,17 +197,12 @@ Outdoor Camping World 台灣站 (Since 2004) 致力於提供最透明、最準�
                     });
                 });
             });
-            // Start observing
             function startObserver() {
                 initAffiliateLinks();
-                adObserver.disconnect(); // Prevent duplicates
-                adObserver.observe(document.body, {
-                    childList: true,
-                    subtree: true
-                });
+                adObserver.disconnect();
+                adObserver.observe(document.body, { childList: true, subtree: true });
             }
 
-            // Run on initial load & view transitions
             document.addEventListener('astro:page-load', startObserver);
             document.addEventListener('DOMContentLoaded', startObserver);
         </script>
