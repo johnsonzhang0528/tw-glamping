@@ -7,10 +7,28 @@ interface Props {
 	description?: string;
 }
 
-const { title, description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。" } = Astro.props;
+const { 
+	title, 
+	description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。" 
+} = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 public 放置預設圖
+
+// 結構化資料：明確告訴 Google 品牌的歷史與權威
+const schema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Outdoor Camping World",
+  "url": "https://www.outdoorcampingworld.com",
+  "logo": "https://www.outdoorcampingworld.com/logo.png",
+  "foundingDate": "2004",
+  "description": "Gear up for the great outdoors. Since 2004.",
+  "sameAs": [
+    "https://www.facebook.com/outdoorcampingworld", 
+    "https://twitter.com/outdoorcampingworld"
+  ]
+});
 ---
 
 <!doctype html>
@@ -27,6 +45,8 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
 
+        <script type="application/ld+json" set:html={schema} />
+
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content={Astro.url} />
@@ -40,7 +60,7 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 		<meta property="twitter:card" content="summary_large_image" />
 		<meta property="twitter:url" content={Astro.url} />
 		<meta property="twitter:title" content={`${title} | Outdoor Camping World - Since 2004`} />
-		<meta property="twitter:description" content={description} />
+		<meta property="twitter:description" content="Gear up for the great outdoors. Since 2004." />
 		<meta property="twitter:image" content={socialImageURL} />
 
 		<slot name="head" />
@@ -75,7 +95,7 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 					<div>
 						<h3 class="text-white font-bold text-lg mb-4">關於本站</h3>
 						<p class="text-sm leading-relaxed">
-							Outdoor Camping World 台灣站致力於提供最透明、最準確的露營區資訊。
+							Outdoor Camping World 台灣站 (Since 2004) 致力於提供最透明、最準確的露營區資訊。
 							結合 AI 技術，為您分析海拔氣候與設施特色。
 						</p>
 					</div>
@@ -148,6 +168,9 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
                 
                 if (isTargetDomain) {
                     anchor.href = `${ICHANNELS_PREFIX}${encodeURIComponent(url)}`;
+                    // SEO Turbo: Add "nofollow sponsored" to retain Link Juice on the aged domain
+                    anchor.rel = "nofollow sponsored"; 
+                    anchor.target = "_blank";
                 }
             }
 
