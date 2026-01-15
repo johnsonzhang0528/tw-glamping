@@ -2,10 +2,16 @@
 import Layout from '../layouts/Layout.astro';
 import CampgroundCard from '../components/CampgroundCard.astro';
 import NativeAdCard from '../components/NativeAdCard.astro';
-import campgrounds from '../data/campgrounds_enriched.json';
+import campgroundsData from '../data/campgrounds_enriched.json';
+
+// 1. 在伺服器端就先依照「中文筆畫」排序，確保與前端 JS 邏輯一致
+// 使用 localeCompare('zh-TW') 進行繁體中文排序
+const campgrounds = [...campgroundsData].sort((a, b) => 
+    a.name.localeCompare(b.name, 'zh-TW')
+);
 
 // Get unique cities for filter dropdown
-const cities = [...new Set(campgrounds.map(c => c.city))].sort();
+const cities = [...new Set(campgroundsData.map(c => c.city))].sort();
 
 // Simple types for the dataset
 type Campground = {
@@ -142,53 +148,80 @@ const filterGroups = [
                     
                     {/* Status Bar */}
                     <div class="mt-4 pt-4 border-t border-stone-100 flex justify-between items-center text-xs text-stone-500">
-                        <button id="clear-filters" class="text-emerald-600 hover:underline hidden font-medium">清除所有條件</button>
-                        <span class="ml-auto">顯示 <span id="count-display" class="font-bold text-stone-800">{campgrounds.length}</span> 筆結果</span>
+                        <span class="ml-auto">目前顯示 <span id="count-display" class="font-bold text-stone-800">{campgrounds.length}</span> 筆結果</span>
                     </div>
 				</div>
 
-                {/* Advanced Filters Panel (Collapsible) */}
-                <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-                    <button 
-                        id="toggle-advanced-filters" 
-                        class="w-full flex items-center justify-between p-4 md:p-5 text-left bg-white hover:bg-stone-50 transition group"
-                    >
-                        <span class="font-bold text-stone-700 flex items-center gap-3">
-                            <span class="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center text-xs shadow-sm transform transition-transform duration-300" id="toggle-icon-container">
-                                <span id="toggle-icon" class="text-[10px]">▶</span>
-                            </span>
-                            進階篩選條件
-                        </span>
-                        <span class="text-xs text-stone-400 font-normal">依標籤、設施過濾</span>
-                    </button>
+<div class="flex gap-3 mt-4">
+    <button 
+        id="open-filter-modal"
+        class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-stone-300 px-6 py-3 rounded-lg text-stone-700 font-bold hover:border-emerald-500 hover:text-emerald-600 transition shadow-sm"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+        進階篩選
+        <span id="active-filter-count" class="hidden bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
+    </button>
 
-                    <div id="advanced-filters-panel" class="hidden border-t border-stone-100 bg-stone-50/50 p-4 md:p-6 transition-all duration-300 ease-in-out">
-                         <div class="space-y-8">
-                            {filterGroups.map(group => (
-                                <div>
-                                    <h3 class="flex items-center gap-2 text-sm font-bold text-stone-500 mb-3 pb-2 border-b border-stone-200/60 uppercase tracking-wide">
-                                        <span class="text-lg opacity-80">{group.icon}</span>
-                                        {group.title}
-                                    </h3>
-                                    <div class="flex flex-wrap gap-2">
-                                        {group.items.map(filter => (
-                                            <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-stone-200 shadow-sm hover:shadow-md hover:border-emerald-200 hover:text-emerald-700 hover:-translate-y-0.5 transition-all duration-200 select-none group/item">
-                                                <input 
-                                                    type="checkbox" 
-                                                    id={filter.id || `filter-${filter.key}`}
-                                                    data-type={filter.type} 
-                                                    data-key={filter.key}
-                                                    class="filter-checkbox w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-stone-300 transition-colors" 
-                                                />
-                                                <span class="text-sm font-medium text-stone-600 group-hover/item:text-emerald-700">{filter.label}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
+    <button id="quick-clear" class="hidden text-stone-400 hover:text-red-500 text-sm font-medium px-4">
+        清除重設
+    </button>
+</div>
+
+<div id="filter-modal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" id="modal-backdrop"></div>
+
+    <div class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+        <div class="bg-white w-full md:w-[800px] md:h-[85vh] md:rounded-2xl flex flex-col h-[90vh] rounded-t-2xl shadow-2xl pointer-events-auto transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modal-panel">
+            
+            <div class="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-white md:rounded-t-2xl">
+                <button id="close-modal-x" class="p-2 -ml-2 text-stone-400 hover:text-stone-800 rounded-full hover:bg-stone-100 transition">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <h3 class="text-lg font-bold text-stone-800">篩選條件</h3>
+                <button id="modal-clear-btn" class="text-sm font-bold text-stone-400 hover:text-red-500 underline">重設</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 bg-stone-50/50">
+                <div class="space-y-8">
+                    {filterGroups.map(group => (
+                        <div class="bg-white p-5 rounded-xl border border-stone-100 shadow-sm">
+                            <h3 class="flex items-center gap-2 text-sm font-bold text-stone-800 mb-4 uppercase tracking-wide">
+                                <span class="text-xl">{group.icon}</span>
+                                {group.title}
+                            </h3>
+                            <div class="flex flex-wrap gap-2">
+                                {group.items.map(filter => (
+                                    <label class="relative flex items-center cursor-pointer group/item select-none">
+                                        <input 
+                                            type="checkbox" 
+                                            id={`filter-${filter.key}`}
+                                            data-type={filter.type} 
+                                            data-key={filter.key}
+                                            class="peer sr-only filter-checkbox" 
+                                        />
+                                        <div class="px-3 py-2 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 text-sm font-medium transition-all
+                                            peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 peer-checked:shadow-md
+                                            group-hover/item:border-emerald-300">
+                                            {filter.label}
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
+            </div>
+
+            <div class="p-4 border-t border-stone-100 bg-white md:rounded-b-2xl pb-safe">
+                <button id="apply-filters-btn" class="w-full bg-emerald-600 text-white font-bold text-lg py-3 rounded-xl shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 active:scale-[0.98] transition-transform">
+                    顯示 <span id="modal-match-count">{campgrounds.length}</span> 個營區
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 			</div>
 		</div>
 	</div>
@@ -229,104 +262,46 @@ const filterGroups = [
 </Layout>
 
 <script>
-    // Client-side filtering logic
-    let searchInput: HTMLInputElement;
-    let filterCity: HTMLSelectElement;
-    let sortOrder: HTMLSelectElement;
+    // Define State Variables
+    let searchInput: HTMLInputElement | null;
+    let filterCity: HTMLSelectElement | null;
+    let sortOrder: HTMLSelectElement | null;
     let checkboxes: NodeListOf<HTMLInputElement>;
-    let clearBtn: HTMLElement | null;
     let resultsGrid: HTMLElement | null;
     let noResults: HTMLElement | null;
     let countDisplay: HTMLElement | null;
-    let items: NodeListOf<Element>;
-    let toggleBtn: HTMLElement | null;
-    let advPanel: HTMLElement | null;
-    let toggleIcon: HTMLElement | null;
-
-    // Parse URL URLSearchParameters to autofill search
-    function initFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        const query = params.get('q');
-        const city = params.get('city');
-        const tag = params.get('tag'); // Supports "?tag=高海拔" or "?tag=冰箱"
-
-        if (query && searchInput) searchInput.value = query;
-        if (city && filterCity) filterCity.value = city;
-        
-        // Handle Tag shortcuts from FilterBar or URL
-        // Tries to find a matching checkbox first
-        if (tag) {
-             let found = false;
-             checkboxes.forEach(cb => {
-                 // Check if the label contains the tag or key matches
-                 const label = cb.parentElement?.textContent || '';
-                 if (cb.dataset.key === tag || label.includes(tag)) {
-                     cb.checked = true;
-                     found = true;
-                 }
-             });
-             
-             // If tag is found in checkboxes, expand the panel automatically
-             if (found) {
-                 toggleAdvancedFilters(true);
-             }
-
-             // If not found in checkboxes, put it in search input (fallback)
-             if (!found && !query && searchInput) {
-                 searchInput.value = tag;
-             }
-        }
-
-        filterCamps();
-    }
+    let items: NodeListOf<HTMLElement>;
     
-    function toggleAdvancedFilters(forceOpen = false) {
-        if (!advPanel || !toggleIcon) return;
-        const iconContainer = document.getElementById('toggle-icon-container');
-        const isHidden = advPanel.classList.contains('hidden');
+    // Modal Elements
+    let modal: HTMLElement | null;
+    let modalPanel: HTMLElement | null;
+    let openModalBtn: HTMLElement | null;
+    let closeModalBtn: HTMLElement | null;
+    let backdrop: HTMLElement | null;
+    let applyBtn: HTMLElement | null;
+    let modalClearBtn: HTMLElement | null;
+    let modalMatchCount: HTMLElement | null;
+    let activeFilterCount: HTMLElement | null;
+    let quickClearBtn: HTMLElement | null;
+
+    // Helper to calculate potential matches based on current DOM state of inputs
+    function calculateMatches(simulateCheckboxes = false): number {
+        if (!items) return 0;
         
-        if (forceOpen || isHidden) {
-            advPanel.classList.remove('hidden');
-             // Rotate down
-            if (iconContainer) iconContainer.classList.add('rotate-90'); 
-        } else {
-            advPanel.classList.add('hidden');
-            // Rotate reset
-            if (iconContainer) iconContainer.classList.remove('rotate-90');
-        }
-    }
-
-    function renderGrid() {
-        if (!resultsGrid || !sortOrder || !items) return;
-
-        // 1. Clean up previously injected ads
-        resultsGrid.querySelectorAll('.native-ad-injected').forEach(el => el.remove());
-
-        const order = sortOrder.value;
-        const itemArray = Array.from(items) as HTMLElement[];
-
-        // 2. Sort Logic
-        if (order === 'default') {
-             itemArray.sort((a, b) => (a.dataset.name || '').localeCompare(b.dataset.name || ''));
-        } else if (order === 'elevation-desc') {
-            itemArray.sort((a, b) => Number(b.dataset.elevation) - Number(a.dataset.elevation));
-        } else if (order === 'elevation-asc') {
-            itemArray.sort((a, b) => Number(a.dataset.elevation) - Number(b.dataset.elevation));
-        }
-
         const term = searchInput ? searchInput.value.toLowerCase() : '';
         const cityFilter = filterCity?.value || '';
-        const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
         
-        // UI: Toggle Clear Button
-        const hasFilters = term || cityFilter || activeCheckboxes.length > 0;
-        if (clearBtn) clearBtn.classList.toggle('hidden', !hasFilters);
+        // If simulating, we use the current checkbox state (which might not be 'applied' yet generally, 
+        // but in this modal design, the checkboxes ARE the state until applied/closed).
+        // Actually, we need to be careful. The checkboxes matches the DOM.
+        // When modal opens, we should reflect "Applied" state. 
+        // When user clicks checkboxes in modal, they change DOM state immediately. 
+        // So "Simulating" just means running the filter logic without hiding the real grid items yet.
+        
+        const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
 
-        let visibleCount = 0;
-        const visibleElements: HTMLElement[] = [];
-
-        // 3. Filter Logic
-        itemArray.forEach((el) => {
+        let count = 0;
+        items.forEach((el) => {
             const name = el.dataset.name || '';
             const city = el.dataset.city || '';
             const area = el.dataset.area || '';
@@ -349,10 +324,8 @@ const filterGroups = [
                 if (term.includes('寵物') && isPet) matchesSearch = true;
             }
             
-            // City Match
             const matchesCity = cityFilter === '' || city === cityFilter;
 
-            // Advanced Checkbox Filters
             const matchesAdvanced = activeCheckboxes.every(cb => {
                 const type = cb.dataset.type;
                 const rawKey = cb.dataset.key || '';
@@ -375,35 +348,125 @@ const filterGroups = [
             });
 
             if (matchesSearch && matchesCity && matchesAdvanced) {
+                count++;
+            }
+        });
+        return count;
+    }
+
+    // Main Render Function (Applies to main grid)
+    function renderResults() {
+        if (!resultsGrid || !sortOrder || !items) return;
+
+        // Clean up injected ads
+        resultsGrid.querySelectorAll('.native-ad-injected').forEach(el => el.remove());
+
+        const order = sortOrder.value;
+        const itemArray = Array.from(items);
+
+        // Sort
+        if (order === 'default') {
+             itemArray.sort((a, b) => (a.dataset.name || '').localeCompare(b.dataset.name || ''));
+        } else if (order === 'elevation-desc') {
+            itemArray.sort((a, b) => Number(b.dataset.elevation) - Number(a.dataset.elevation));
+        } else if (order === 'elevation-asc') {
+            itemArray.sort((a, b) => Number(a.dataset.elevation) - Number(b.dataset.elevation));
+        }
+
+        // Filter
+        let visibleCount = 0;
+        const visibleElements: HTMLElement[] = [];
+        
+        // Re-use logic or just rely on CSS classes? 
+        // We'll re-run logic to set display:none
+        
+        const term = searchInput ? searchInput.value.toLowerCase() : '';
+        const cityFilter = filterCity?.value || '';
+        const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
+
+        // Update Active Filter Count Badge
+        if (activeFilterCount) {
+            activeFilterCount.textContent = activeCheckboxes.length.toString();
+            if (activeCheckboxes.length > 0) {
+                activeFilterCount.classList.remove('hidden');
+                quickClearBtn?.classList.remove('hidden');
+            } else {
+                activeFilterCount.classList.add('hidden');
+                // Only hide Main Clear if Grid Search/City is also empty
+                if (!term && !cityFilter) {
+                     quickClearBtn?.classList.add('hidden');
+                }
+            }
+        }
+        
+        // Show Quick Clear if ANY filter is active
+        if (quickClearBtn) {
+            if (term || cityFilter || activeCheckboxes.length > 0) {
+                 quickClearBtn.classList.remove('hidden');
+            } else {
+                 quickClearBtn.classList.add('hidden');
+            }
+        }
+
+        itemArray.forEach((el) => {
+            const name = el.dataset.name || '';
+            const city = el.dataset.city || '';
+            const area = el.dataset.area || '';
+            const tags = el.dataset.tags || '';
+            const isHighAlt = el.dataset.highAltitude === 'true';
+            const isGlamping = el.dataset.glamping === 'true';
+            const isPet = el.dataset.pet === 'true';
+
+            let matchesSearch = term === '' || 
+                                  name.includes(term) || 
+                                  city.includes(term) || 
+                                  area.includes(term) ||
+                                  tags.includes(term);
+            
+            if (!matchesSearch) {
+                 if (term.includes('豪華') && isGlamping) matchesSearch = true;
+                 if (term.includes('高海拔') && isHighAlt) matchesSearch = true;
+                 if (term.includes('寵物') && isPet) matchesSearch = true;
+            }
+            
+            const matchesCity = cityFilter === '' || city === cityFilter;
+            const matchesAdvanced = activeCheckboxes.every(cb => {
+                const type = cb.dataset.type;
+                const rawKey = cb.dataset.key || '';
+                const keys = rawKey.split('/');
+                if (type === 'feature') {
+                    if (rawKey === 'high_altitude') return isHighAlt;
+                    if (rawKey === 'glamping') return isGlamping;
+                    if (rawKey === 'pet_friendly') return isPet;
+                } else if (type === 'tag') {
+                    return keys.some(k => tags.includes(k));
+                } else if (type === 'location') return keys.some(k => city.includes(k) || area.includes(k) || tags.includes(k));
+                return true;
+            });
+
+            if (matchesSearch && matchesCity && matchesAdvanced) {
                 el.style.display = 'block';
                 visibleCount++;
                 visibleElements.push(el);
             } else {
                 el.style.display = 'none';
             }
-            
-            // Re-append to grid in sorted order
-            // Note: This moves the element to the end of the container
             resultsGrid?.appendChild(el);
         });
 
-        // 4. Inject Ads into Visible Stream
+        // Inject Ads
         const adTemplate = document.getElementById('native-ad-template') as HTMLTemplateElement;
         if (adTemplate && visibleElements.length > 0) {
             visibleElements.forEach((el, idx) => {
-                // Insert after every 6th visible item (index 5, 11, 17...)
                 if ((idx + 1) % 6 === 0) {
                      const adClone = adTemplate.content.cloneNode(true);
-                     // Insert strictly after this visible element
-                     // Even if nextSibling is a hidden element, the visual grid order is respected
                      el.parentNode?.insertBefore(adClone, el.nextSibling); 
                 }
             });
         }
 
-        // Update UI State
+        // Update Counts
         if (countDisplay) countDisplay.textContent = visibleCount.toString();
-        
         if (visibleCount === 0) {
             resultsGrid?.classList.add('hidden');
             noResults?.classList.remove('hidden');
@@ -413,56 +476,129 @@ const filterGroups = [
         }
     }
 
-    // Alias for compatibility with existing calls
-    const filterCamps = renderGrid;
-    const sortCamps = renderGrid;
-
-    function clearFilters() {
-        if(searchInput) searchInput.value = '';
-        if(filterCity) filterCity.value = '';
-        if(sortOrder) sortOrder.value = 'default';
-        checkboxes.forEach(cb => cb.checked = false);
-        filterCamps();
+    function openModal() {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        
+        // Slightly delay removing the translate class to trigger transition
+        setTimeout(() => {
+            if (modalPanel) modalPanel.classList.remove('translate-y-full');
+        }, 10);
+        
+        updateModalCount();
     }
 
-    // Debounce for better performance
-    let debounceTimer: ReturnType<typeof setTimeout>;
-    function handleInput() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(filterCamps, 150);
+    function closeModal() {
+        if (!modal) return;
+        
+        if (modalPanel) modalPanel.classList.add('translate-y-full');
+        
+        // Wait for transition (300ms) before hiding
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
     }
 
-    // Main initialization function
+    function updateModalCount() {
+        const count = calculateMatches(true); // True explicitly
+        if (modalMatchCount) modalMatchCount.textContent = count.toString();
+    }
+
     function init() {
-         // Re-query DOM elements because they might be new after a transition
+        // Elements
         searchInput = document.getElementById('search-input') as HTMLInputElement;
         filterCity = document.getElementById('filter-city') as HTMLSelectElement;
         sortOrder = document.getElementById('sort-order') as HTMLSelectElement;
         checkboxes = document.querySelectorAll('.filter-checkbox');
-        clearBtn = document.getElementById('clear-filters');
         resultsGrid = document.getElementById('results-grid');
         noResults = document.getElementById('no-results');
         countDisplay = document.getElementById('count-display');
         items = document.querySelectorAll('.camp-item');
         
-        toggleBtn = document.getElementById('toggle-advanced-filters');
-        advPanel = document.getElementById('advanced-filters-panel');
-        toggleIcon = document.getElementById('toggle-icon');
+        // Modal UI
+        modal = document.getElementById('filter-modal');
+        modalPanel = document.getElementById('modal-panel');
+        openModalBtn = document.getElementById('open-filter-modal');
+        closeModalBtn = document.getElementById('close-modal-x');
+        backdrop = document.getElementById('modal-backdrop');
+        applyBtn = document.getElementById('apply-filters-btn');
+        modalClearBtn = document.getElementById('modal-clear-btn');
+        modalMatchCount = document.getElementById('modal-match-count');
+        activeFilterCount = document.getElementById('active-filter-count');
+        quickClearBtn = document.getElementById('quick-clear');
 
-        if (searchInput) searchInput.addEventListener('input', handleInput);
-        if (filterCity) filterCity.addEventListener('change', filterCamps);
-        if (sortOrder) sortOrder.addEventListener('change', sortCamps);
-        if (clearBtn) clearBtn.addEventListener('click', clearFilters);
-        if (toggleBtn) toggleBtn.addEventListener('click', () => toggleAdvancedFilters());
+        // Binds
+        if (searchInput) searchInput.addEventListener('input', () => {
+             renderResults(); // Immediate for text
+        });
+        if (filterCity) filterCity.addEventListener('change', renderResults);
+        if (sortOrder) sortOrder.addEventListener('change', renderResults);
         
+        // Modal Logic
+        if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+        
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+        if (backdrop) backdrop.addEventListener('click', closeModal);
+        
+        // Inside Modal: Checkbox changes update the number on the button only
         checkboxes.forEach(cb => {
-            cb.addEventListener('change', filterCamps);
+            cb.addEventListener('change', () => {
+                updateModalCount();
+            });
         });
 
+        // Inside Modal: Reset
+        if (modalClearBtn) modalClearBtn.addEventListener('click', () => {
+            checkboxes.forEach(cb => cb.checked = false);
+            updateModalCount();
+        });
+
+        // Apply
+        if (applyBtn) applyBtn.addEventListener('click', () => {
+            renderResults();
+            closeModal();
+        });
+
+        // Quick Clear (Main View)
+        if (quickClearBtn) quickClearBtn.addEventListener('click', () => {
+             if(searchInput) searchInput.value = '';
+             if(filterCity) filterCity.value = '';
+             checkboxes.forEach(cb => cb.checked = false);
+             renderResults();
+        });
+
+        // Init Logic
         initFromURL();
     }
-    
-    // Astro View Transitions Events
-    // Runs on initial load AND after every navigation
+
+    function initFromURL() {
+         const params = new URLSearchParams(window.location.search);
+         const query = params.get('q');
+         const city = params.get('city');
+         const tag = params.get('tag');
+
+         if (query && searchInput) searchInput.value = query;
+         if (city && filterCity) filterCity.value = city;
+
+         if (tag) {
+             let found = false;
+             checkboxes.forEach(cb => {
+                 const label = cb.parentElement?.textContent || '';
+                 if (cb.dataset.key === tag || label.includes(tag)) {
+                     cb.checked = true;
+                     found = true;
+                 }
+             });
+             // Fallback to text search if tag not found in checkboxes
+             if (!found && !query && searchInput) {
+                 searchInput.value = tag;
+             }
+         }
+         renderResults();
+    }
+
     document.addEventListener('astro:page-load', init);
 </script>
