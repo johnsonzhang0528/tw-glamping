@@ -299,6 +299,8 @@ const filterGroups = [
                     data-high-altitude={camp.features.high_altitude}
                     data-glamping={camp.features.has_glamping}
                     data-pet={camp.features.pet_friendly}
+                    /* 🟢 [PERFORMANCE FIX] 加入 CSS Containment */
+                    style="content-visibility: auto; contain-intrinsic-size: 1px 400px;"
                 >
                     <CampgroundCard camp={camp as Campground} />
                 </div>
@@ -755,7 +757,12 @@ const filterGroups = [
              renderResults();
         });
 
-        initFromURL();
+        // 🟢 [PERFORMANCE FIX] 延後初始渲染，解決 "Forced Reflow"
+        // 將 renderResults 的繁重寫入操作推遲到下一個 Event Loop tick，
+        // 讓 ClientRouter (View Transitions) 先完成它的 Read 操作與轉場。
+        setTimeout(() => {
+            initFromURL();
+        }, 0);
     }
 
     function initFromURL() {
