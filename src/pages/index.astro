@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import CampgroundCard from '../components/CampgroundCard.astro';
+import NativeAdCard from '../components/NativeAdCard.astro';
 import campgrounds from '../data/campgrounds_enriched.json';
 
 // Simple types for the dataset
@@ -45,8 +46,12 @@ const camps = campgrounds as Campground[];
 				<a href="/search" class="text-emerald-600 font-medium hover:underline text-sm md:text-base">查看全部 &rarr;</a>
 			</div>
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-				{camps.slice(0, 9).map((camp) => (
-					<CampgroundCard camp={camp} />
+				{camps.slice(0, 9).map((camp, index) => (
+					<>
+						<CampgroundCard camp={camp} />
+						{/* Insert Native Ad every 6th item (index 5) */}
+						{index === 5 && <NativeAdCard />}
+					</>
 				))}
 			</div>
 		</section>

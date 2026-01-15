@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import CampgroundCard from '../components/CampgroundCard.astro';
+import NativeAdCard from '../components/NativeAdCard.astro';
 import campgrounds from '../data/campgrounds_enriched.json';
 
 // Get unique cities for filter dropdown
@@ -195,7 +196,7 @@ const filterGroups = [
 	<div class="container mx-auto px-4 py-12">
 		<div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
 			{campgrounds.map((camp) => (
-				<div 
+                <div 
                     class="camp-item opacity-100 transition-opacity duration-300"
                     data-name={camp.name.toLowerCase()}
                     data-city={camp.city}
@@ -206,10 +207,17 @@ const filterGroups = [
                     data-glamping={camp.features.has_glamping}
                     data-pet={camp.features.pet_friendly}
                 >
-					<CampgroundCard camp={camp as Campground} />
-				</div>
+                    <CampgroundCard camp={camp as Campground} />
+                </div>
 			))}
 		</div>
+
+        {/* Template for Client-side Ad Injection */}
+        <template id="native-ad-template">
+            <div class="native-ad-injected h-full">
+                <NativeAdCard />
+            </div>
+        </template>
 
         {/* No Results Message */}
         <div id="no-results" class="hidden text-center py-20">
@@ -288,13 +296,17 @@ const filterGroups = [
         }
     }
 
-    function sortCamps() {
-        if (!resultsGrid || !sortOrder) return;
+    function renderGrid() {
+        if (!resultsGrid || !sortOrder || !items) return;
+
+        // 1. Clean up previously injected ads
+        resultsGrid.querySelectorAll('.native-ad-injected').forEach(el => el.remove());
+
         const order = sortOrder.value;
         const itemArray = Array.from(items) as HTMLElement[];
 
+        // 2. Sort Logic
         if (order === 'default') {
-             // Basic sort by name for stability
              itemArray.sort((a, b) => (a.dataset.name || '').localeCompare(b.dataset.name || ''));
         } else if (order === 'elevation-desc') {
             itemArray.sort((a, b) => Number(b.dataset.elevation) - Number(a.dataset.elevation));
@@ -302,27 +314,19 @@ const filterGroups = [
             itemArray.sort((a, b) => Number(a.dataset.elevation) - Number(b.dataset.elevation));
         }
 
-        // Re-append to grid
-        itemArray.forEach(item => resultsGrid?.appendChild(item));
-    }
-
-    function filterCamps() {
-        if (!searchInput) return;
-        
-        const term = searchInput.value.toLowerCase();
+        const term = searchInput ? searchInput.value.toLowerCase() : '';
         const cityFilter = filterCity?.value || '';
-        
-        // Get all active checkboxes
         const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
-
-        // Show/Hide Clear Button
+        
+        // UI: Toggle Clear Button
         const hasFilters = term || cityFilter || activeCheckboxes.length > 0;
         if (clearBtn) clearBtn.classList.toggle('hidden', !hasFilters);
 
         let visibleCount = 0;
+        const visibleElements: HTMLElement[] = [];
 
-        items.forEach((item) => {
-            const el = item as HTMLElement;
+        // 3. Filter Logic
+        itemArray.forEach((el) => {
             const name = el.dataset.name || '';
             const city = el.dataset.city || '';
             const area = el.dataset.area || '';
@@ -332,28 +336,27 @@ const filterGroups = [
             const isGlamping = el.dataset.glamping === 'true';
             const isPet = el.dataset.pet === 'true';
 
-            // 1. Text Search
+            // Text Search
             let matchesSearch = term === '' || 
                                   name.includes(term) || 
                                   city.includes(term) || 
                                   area.includes(term) ||
                                   tags.includes(term);
             
-            // Special keyword mapping for features fallback
             if (!matchesSearch) {
                 if (term.includes('豪華') && isGlamping) matchesSearch = true;
                 if (term.includes('高海拔') && isHighAlt) matchesSearch = true;
                 if (term.includes('寵物') && isPet) matchesSearch = true;
             }
             
-            // 2. City Match
+            // City Match
             const matchesCity = cityFilter === '' || city === cityFilter;
 
-            // 3. Advanced Checkbox Filters
+            // Advanced Checkbox Filters
             const matchesAdvanced = activeCheckboxes.every(cb => {
                 const type = cb.dataset.type;
                 const rawKey = cb.dataset.key || '';
-                const keys = rawKey.split('/'); // Support aliases like "有冰箱/冰箱"
+                const keys = rawKey.split('/');
 
                 if (type === 'feature') {
                     if (rawKey === 'high_altitude') return isHighAlt;
@@ -374,10 +377,29 @@ const filterGroups = [
             if (matchesSearch && matchesCity && matchesAdvanced) {
                 el.style.display = 'block';
                 visibleCount++;
+                visibleElements.push(el);
             } else {
                 el.style.display = 'none';
             }
+            
+            // Re-append to grid in sorted order
+            // Note: This moves the element to the end of the container
+            resultsGrid?.appendChild(el);
         });
+
+        // 4. Inject Ads into Visible Stream
+        const adTemplate = document.getElementById('native-ad-template') as HTMLTemplateElement;
+        if (adTemplate && visibleElements.length > 0) {
+            visibleElements.forEach((el, idx) => {
+                // Insert after every 6th visible item (index 5, 11, 17...)
+                if ((idx + 1) % 6 === 0) {
+                     const adClone = adTemplate.content.cloneNode(true);
+                     // Insert strictly after this visible element
+                     // Even if nextSibling is a hidden element, the visual grid order is respected
+                     el.parentNode?.insertBefore(adClone, el.nextSibling); 
+                }
+            });
+        }
 
         // Update UI State
         if (countDisplay) countDisplay.textContent = visibleCount.toString();
@@ -388,9 +410,12 @@ const filterGroups = [
         } else {
             resultsGrid?.classList.remove('hidden');
             noResults?.classList.add('hidden');
-            sortCamps(); // Re-sort visible items
         }
     }
+
+    // Alias for compatibility with existing calls
+    const filterCamps = renderGrid;
+    const sortCamps = renderGrid;
 
     function clearFilters() {
         if(searchInput) searchInput.value = '';

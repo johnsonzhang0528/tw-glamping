@@ -120,5 +120,71 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 				</a>
 			</div>
 		</nav>
+
+		<script>
+            // 🪙 Global Affiliate Link Rewriter
+            // Automatically wraps external e-commerce links with iChannels redirection
+            const ICHANNELS_PREFIX = "https://product.mchannles.com/redirect_wa.php?k=3F8Gh&tourl=";
+            
+            // Domains to be wrapped (Extend list as needed)
+            const TARGET_DOMAINS = [
+                "momoshop.com.tw",
+                "klook.com",
+                "kkday.com",
+                "shopee.tw",
+            ];
+
+            function processAffiliateLink(anchor) {
+                if (!anchor || !anchor.href) return;
+                const url = anchor.href;
+
+                // Skip if already wrapped
+                if (url.includes('product.mchannles.com')) return;
+
+                // Check if domain matches target list
+                const isTargetDomain = TARGET_DOMAINS.some(domain => url.includes(domain));
+                
+                if (isTargetDomain) {
+                    anchor.href = `${ICHANNELS_PREFIX}${encodeURIComponent(url)}`;
+                }
+            }
+
+            function initAffiliateLinks() {
+                // Process existing links
+                document.querySelectorAll('a[href^="http"]').forEach(processAffiliateLink);
+            }
+
+            // Observer for dynamic content (like Search results or Lazy loaded items)
+            const adObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // ELEMENT_NODE
+                             const el = node; // Cast to Element
+                             // 1. Check if the element itself is a target link
+                             if (el.tagName === 'A') processAffiliateLink(el);
+                             
+                             // 2. Check for links inside the element
+                             if (el.querySelectorAll) {
+                                 el.querySelectorAll('a[href^="http"]').forEach(processAffiliateLink);
+                             }
+                        }
+                    });
+                });
+            });
+
+            // Start observing
+            function startObserver() {
+                initAffiliateLinks();
+                adObserver.disconnect(); // Prevent duplicates
+                adObserver.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+
+            // Run on initial load & view transitions
+            document.addEventListener('astro:page-load', startObserver);
+            document.addEventListener('DOMContentLoaded', startObserver);
+        </script>
 	</body>
 </html>
