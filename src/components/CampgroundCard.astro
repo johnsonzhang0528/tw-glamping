@@ -40,9 +40,10 @@ const { camp } = Astro.props;
 		
 		<div class="p-6 flex-grow flex flex-col">
 			<div class="flex justify-between items-start mb-2">
-				<h3 class="text-xl font-bold text-stone-900 group-hover:text-emerald-700 transition-colors">
+				{/* 🟢 [FIX] SEO/A11y 優化: 將 h3 改為 h2，符合 h1 -> h2 的正確層級結構 */}
+				<h2 class="text-xl font-bold text-stone-900 group-hover:text-emerald-700 transition-colors">
 					{camp.name}
-				</h3>
+				</h2>
 				<span class="text-xs font-semibold bg-stone-100 text-stone-600 px-2 py-1 rounded-full">
 					{camp.city}
 				</span>

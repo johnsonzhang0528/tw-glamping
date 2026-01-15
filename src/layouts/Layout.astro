@@ -38,7 +38,13 @@ const socialImageURL = new URL('/social-card.webp', Astro.url);
         <link rel="preconnect" href="https://www.conn.tw">
         <link rel="preconnect" href="https://www.transparenttextures.com">
 
-        <link rel="preload" href="https://www.transparenttextures.com/patterns/stardust.png" as="image" />
+        {/* 🟢 [LCP FIX] 加入 fetchpriority="high" 以消除 LCP 警告 */}
+        <link 
+            rel="preload" 
+            href="https://www.transparenttextures.com/patterns/stardust.png" 
+            as="image" 
+            fetchpriority="high"
+        />
 
         {preloadImage && (
             <link rel="preload" href={preloadImage} as="image" fetchpriority="high" />
