@@ -7,7 +7,7 @@ interface Props {
 	description?: string;
 }
 
-const { title, description = "全台最詳盡的露營區指南，結合 AI 智能推薦" } = Astro.props;
+const { title, description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。" } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 public 放置預設圖
@@ -22,22 +22,24 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 		<meta name="generator" content={Astro.generator} />
 
 		<!-- SEO Primary -->
-		<title>{title}</title>
-		<meta name="title" content={title} />
+		<title>{title} | Outdoor Camping World - Since 2004</title>
+		<meta name="title" content={`${title} | Outdoor Camping World - Since 2004`} />
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
 
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content={Astro.url} />
-		<meta property="og:title" content={title} />
+		<meta property="og:title" content={`${title} | Outdoor Camping World - Since 2004`} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={socialImageURL} />
+		<meta property="og:site_name" content="Outdoor Camping World (台灣站)" />
+		<meta property="og:locale" content="zh_TW" />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
 		<meta property="twitter:url" content={Astro.url} />
-		<meta property="twitter:title" content={title} />
+		<meta property="twitter:title" content={`${title} | Outdoor Camping World - Since 2004`} />
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content={socialImageURL} />
 
@@ -73,7 +75,7 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 					<div>
 						<h3 class="text-white font-bold text-lg mb-4">關於本站</h3>
 						<p class="text-sm leading-relaxed">
-							台灣露營地圖致力於提供最透明、最準確的露營區資訊。
+							Outdoor Camping World 台灣站致力於提供最透明、最準確的露營區資訊。
 							結合 AI 技術，為您分析海拔氣候與設施特色。
 						</p>
 					</div>
@@ -94,7 +96,7 @@ const socialImageURL = new URL('/social-card.jpg', Astro.url); // 需要在 publ
 					</div>
 				</div>
 				<div class="border-t border-stone-800 mt-8 pt-8 text-center text-xs">
-					&copy; {new Date().getFullYear()} Taiwan Glamping Map. All rights reserved.
+					&copy; 2004-{new Date().getFullYear()} Outdoor Camping World. All rights reserved.
 				</div>
 			</div>
 		</footer>

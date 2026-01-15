@@ -111,6 +111,10 @@ if (recommendedCategories.length === 0) {
     </header>
 
     <div class="space-y-4 relative z-10">
+        <div class="flex items-center gap-2 mb-2 pb-2 border-b border-stone-100 mx-1">
+            <span class="text-xs font-bold bg-stone-800 text-amber-400 px-2 py-0.5 rounded uppercase tracking-wider">Editor's Gear Pick</span>
+            <span class="text-xs text-stone-500 font-medium">裝備評測推薦</span>
+        </div>
         {recommendedCategories.map(cat => (
             <div class="group bg-white rounded-lg border border-stone-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
                 <!-- Category Header -->

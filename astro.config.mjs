@@ -4,6 +4,6 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://tw-glamping.com',
+  site: 'https://www.outdoorcampingworld.com',
   integrations: [tailwind(), sitemap()],
 });
