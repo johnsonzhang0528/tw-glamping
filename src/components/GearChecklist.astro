@@ -12,7 +12,6 @@ const { tags, elevation } = Astro.props;
 const ICHANNELS_PREFIX = "https://product.mchannles.com/redirect_wa.php?k=3F8Gh&tourl=";
 
 // 1. 定義情境策略 (Marketing Hooks)
-// 根據標籤權重決定顯示哪種情境，越上面的優先級越高 (若符合條件)
 const scenarios = [
   {
     id: 'glamping',
@@ -55,16 +54,14 @@ const scenarios = [
     targetTags: ['general', 'sleep', 'furniture', 'cooking']
   }
 ];
-
 // 2. 選擇最佳情境
 const activeScenario = scenarios.find(s => s.check());
 
 // 3. 智慧選品演算法
-// 不只是 filter，還根據 targetTags 的命中數量進行排序 (Relevance Sorting)
 const recommendedCategories = productData
   .filter(cat => cat.id !== 'booking-always' && cat.tags.some(t => activeScenario.targetTags.includes(t)))
   .map(cat => {
-    // 計算關聯分數：該類別中了幾個 targetTags？
+    // 計算關聯分數
     const score = cat.tags.filter(t => activeScenario.targetTags.includes(t)).length;
     
     // Affiliate Link Wrapping
@@ -75,10 +72,10 @@ const recommendedCategories = productData
 
     return { ...cat, items: wrappedItems, matchScore: score };
   })
-  .sort((a, b) => b.matchScore - a.matchScore) // 分數高的排前面
-  .slice(0, 3); // 取前三名
+  .sort((a, b) => b.matchScore - a.matchScore)
+  .slice(0, 3);
 
-// Fallback: 如果真的選不到 (例如 AI 還沒生成對應 tag 的商品)，補通用商品
+// Fallback
 if (recommendedCategories.length === 0) {
     const fallbacks = productData
         .filter(cat => cat.tags.includes('general') || cat.tags.includes('sleep'))
@@ -117,15 +114,14 @@ if (recommendedCategories.length === 0) {
         </div>
         {recommendedCategories.map(cat => (
             <div class="group bg-white rounded-lg border border-stone-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                <!-- Category Header -->
                 <div class="bg-stone-50/50 px-4 py-2 border-b border-stone-100 flex justify-between items-center">
                     <h4 class="font-bold text-stone-700 text-sm flex items-center gap-2">
                         {cat.title}
                     </h4>
-                    <span class="text-[10px] text-stone-400 font-mono tracking-wider uppercase">Hot Picks</span>
+                    {/* 🟢 [FIX] 對比度優化: text-stone-400 -> text-stone-500 */}
+                    <span class="text-[10px] text-stone-500 font-mono tracking-wider uppercase">Hot Picks</span>
                 </div>
                 
-                <!-- Products List -->
                 <div class="p-3 grid gap-2">
                     {cat.items.slice(0, 3).map((item, idx) => (
                         <a 
@@ -136,7 +132,9 @@ if (recommendedCategories.length === 0) {
                         >
                             <div class="flex-1 min-w-0 pr-3">
                                 <div class="flex items-start gap-2 mb-0.5">
-                                    <span class={`text-xs font-bold px-1.5 py-0.5 rounded text-white shrink-0 mt-0.5 ${idx === 0 ? 'bg-amber-500' : 'bg-stone-300'}`}>
+                                    {/* 🟢 [FIX] 對比度優化: 加深背景色，確保白字清晰 */}
+                                    {/* No.1 改用 bg-amber-600, 其他改用 bg-stone-600 (原本 stone-300 太淺) */}
+                                    <span class={`text-xs font-bold px-1.5 py-0.5 rounded text-white shrink-0 mt-0.5 ${idx === 0 ? 'bg-amber-600' : 'bg-stone-600'}`}>
                                         {idx === 0 ? 'No.1' : (idx + 1)}
                                     </span>
                                     <span class="text-stone-700 font-medium text-sm line-clamp-2 group-hover/item:text-emerald-700 transition-colors leading-snug">
@@ -148,7 +146,8 @@ if (recommendedCategories.length === 0) {
                             
                             <div class="flex flex-col items-end gap-1 min-w-[80px] shrink-0">
                                 <span class="text-sm font-bold text-rose-600 font-mono text-right whitespace-nowrap">{item.price}</span>
-                                <span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 group-hover/item:bg-emerald-600 group-hover/item:text-white transition-all whitespace-nowrap">
+                                {/* 🟢 [FIX] 對比度優化: text-emerald-600 -> text-emerald-700 */}
+                                <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 group-hover/item:bg-emerald-600 group-hover/item:text-white transition-all whitespace-nowrap">
                                     {item.cta || '查看'} &rarr;
                                 </span>
                             </div>
