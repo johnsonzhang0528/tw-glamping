@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /search
+Disallow: /search?*
 
 Sitemap: https://www.outdoorcampingworld.com/sitemap-index.xml

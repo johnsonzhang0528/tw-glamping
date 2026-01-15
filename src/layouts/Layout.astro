@@ -5,11 +5,13 @@ import { ClientRouter } from 'astro:transitions';
 interface Props {
 	title: string;
 	description?: string;
+	noindex?: boolean;
 }
 
 const { 
 	title, 
-	description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。" 
+	description = "Outdoor Camping World 台灣站 (Since 2004) - 您的終極露營指南。收錄全台 300+ 熱門營區地圖、豪華露營推薦，以及專業的露營裝備導購評測。",
+	noindex = false
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -43,7 +45,14 @@ const schema = JSON.stringify({
 		<title>{title} | Outdoor Camping World - Since 2004</title>
 		<meta name="title" content={`${title} | Outdoor Camping World - Since 2004`} />
 		<meta name="description" content={description} />
-		<link rel="canonical" href={canonicalURL} />
+		
+		<!-- Robots & Canonical -->
+		{noindex ? (
+			<meta name="robots" content="noindex, nofollow" />
+		) : (
+			<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+		)}
+		{!noindex && <link rel="canonical" href={canonicalURL} />}
 
 		<!-- Google Analytics 4 -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=G-CS5334JZT3"></script>
