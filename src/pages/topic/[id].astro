@@ -2,11 +2,11 @@
 import Layout from '../../layouts/Layout.astro';
 import CampgroundCard from '../../components/CampgroundCard.astro';
 import NativeAdCard from '../../components/NativeAdCard.astro';
+import GearChecklist from '../../components/GearChecklist.astro'; // 🟢 [NEW] 引入導購元件
 import campgrounds from '../../data/campgrounds_enriched.json';
 
 export async function getStaticPaths() {
   const allCamps = campgrounds;
-  
   return [
     {
       params: { id: 'glamping' },
@@ -14,7 +14,10 @@ export async function getStaticPaths() {
         title: '豪華露營推薦',
         subtitle: '免搭帳、星級體驗',
         description: '精選全台豪華露營(Glamping)地點，提供冷氣、舒適床鋪與絕美景觀，不用大包小包也能享受大自然。',
-        camps: allCamps.filter(c => c.features.has_glamping)
+        camps: allCamps.filter(c => c.features.has_glamping),
+        // 🟢 [NEW] 設定導購參數：針對豪華露營客群
+        checklistTags: ['glamping', 'luxury'], 
+        checklistElevation: 0
       }
     },
     {
@@ -23,19 +26,25 @@ export async function getStaticPaths() {
         title: '高海拔避暑露營',
         subtitle: '雲海、星空、涼爽',
         description: '海拔1000公尺以上的避暑勝地。享受天然冷氣，欣賞壯闊的雲海與無光害的星空。',
-        camps: allCamps.filter(c => c.features.high_altitude)
+        camps: allCamps.filter(c => c.features.high_altitude),
+        // 🟢 [NEW] 設定導購參數：針對高山露營客群
+        checklistTags: ['high_altitude'],
+        checklistElevation: 1500
       }
     }
   ];
 }
 
-const { title, subtitle, description, camps } = Astro.props;
+const { title, subtitle, description, camps, checklistTags, checklistElevation } = Astro.props;
 const { id } = Astro.params;
 ---
 
 <Layout title={`${title} | Outdoor Camping World`} description={description}>
+    {/* Hero Section */}
     <div class="bg-emerald-900 text-white py-16 md:py-24 relative overflow-hidden">
+        {/* 背景紋理 */}
         <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        
         <div class="container mx-auto px-4 relative z-10 text-center">
             <h1 class="text-4xl md:text-5xl font-extrabold mb-4">{title}</h1>
             <p class="text-xl text-emerald-100 font-light mb-6">{subtitle}</p>
@@ -46,31 +55,56 @@ const { id } = Astro.params;
     </div>
 
     <div class="container mx-auto px-4 py-12">
-        <div class="flex justify-between items-center mb-8 border-b border-stone-200 pb-4">
-            <span class="text-stone-500 text-sm">共找到 <strong class="text-stone-800">{camps.length}</strong> 個營區</span>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            {/* Simple Sort/Filter Placeholder - Can be expanded later */}
-            <div class="text-sm text-stone-500">
-                排序：<span class="font-medium text-emerald-700 cursor-pointer">熱門程度</span>
-            </div>
-        </div>
+            {/* 左側主要內容: Camp List */}
+            <div class="lg:col-span-8">
+                <div class="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
+                    <span class="text-stone-500 text-sm">共找到 <strong class="text-stone-800">{camps.length}</strong> 個營區</span>
+                    <div class="text-sm text-stone-500">
+                        排序：<span class="font-medium text-emerald-700">熱門程度</span>
+                    </div>
+                </div>
 
-        {camps.length > 0 ? (
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {camps.map((camp, index) => (
-                    <>
-                        <CampgroundCard camp={camp} />
-                        {/* Insert Native Ad every 6 items */}
-                        {(index + 1) % 6 === 0 && <NativeAdCard />}
-                    </>
-                ))}
+                {camps.length > 0 ? (
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {camps.map((camp, index) => (
+                            <>
+                                <CampgroundCard camp={camp} />
+                                {/* 每 6 個營區插入一個原生廣告卡片 */}
+                                {(index + 1) % 6 === 0 && <NativeAdCard />}
+                            </>
+                        ))}
+                    </div>
+                ) : (
+                    <div class="text-center py-20 bg-stone-50 rounded-2xl border border-stone-100">
+                        <p class="text-xl text-stone-400 mb-2">這裡目前還沒有資料喔</p>
+                        <a href="/" class="inline-block mt-6 text-emerald-600 hover:text-emerald-700 font-medium">回首頁逛逛 &rarr;</a>
+                    </div>
+                )}
             </div>
-        ) : (
-            <div class="text-center py-20 bg-stone-50 rounded-2xl border border-stone-100">
-                <p class="text-xl text-stone-400 mb-2">這裡目前還沒有資料喔</p>
-                <p class="text-stone-500">我們會持續更新營區資訊，敬請期待！</p>
-                <a href="/" class="inline-block mt-6 text-emerald-600 hover:text-emerald-700 font-medium">回首頁逛逛 &rarr;</a>
-            </div>
-        )}
+
+            {/* 🟢 [NEW] 右側側邊欄: 變現引擎 (Monetization Engine) */}
+            <aside class="lg:col-span-4 space-y-8">
+                <div class="sticky top-24">
+                    {/* 1. 裝備推薦清單 (根據頁面類型自動切換內容) */}
+                    <GearChecklist 
+                        tags={checklistTags} 
+                        elevation={checklistElevation} 
+                        className="shadow-lg ring-1 ring-emerald-900/5"
+                    />
+                    
+                    {/* 2. 輔助導航：引導回搜尋頁 */}
+                    <div class="mt-8 bg-stone-50 p-6 rounded-xl border border-stone-100 text-center">
+                        <h3 class="font-bold text-stone-800 mb-2">找不到喜歡的？</h3>
+                        <p class="text-sm text-stone-500 mb-4">使用我們的進階搜尋功能，依照地區、設施篩選您的理想營地。</p>
+                        <a href="/search" class="inline-block w-full bg-white border border-stone-300 text-stone-700 font-bold py-3 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition">
+                            前往進階搜尋
+                        </a>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
     </div>
 </Layout>
