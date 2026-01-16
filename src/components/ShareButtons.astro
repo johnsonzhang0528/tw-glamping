@@ -132,10 +132,10 @@ const messengerShareUrl = `fb-messenger://share/?link=${encodedUrl}`;
                 text: '快來看看這個超棒的營區！',
                 url: window.location.href
             });
-            return;
         } catch (err) {
             console.log('Native share cancelled/failed', err);
         }
+        return; // 🛑 Stop here regardless of success/cancel
     }
 
     modal?.classList.remove('hidden');
