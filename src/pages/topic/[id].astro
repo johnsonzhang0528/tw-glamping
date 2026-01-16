@@ -219,7 +219,7 @@ const schema = {
                                 )}
 
                                 {/* 原生廣告插入點 (每 6 個顯示一次) */}
-                                {(index + 1) % 6 === 0 && <NativeAdCard />}
+                                {(index + 1) % 6 === 0 && <NativeAdCard adIndex={AD_START_INDEX + ((index + 1) / 6)} />}
                             </>
                         ))}
                     </div>
@@ -254,3 +254,8 @@ const schema = {
         </div>
     </div>
 </Layout>
+
+{/* 🟢 [Ad Logic] Cyclic Ads Strategy for SSG */}
+<script>
+  const AD_START_INDEX = Math.floor(Math.random() * 10);
+</script>

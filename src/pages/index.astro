@@ -75,6 +75,8 @@ const homeSchema = {
     }
   ]
 };
+// 🟢 [Ad Logic] Random Start
+const AD_START_INDEX = Math.floor(Math.random() * 10);
 ---
 
 <Layout 
@@ -178,7 +180,7 @@ const homeSchema = {
 					<>
 						<CampgroundCard camp={camp} />
 						{/* Insert Native Ad every 6th item (index 5) */}
-						{index === 5 && <NativeAdCard />}
+						{index === 5 && <NativeAdCard adIndex={AD_START_INDEX} />}
 					</>
 				))}
 			</div>

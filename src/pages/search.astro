@@ -356,16 +356,20 @@ const filterGroups = [
     let btnSortPicker: HTMLElement | null;
     let pickerOptions: NodeListOf<HTMLElement>;
 
+    // 🟢 [Ad Logic] Cyclic Ads Strategy
+    // Randomize the start index once per page load, then cycle sequentially.
+    const AD_START_INDEX = Math.floor(Math.random() * 10);
+
     // Helper to randomize ad content on client-side
-    function randomizeAdCard(adElement: Element) {
+    function randomizeAdCard(adElement: Element, sequenceIndex: number) {
         const article = adElement.querySelector('.js-native-ad') as HTMLElement;
         if (!article || !article.dataset.adsPool) return;
 
         try {
             // 1. Get the pool
             const ads = JSON.parse(article.dataset.adsPool);
-            // 2. Pick random
-            const ad = ads[Math.floor(Math.random() * ads.length)];
+            // 2. Pick sequentially using modulo
+            const ad = ads[sequenceIndex % ads.length];
             
             // 3. Update DOM Elements
             const img = article.querySelector('.js-ad-img') as HTMLImageElement;
@@ -479,6 +483,7 @@ const filterGroups = [
 
         // 3. 準備篩選條件
         let visibleCount = 0;
+        let adInsertionCount = 0; // Track how many ads we've inserted this render
         const term = searchInput ? searchInput.value.toLowerCase() : '';
         const cityFilter = filterCityInput?.value || '';
         const activeCheckboxes = Array.from(checkboxes).filter(cb => cb.checked);
@@ -548,7 +553,8 @@ const filterGroups = [
                         // 為廣告也加上效能隔離，防止廣告內容引起重排
                         wrapper.style.contentVisibility = 'auto';
                         wrapper.style.containIntrinsicSize = '1px 400px';
-                        randomizeAdCard(wrapper);
+                        randomizeAdCard(wrapper, AD_START_INDEX + adInsertionCount); // Use cyclic index
+                        adInsertionCount++;
                      }
 
                      resultsGrid?.appendChild(adClone); // Write
