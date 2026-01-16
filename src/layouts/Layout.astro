@@ -43,6 +43,10 @@ const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
         <link rel="preconnect" href="https://www.googletagmanager.com">
         <link rel="preconnect" href="https://www.conn.tw">
         <link rel="preconnect" href="https://www.transparenttextures.com">
+<!-- 🟢 [Performance] Preconnect to Map Tilet Servers -->
+    <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin />
+    <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossorigin />
+    <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossorigin />
 
         {/* 🟢 [LCP FIX] 加入 fetchpriority="high" 以消除 LCP 警告 */}
         <link 

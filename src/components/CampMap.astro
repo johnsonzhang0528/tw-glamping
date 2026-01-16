@@ -104,9 +104,12 @@ const { lat, lng, name } = Astro.props;
     }
   }
 
-  // Run on load
-  initMap();
+  // Run on load with requestAnimationFrame to avoid "Forced Synchronous Layout"
+  // This ensures the map initializes after the browser has finished the Critical Rendering Path (CRP)
+  requestAnimationFrame(() => {
+     initMap();
+  });
   
   // Support Astro View Transitions if enabled in future
-  document.addEventListener('astro:page-load', initMap);
+  document.addEventListener('astro:page-load', () => requestAnimationFrame(initMap));
 </script>
