@@ -129,6 +129,9 @@ export async function getStaticPaths() {
 const { title, subtitle, description, camps, checklistTags, checklistElevation } = Astro.props;
 const { id } = Astro.params;
 
+// 🟢 [Ad Logic] Cyclic Ads Strategy for SSG
+const AD_START_INDEX = Math.floor(Math.random() * 10);
+
 // 🟢 [SEO] Date Strategy for pSEO Pages
 // 由於這些頁面是「聚合頁 (Collection Page)」，它們的上線時間通常設定為「網站已生成的時間」。
 // 如果您需要「排程發布 (Drip Feed)」，可以在 getStaticPaths 中傳入 releaseDate 屬性控制。
@@ -254,8 +257,3 @@ const schema = {
         </div>
     </div>
 </Layout>
-
-{/* 🟢 [Ad Logic] Cyclic Ads Strategy for SSG */}
-<script>
-  const AD_START_INDEX = Math.floor(Math.random() * 10);
-</script>

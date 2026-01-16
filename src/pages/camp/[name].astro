@@ -325,7 +325,7 @@ const relatedCamps = nearbyCamps;
                 </header>
 
                 {/* Map Component - Full width on mobile, top position */}
-                <div class="bg-stone-200 rounded-2xl h-64 md:h-96 w-full mb-8 relative border border-stone-300 overflow-hidden shadow-inner group">
+                <div class="bg-stone-200 rounded-2xl h-64 md:h-96 w-full mb-8 relative border border-stone-300 overflow-hidden shadow-inner group z-0">
                    <CampMap lat={camp.lat} lng={camp.lng} name={camp.name} />
                    <a href={`https://www.google.com/maps/search/?api=1&query=${camp.lat},${camp.lng}`} 
                       target="_blank" 
