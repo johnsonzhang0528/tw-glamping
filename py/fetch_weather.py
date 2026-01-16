@@ -3,6 +3,7 @@ import requests
 import time
 import os
 import math
+import datetime
 
 # Configuration
 INPUT_FILE = os.path.join("src", "data", "campgrounds_enriched.json")
@@ -62,6 +63,11 @@ def fetch_weather():
     
     weather_data = {}
     
+    # Add metadata
+    weather_data["_metadata"] = {
+        "generated_at": datetime.datetime.now().isoformat()
+    }
+
     # Process in batches
     total_batches = math.ceil(len(campgrounds) / BATCH_SIZE)
     
@@ -74,7 +80,8 @@ def fetch_weather():
             "latitude": ",".join(lats),
             "longitude": ",".join(lngs),
             "daily": "weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
-            "timezone": "auto"
+            "timezone": "auto",
+            "forecast_days": "14"
         }
         
         try:
