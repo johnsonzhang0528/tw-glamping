@@ -212,15 +212,10 @@ const schemaData = {
   "geo": {
     "@type": "GeoCoordinates",
     "latitude": camp.lat,
-    "longitude": camp.lng
+    "longitude": camp.lng,
+    "elevation": camp.elevation
   },
-  "elevation": camp.elevation,
-  "priceRange": "$$",
-  // SEO Strategy: 
-  // datePublished: 綁定資料原始發布日，保持歷史紀錄穩定。
-  // dateModified: 綁定最近一次網站構建日，代表內容經過系統最新驗證。
-  "datePublished": publishedTime,
-  "dateModified": modifiedTime
+  "priceRange": "$$"
 };
 
 const schemas = [schemaData, breadcrumbSchema, faqSchema];
