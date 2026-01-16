@@ -395,27 +395,34 @@ const relatedCamps = nearbyCamps;
                     </div>
                 </div>
 
-                {/* 🟢 [RESTORED] Nearby Camps - Internal Linking */}
-                {relatedCamps.length > 0 && (
-                    <div class="border-t border-stone-200 pt-10">
-                        <h3 class="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
-                           <span>📍</span> 推薦附近的其他露營區
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             {relatedCamps.map(related => (
-                                 <CampgroundCard camp={related} />
-                             ))}
-                        </div>
-                    </div>
-                )}
+                {/* Gear Checklist - Swapped from Sidebar */}
+                <div class="border-t border-stone-200 pt-10">
+                    <GearChecklist tags={camp.tags} elevation={camp.elevation} />
+                </div>
             </div>
 
             {/* Sidebar (Right Column) */}
              <aside class="space-y-6 lg:col-span-1">
-                 {/* Gear Checklist (Now in Sidebar) */}
-                 <div class="sticky top-24 z-10 space-y-6">
-                     <GearChecklist tags={camp.tags} elevation={camp.elevation} />
-                 </div>
+                 {/* 🟢 [RESTORED] Nearby Camps - Internal Linking (Swapped to Sidebar) */}
+                 {relatedCamps.length > 0 && (
+                    <div class="sticky top-24 z-10 space-y-6">
+                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                             <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
+                                <span>📍</span> 推薦附近營區
+                             </h3>
+                             <div class="space-y-4">
+                                  {relatedCamps.map(related => (
+                                      <div class="h-64">
+                                          <CampgroundCard camp={related} />
+                                      </div>
+                                  ))}
+                             </div>
+                             <a href={`/city/${camp.city}`} class="block mt-4 text-center text-sm text-emerald-600 font-bold hover:underline py-2">
+                                查看更多{camp.city}營區 &rarr;
+                             </a>
+                        </div>
+                    </div>
+                 )}
             </aside>
 
         </div>
