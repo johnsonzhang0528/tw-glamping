@@ -1,0 +1,77 @@
+---
+interface Props {
+  forecast: {
+    date: string;
+    max_temp: number;
+    min_temp: number;
+    rain_prob: number;
+    weather_code: number;
+    label: string;
+    icon: string;
+  }[];
+}
+
+const { forecast } = Astro.props;
+
+// Format date to MM/DD (WeekDay)
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekDay = date.toLocaleDateString('zh-TW', { weekday: 'short' });
+  return `${month}/${day} (${weekDay})`;
+}
+
+// Icon mapping (simplified fallback to emojis if needed, or refine styling)
+const iconMap: Record<string, string> = {
+    "clear-day": "☀️",
+    "partly-cloudy-day": "⛅",
+    "cloudy": "☁️",
+    "overcast": "☁️",
+    "fog": "🌫️",
+    "drizzle": "🌧️",
+    "rain": "🌧️",
+    "snow": "❄️",
+    "sleet": "🌧️",
+    "thunderstorm": "⛈️"
+};
+---
+
+{forecast && forecast.length > 0 ? (
+  <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-4 md:p-6 mb-8">
+    <h3 class="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+      <span>🌤️</span> 一週天氣預報
+    </h3>
+    <div class="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+      <div class="flex gap-4 min-w-max">
+        {forecast.map((day, index) => (
+          <div class={`flex flex-col items-center p-3 rounded-lg border min-w-[100px] ${index === 0 ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-100' : 'bg-stone-50 border-stone-100'}`}>
+            <span class={`text-sm font-medium mb-2 ${index === 0 ? 'text-emerald-800' : 'text-stone-500'}`}>
+              {index === 0 ? '今天' : formatDate(day.date)}
+            </span>
+            <span class="text-4xl mb-2" role="img" aria-label={day.label}>
+              {iconMap[day.icon] || "🌡️"}
+            </span>
+            <div class="text-center mb-1">
+              <span class="text-lg font-bold text-stone-800">{day.max_temp}°</span>
+              <span class="text-sm text-stone-500">/{day.min_temp}°</span>
+            </div>
+            <div class="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+               <span>☔</span> {day.rain_prob}%
+            </div>
+            <span class="text-xs text-stone-500 mt-2 text-center w-full truncate px-1">
+              {day.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="text-right mt-2 text-xs text-stone-400">
+      資料來源: Open-Meteo
+    </div>
+  </div>
+) : (
+  <div class="bg-stone-50 p-4 rounded-lg text-stone-500 text-center text-sm mb-8">
+    暫無天氣資料
+  </div>
+)}

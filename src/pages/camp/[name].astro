@@ -4,7 +4,9 @@ import CampMap from '../../components/CampMap.astro';
 import GearChecklist from '../../components/GearChecklist.astro';
 import BaseShareButtons from '../../components/ShareButtons.astro';
 import CampgroundCard from '../../components/CampgroundCard.astro';
+import WeatherWidget from '../../components/WeatherWidget.astro';
 import campgrounds from '../../data/campgrounds_enriched.json';
+import weatherData from '../../data/weather_forecast.json';
 import productData from '../../data/products.json';
 
 export async function getStaticPaths() {
@@ -91,6 +93,9 @@ const getFacilities = () => {
 };
 
 const campFacilities = getFacilities();
+
+// Weather Data
+const campWeather = (weatherData as any)[camp.name];
 
 // Breadcrumb Schema
 const breadcrumbSchema = {
@@ -320,6 +325,9 @@ const relatedCamps = nearbyCamps;
                         <span>🧭</span> Google 導航
                    </a>
                 </div>
+
+                {/* Weather Forecast */}
+                <WeatherWidget forecast={campWeather} />
 
                 {/* Description - Enhanced Typography */}
                 <article class="prose prose-stone prose-lg md:prose-xl max-w-none mb-12 prose-headings:font-bold prose-p:text-stone-700 prose-a:text-emerald-600">
