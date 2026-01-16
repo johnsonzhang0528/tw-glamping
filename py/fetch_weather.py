@@ -95,17 +95,6 @@ def fetch_weather():
         lats = [str(c["lat"]) for c in batch]
         lngs = [str(c["lng"]) for c in batch]
         
-        camp_names = [c["name"] for c in batch]
-        log(f"🔄 [Batch {i+1}/{total_batches}] Preparing request for {len(batch)} camps...")
-        
-        params = {
-            "latitude": ",".join(lats),
-            "longitude": ",".join(lngs),
-            "daily": "weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
-            "timezone": "auto",
-            "forecast_days": "14"
-        }
-        
         log(f"🔄 [Batch {i+1}/{total_batches}] Preparing request for {len(batch)} camps...")
         
         params = {
