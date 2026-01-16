@@ -123,7 +123,21 @@ const messengerShareUrl = `fb-messenger://share/?link=${encodedUrl}`;
   const feedback = document.getElementById('copy-feedback');
 
   // Toggle Functions
-  const openModal = () => {
+  const openModal = async () => {
+    // 🟢 [UX] Mobile Native Share API Priority
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: document.title,
+                text: '快來看看這個超棒的營區！',
+                url: window.location.href
+            });
+            return;
+        } catch (err) {
+            console.log('Native share cancelled/failed', err);
+        }
+    }
+
     modal?.classList.remove('hidden');
     backdrop?.classList.remove('hidden');
     // Small delay for transition
