@@ -191,15 +191,22 @@ const keywords = [
 
 const richDescription = `【${camp.name}】是位於${camp.city}${camp.area}的${camp.features.has_glamping ? '豪華露營聖地' : '推薦露營區'}。${baseDesc} 提供${keywords}等優質體驗，${currentYear}年最新路況與訂位資訊請參考詳細介紹。`;
 
+// 🟢 [Social SEO] Define Share Image
+// 策略優先級 (Fallback Strategy):
+// 1. 營區專屬圖片 (若資料庫 camp.image 欄位有值)
+// 2. Unsplash 隨機情境圖 (根據 tags 自動產生，解決無圖的空窗期)
+// 3. 若以上皆無 (設為 undefined)，Layout 元件會自動退回使用全站預設圖 (/social-card.webp)
+// const randomCover = `https://source.unsplash.com/800x600/?camping,${camp.tags.includes('豪華露營') ? 'glamping' : 'tent'}`;
+const shareImage = camp.image;
+// 若您希望「沒有專屬圖就直接顯示全站預設圖(不要隨機圖)」，請改為: const shareImage = camp.image;
+
 const schemaData = {
-  "@context": "https://schema.org",
   "@type": "Campground",
   "name": camp.name,
   "description": richDescription,
   // 🟢 [SEO] Add explicit image property (Google Requirement for LocalBusiness)
   "image": [
-    `https://source.unsplash.com/800x600/?camping,${camp.tags.includes('豪華露營') ? 'glamping' : 'tent'}`,
-    // In production, use real camp photos if available
+    shareImage
   ],
   "telephone": camp.phone,
   "address": {
@@ -218,8 +225,23 @@ const schemaData = {
   "priceRange": "$$"
 };
 
-const schemas = [schemaData, breadcrumbSchema, faqSchema];
-
+// 🟢 [SEO] Consolidated Graph Schema
+// Combining Campground, Breadcrumb, and FAQ into one graph for better entity relation understanding by Google
+const schemas = {
+  "@context": "https://schema.org",
+  "@graph": [
+     schemaData,
+     {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "首頁", "item": "https://www.outdoorcampingworld.com" },
+            { "@type": "ListItem", "position": 2, "name": camp.city, "item": `https://www.outdoorcampingworld.com/city/${camp.city}` },
+            { "@type": "ListItem", "position": 3, "name": camp.name, "item": `https://www.outdoorcampingworld.com/camp/${camp.name}` }
+        ]
+     },
+     faqSchema
+  ]
+};
 
 // 🟢 [SEO] Internal Linking: Nearby Campgrounds (Haversine Distance)
 function getDistance(lat1, lon1, lat2, lon2) {
@@ -250,10 +272,9 @@ const nearbyCamps = campgrounds
     .slice(0, 6); // Take top 5 closest (6 to fill grid neatly if needed)
 
 const relatedCamps = nearbyCamps;
-
 ---
 
-<Layout title={seoTitle} description={richDescription}>
+<Layout title={seoTitle} description={richDescription} image={shareImage}>
     <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemas)}></script>
     
     {/* PSEO Drip Feed Control */}
