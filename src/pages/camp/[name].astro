@@ -371,6 +371,30 @@ const relatedCamps = nearbyCamps;
                     )}
                 </article>
 
+                {/* 🟢 [RESTORED] Info Cards (Old Version Style) */}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+                    <div class="bg-emerald-50 p-6 rounded-xl border border-emerald-100">
+                        <h3 class="font-bold text-emerald-800 mb-4 flex items-center gap-2">
+                            <span>📞</span> 聯絡資訊
+                        </h3>
+                        <p class="text-emerald-900 font-medium text-lg mb-2">{camp.phone || "請依現場公告為主"}</p>
+                        <p class="text-sm text-emerald-700">建議預訂前先致電確認營況</p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                        <h3 class="font-bold text-blue-800 mb-4 flex items-center gap-2">
+                            <span>⛰️</span> 地理環境
+                        </h3>
+                        <div class="flex justify-between items-center border-b border-blue-200 pb-2 mb-2">
+                            <span class="text-blue-700">海拔高度</span>
+                            <span class="font-bold text-blue-900">{camp.elevation} 公尺</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-700">所在區域</span>
+                            <span class="font-bold text-blue-900">{camp.city} {camp.area}</span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* 🟢 [RESTORED] Nearby Camps - Internal Linking */}
                 {relatedCamps.length > 0 && (
                     <div class="border-t border-stone-200 pt-10">
@@ -389,7 +413,7 @@ const relatedCamps = nearbyCamps;
             {/* Sidebar (Right Column) */}
              <aside class="space-y-6 lg:col-span-1">
                  {/* Gear Checklist (Now in Sidebar) */}
-                 <div class="sticky top-24 z-10">
+                 <div class="sticky top-24 z-10 space-y-6">
                      <GearChecklist tags={camp.tags} elevation={camp.elevation} />
                  </div>
             </aside>
