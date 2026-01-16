@@ -5,6 +5,11 @@ import os
 import math
 import datetime
 
+# Setup simple logging helper
+def log(message, level="INFO"):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] [{level}] {message}", flush=True)
+
 # Configuration
 INPUT_FILE = os.path.join("src", "data", "campgrounds_enriched.json")
 OUTPUT_FILE = os.path.join("src", "data", "weather_forecast.json")
@@ -48,18 +53,27 @@ def get_weather_info(code):
     return WEATHER_CODES.get(code, {"label": "未知", "icon": "cloudy"})
 
 def fetch_weather():
-    print("Loading campground data...")
+    start_time = time.time()
+    log("🚀 Starting weather fetch script...")
+    log(f"📂 Input File: {INPUT_FILE}")
+    log(f"💾 Output File: {OUTPUT_FILE}")
+    
     if not os.path.exists(INPUT_FILE):
-        print(f"Error: {INPUT_FILE} not found.")
+        log(f"❌ Error: {INPUT_FILE} not found.", "ERROR")
         return
 
-    with open(INPUT_FILE, "r", encoding="utf-8") as f:
-        network_data = json.load(f)
+    try:
+        with open(INPUT_FILE, "r", encoding="utf-8") as f:
+            network_data = json.load(f)
+        log(f"✅ Successfully loaded campground data. Total records: {len(network_data)}")
+    except Exception as e:
+        log(f"❌ Failed to load JSON data: {str(e)}", "CRITICAL")
+        return
 
     # Filter out entries without valid coordinates
     campgrounds = [c for c in network_data if c.get("lat") and c.get("lng")]
     
-    print(f"Found {len(campgrounds)} campgrounds with coordinates.")
+    log(f"📍 Found {len(campgrounds)} campgrounds with valid coordinates.")
     
     weather_data = {}
     
@@ -70,11 +84,18 @@ def fetch_weather():
 
     # Process in batches
     total_batches = math.ceil(len(campgrounds) / BATCH_SIZE)
+    log(f"📦 Processing {len(campgrounds)} campgrounds in {total_batches} batches (Batch Size: {BATCH_SIZE})")
     
+    success_count = 0
+    fail_count = 0
+
     for i in range(total_batches):
         batch = campgrounds[i * BATCH_SIZE : (i + 1) * BATCH_SIZE]
         lats = [str(c["lat"]) for c in batch]
         lngs = [str(c["lng"]) for c in batch]
+        
+        camp_names = [c["name"] for c in batch]
+        log(f"🔄 [Batch {i+1}/{total_batches}] Preparing request for {len(batch)} camps...")
         
         params = {
             "latitude": ",".join(lats),
@@ -85,9 +106,15 @@ def fetch_weather():
         }
         
         try:
-            print(f"Fetching batch {i+1}/{total_batches}...")
-            response = requests.get(API_URL, params=params)
-            response.raise_for_status()
+            log(f"☁️ [Batch {i+1}/{total_batches}] Sending API request to Open-Meteo...")
+            # Add timeout to prevent CI/CD hanging indefinitely (e.g. if IP blocked or API slow)
+            response = requests.get(API_URL, params=params, timeout=30)
+            
+            if response.status_code != 200:
+                log(f"⚠️ [Batch {i+1}/{total_batches}] API returned status code {response.status_code}: {response.text}", "WARNING")
+                response.raise_for_status()
+            
+            log(f"📥 [Batch {i+1}/{total_batches}] Response received. Parsing data...")
             results = response.json()
             
             # Open-Meteo returns a list of results if multiple coordinates are provided
@@ -100,8 +127,20 @@ def fetch_weather():
             # Handle the case where the batch loop continues but maybe batch size was small (shouldn't happen with logic above unless len=1)
             response_list = results if isinstance(results, list) else [results]
 
+            log(f"✨ [Batch {i+1}/{total_batches}] Processing {len(response_list)} records...")
+
             for idx, item in enumerate(response_list):
+                if idx >= len(batch):
+                     # Safety check
+                     log(f"⚠️ Index mismatch in batch {i+1}", "WARNING")
+                     continue
+
                 camp_name = batch[idx]["name"]
+                
+                if "error" in item:
+                     log(f"⚠️ Error for camp {camp_name}: {item.get('reason', 'Unknown error')}", "WARNING")
+                     continue
+
                 daily = item.get("daily", {})
                 
                 # Construct simplified forecast
@@ -112,35 +151,57 @@ def fetch_weather():
                 min_temps = daily.get("temperature_2m_min", [])
                 precip_probs = daily.get("precipitation_probability_max", [])
                 
+                # Basic validation
+                if not times:
+                    log(f"⚠️ No daily data for {camp_name}", "WARNING")
+                    continue
+
                 for k in range(len(times)):
                     w_code = codes[k]
                     w_info = get_weather_info(w_code)
                     
                     forecast.append({
                         "date": times[k],
-                        "max_temp": round(max_temps[k]),
-                        "min_temp": round(min_temps[k]),
-                        "rain_prob": precip_probs[k],
+                        "max_temp": round(max_temps[k]) if max_temps[k] is not None else 0,
+                        "min_temp": round(min_temps[k]) if min_temps[k] is not None else 0,
+                        "rain_prob": precip_probs[k] if precip_probs[k] is not None else 0,
                         "weather_code": w_code,
                         "label": w_info["label"],
                         "icon": w_info["icon"]
                     })
                 
                 weather_data[camp_name] = forecast
-                
-            # Respect rate limits
-            time.sleep(1)
+                success_count += 1
             
+            log(f"✅ [Batch {i+1}/{total_batches}] Batch complete.")
+            
+            # Respect rate limits
+            if i < total_batches - 1:
+                log("⏳ Waiting 2 seconds before next batch...")
+                time.sleep(2)
+            
+        except requests.Exceptions.Timeout:
+            log(f"❌ [Batch {i+1}/{total_batches}] Request timed out after 30s.", "ERROR")
+            fail_count += len(batch)
+            continue
         except Exception as e:
-            print(f"Error fetching batch {i+1}: {e}")
+            log(f"❌ [Batch {i+1}/{total_batches}] Unexpected Error: {str(e)}", "ERROR")
+            fail_count += len(batch)
             # Continue to next batch instead of crashing
             continue
 
-    print(f"Saving weather data to {OUTPUT_FILE}...")
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(weather_data, f, ensure_ascii=False, indent=2)
-    
-    print("Done!")
+    log(f"💾 Saving weather data to {OUTPUT_FILE}...")
+    try:
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump(weather_data, f, ensure_ascii=False, indent=2)
+        log("✅ File saved successfully.")
+    except Exception as e:
+        log(f"❌ Failed to save output file: {str(e)}", "CRITICAL")
+
+    end_time = time.time()
+    duration = end_time - start_time
+    log(f"🏁 Script finished in {duration:.2f} seconds.")
+    log(f"📊 Summary: Success: {success_count} | Failed/Skipped: {fail_count}")
 
 if __name__ == "__main__":
     fetch_weather()
