@@ -42,7 +42,6 @@ jobs:
           python generate_products.py
 
       - name: Generate External Feeds
-        if: steps.check_schedule.outputs.is_weekly_update == 'true'
         run: |
           python py/generate_camp_feed.py
 
