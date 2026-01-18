@@ -41,6 +41,12 @@ jobs:
           python update_pipeline.py
           python generate_products.py
 
+      - name: Generate External Feeds
+        if: steps.check_schedule.outputs.is_weekly_update == 'true'
+        run: |
+          python py/generate_camp_feed.py
+
+
       - name: Run Daily Weather Update
         run: |
           python py/fetch_weather.py
@@ -55,7 +61,7 @@ jobs:
           git add src/data/weather_forecast.json
 
           if [[ -n $(git status -s src/data/campgrounds_enriched.json src/data/products.json src/data/weather_forecast.json) ]]; then
-            git add src/data/campgrounds_enriched.json src/data/icamping_raw.json src/data/products.json src/data/weather_forecast.json
+            git add src/data/campgrounds_enriched.json src/data/icamping_raw.json src/data/products.json src/data/weather_forecast.json public/feeds/top_camps.json
             git commit -m "chore(data): daily system update (weather/weekly trends)"
             git push
           else
