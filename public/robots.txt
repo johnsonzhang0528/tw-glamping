@@ -1,6 +1,14 @@
 User-agent: *
 Allow: /
-# Allow /search for crawling (sort/filter), but block dynamic user search queries to save budget
 Disallow: /search?q=*
+
+Disallow: /products/
+Disallow: /categories/
+Disallow: /brands/
+Disallow: /checkout/
+Disallow: /lander
+Disallow: /tent?*
+Disallow: /shipping-returns
+Disallow: /terms-conditions
 
 Sitemap: https://www.outdoorcampingworld.com/sitemap-index.xml
