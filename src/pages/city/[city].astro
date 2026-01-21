@@ -3,8 +3,12 @@ import Layout from '../../layouts/Layout.astro';
 import CampgroundCard from '../../components/CampgroundCard.astro';
 import campgrounds from '../../data/campgrounds_enriched.json';
 
+import { getValidCampgrounds } from '../../utils/filterCamps';
+
 export async function getStaticPaths() {
-  const cities = [...new Set(campgrounds.map((camp) => camp.city))];
+  const validCamps = getValidCampgrounds(campgrounds);
+  // Ensure we only generate pages for cities that have valid camps
+  const cities = [...new Set(validCamps.map((camp) => camp.city))];
   return cities.map((city) => ({
     params: { city },
     props: { city },
@@ -12,7 +16,9 @@ export async function getStaticPaths() {
 }
 
 const { city } = Astro.props;
-const cityCamps = campgrounds.filter(camp => camp.city === city);
+// Re-filter for run-time usage to ensure consistency
+const allValidCamps = getValidCampgrounds(campgrounds);
+const cityCamps = allValidCamps.filter(camp => camp.city === city);
 // Layout.astro 會自動附加 "| Outdoor Camping World - Since 2004"，因此這裡不需要重複品牌名稱
 const title = `${city}露營區推薦與景點地圖 - 共 ${cityCamps.length} 個精選營地`;
 const description = `精選 ${city} 露營區推薦，包含高海拔、豪華露營、寵物友善等特色營地。提供完整的${city}露營地圖與詳細資訊。`;

@@ -20,7 +20,9 @@ type Campground = {
 	};
 };
 
-const camps = campgrounds as Campground[];
+import { getValidCampgrounds } from '../utils/filterCamps';
+
+const camps = getValidCampgrounds(campgrounds);
 
 // 🟢 動態計算熱門縣市
 const cityStats = camps.reduce((acc, camp) => {

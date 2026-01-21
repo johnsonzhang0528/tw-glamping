@@ -9,8 +9,13 @@ import campgrounds from '../../data/campgrounds_enriched.json';
 import productData from '../../data/products.json';
 import weatherData from '../../data/weather_forecast.json';
 
+import { getValidCampgrounds } from '../../utils/filterCamps';
+
 export async function getStaticPaths() {
-  return campgrounds.map((camp) => ({
+  // 🟢 [SEO Fix] Quality Gate: Filter out low-quality data
+  const validCamps = getValidCampgrounds(campgrounds);
+
+  return validCamps.map((camp) => ({
     params: { name: camp.name },
     props: { camp },
   }));
@@ -195,7 +200,35 @@ const keywords = [
     ...camp.tags.slice(0, 3)
 ].filter(Boolean).join('、');
 
-const richDescription = `【${camp.name}】是位於${camp.city}${camp.area}的${camp.features.has_glamping ? '豪華露營聖地' : '推薦露營區'}。${baseDesc} 提供${keywords}等優質體驗，${currentYear}年最新路況與訂位資訊請參考詳細介紹。`;
+// 🟢 [SEO Upgrade] Dynamic Content Composition
+// 不再使用單一模板，而是根據特徵 "組裝" 文章
+const introTemplates = [
+  (c) => `位於${c.city}${c.area}的【${c.name}】，是近期在社群媒體上討論度極高的熱門營地。`,
+  (c) => `如果您正在尋找${c.city}地區的優質露營區，坐落於${c.area}的【${c.name}】絕對是口袋名單之一。`,
+  (c) => `【${c.name}】擁有得天獨厚的地理位置，是探索${c.city}${c.area}自然生態的最佳基地。`
+];
+
+// 根據特徵選擇強調句
+const featureSentences = [];
+if (camp.features.has_glamping) {
+    featureSentences.push(`這裡主打豪華露營體驗，免裝備即可輕鬆入住，特別適合親子家庭或露營新手。`);
+} else {
+    featureSentences.push(`保留了最純粹的野營樂趣，讓您能親手搭建屬於自己的戶外城堡。`);
+}
+
+if (camp.features.high_altitude) {
+    featureSentences.push(`海拔 ${camp.elevation} 公尺的優勢，讓這裡即使在盛夏也能享受天然冷氣般的涼爽。`);
+}
+
+if (camp.tags.includes('螢火蟲')) {
+    featureSentences.push(`每逢四五月，這裡更是賞螢的絕佳秘境，漫天飛舞的螢火蟲將夜晚點綴得如夢似幻。`);
+}
+
+// 隨機選擇開頭，避免每頁都一樣 (利用 camp.name 的長度當作偽隨機數種子，確保同一頁面每次 build 結果一致)
+const templateIndex = camp.name.length % introTemplates.length;
+const intro = introTemplates[templateIndex](camp);
+
+const richDescription = `${intro}${camp.description} ${featureSentences.join('')} 此外，營區內設有${keywords}等完善設施，是${currentYear}年值得一訪的優質營地。`;
 
 // 🟢 [Social SEO] Define Share Image
 // 策略優先級 (Fallback Strategy):
@@ -399,6 +432,21 @@ const relatedCamps = nearbyCamps;
                 <div class="border-t border-stone-200 pt-10">
                     <GearChecklist tags={camp.tags} elevation={camp.elevation} />
                 </div>
+
+                {/* 🟢 [SEO Issue] FAQ Rendering (Invisible Content Penalty Fix) */}
+                <div class="bg-white p-6 rounded-xl border border-stone-200 mb-8 mt-10">
+                  <h3 class="font-bold text-stone-800 mb-4 flex items-center gap-2">
+                    <span>❓</span> 常見問題 Q&A
+                  </h3>
+                  <div class="space-y-4">
+                    {faqSchema.mainEntity.map((faq) => (
+                      <div class="border-b border-stone-100 last:border-0 pb-4 last:pb-0">
+                        <h4 class="font-bold text-stone-700 mb-2">{faq.name}</h4>
+                        <p class="text-stone-600 text-sm leading-relaxed">{faq.acceptedAnswer.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
             </div>
 
             {/* Sidebar (Right Column) */}
@@ -410,6 +458,9 @@ const relatedCamps = nearbyCamps;
                              <h3 class="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
                                 <span>📍</span> 推薦附近營區
                              </h3>
+                             <p class="text-stone-600 mb-4 text-sm leading-relaxed">
+                                如果您喜歡 {camp.name} 的風格，位於 {camp.city} 的這些鄰近營地（距離皆在 20 公里內）或許也符合您的需求。這些營地同樣擁有 {camp.tags.slice(0,2).join('、')} 等特色。
+                             </p>
                              <div class="space-y-4">
                                   {relatedCamps.map(related => (
                                       <div>

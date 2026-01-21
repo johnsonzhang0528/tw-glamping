@@ -4,10 +4,11 @@ import CampgroundCard from '../components/CampgroundCard.astro';
 import NativeAdCard from '../components/NativeAdCard.astro';
 import campgroundsData from '../data/campgrounds_enriched.json';
 
+import { getValidCampgrounds } from '../utils/filterCamps';
+
 // 1. 伺服器端預先排序 (CLS 優化)
-const campgrounds = [...campgroundsData].sort((a, b) => 
-    a.name.localeCompare(b.name, 'zh-TW')
-);
+const campgrounds = getValidCampgrounds(campgroundsData)
+    .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
 
 // 取得唯一縣市列表
 const cities = [...new Set(campgroundsData.map(c => c.city))].sort();
