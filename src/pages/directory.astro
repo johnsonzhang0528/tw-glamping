@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import campgrounds from '../data/campgrounds_enriched.json';
+import { getValidCampgrounds } from '../utils/filterCamps';
+
+const validCamps = getValidCampgrounds(campgrounds);
 
 // Define regions mapping
 const regionMap = {
@@ -20,7 +23,7 @@ const regionNames = {
 };
 
 // Group campgrounds
-const groupedCamps = campgrounds.reduce((acc, camp) => {
+const groupedCamps = validCamps.reduce((acc: any, camp: any) => {
   const city = camp.city || "Unknown";
   const region = regionMap[city] || "Other";
   
@@ -45,7 +48,7 @@ const description = "Outdoor Camping World 收錄的全台露營區完整列表�
       <header class="mb-12 text-center">
         <h1 class="text-3xl md:text-4xl font-bold text-stone-900 mb-4">全台露營區總覽</h1>
         <p class="text-stone-600 max-w-2xl mx-auto">
-          這裡收錄了我們目前資料庫中所有的露營區資訊（共 {campgrounds.length} 筆）。
+          這裡收錄了我們目前資料庫中所有的露營區資訊（共 {validCamps.length} 筆）。
           若您想尋找特定地點，可以使用 <a href="/search" class="text-emerald-600 hover:text-emerald-700 underline">搜尋功能</a>。
         </p>
       </header>
