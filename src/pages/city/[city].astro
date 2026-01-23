@@ -61,7 +61,7 @@ const availableTopics = FEATURE_CONFIG.map(feat => {
     return {
         ...feat,
         count,
-        href: `/topic/${CITY_SLUG_MAP[city]}-${feat.id}`
+        href: `/topic/${CITY_SLUG_MAP[city]}-${feat.id}/`
     };
 }).filter(t => t.count >= 3 && CITY_SLUG_MAP[city]); // 確保有對應的 slug 且數量足夠
 
@@ -86,7 +86,7 @@ const schema = {
         "itemListElement": cityCamps.slice(0, 15).map((camp, index) => ({
           "@type": "ListItem",
           "position": index + 1,
-          "url": new URL(`/camp/${camp.name}`, Astro.site).toString(),
+          "url": new URL(`/camp/${camp.name}/`, Astro.site).toString(),
           "name": camp.name
         }))
       }

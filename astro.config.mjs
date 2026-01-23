@@ -7,6 +7,10 @@ export default defineConfig({
   site: 'https://www.outdoorcampingworld.com',
   integrations: [tailwind(), sitemap()],
   
+  // 🟢 [SEO] Force Trailing Slash behavior
+  // This matches Vercel's default behavior and prevents 308 redirects
+  trailingSlash: 'always',
+
   // 🟢 [NEW] 加入這段設定
   build: {
     // 強制將 CSS 寫入 HTML，消除 CSS 轉譯封鎖 (Render Blocking)

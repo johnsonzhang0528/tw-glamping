@@ -67,8 +67,8 @@ const filters = [...fixedFilters, ...sortedTags];
           // Check if this filter corresponds to a static topic page
           const isTopic = ['glamping', 'high-altitude', 'pet-friendly'].includes(filter.value);
           const href = isTopic 
-              ? `/topic/${filter.value}`
-              : (filter.value === 'all' ? '/search' : `/search?q=${filter.label}`);
+              ? `/topic/${filter.value}/`
+              : (filter.value === 'all' ? '/search/' : `/search/?q=${filter.label}`);
           
           return (
             <a 

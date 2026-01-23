@@ -54,13 +54,13 @@ const description = "Outdoor Camping World 收錄的全台露營區完整列表�
 
         {/* 🟢 [SEO] Topic Index for Link Cleanliness */}
         <div class="mt-8 flex justify-center gap-3 flex-wrap">
-            <a href="/topic/glamping" class="px-4 py-2 bg-white border border-stone-200 rounded-full text-stone-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors text-sm font-bold shadow-sm">
+            <a href="/topic/glamping/" class="px-4 py-2 bg-white border border-stone-200 rounded-full text-stone-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors text-sm font-bold shadow-sm">
                 ✨ 豪華露營
             </a>
-            <a href="/topic/high-altitude" class="px-4 py-2 bg-white border border-stone-200 rounded-full text-stone-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors text-sm font-bold shadow-sm">
+            <a href="/topic/high-altitude/" class="px-4 py-2 bg-white border border-stone-200 rounded-full text-stone-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors text-sm font-bold shadow-sm">
                 ⛰️ 高海拔避暑
             </a>
-            <a href="/topic/pet-friendly" class="px-4 py-2 bg-white border border-stone-200 rounded-full text-stone-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors text-sm font-bold shadow-sm">
+            <a href="/topic/pet-friendly/" class="px-4 py-2 bg-white border border-stone-200 rounded-full text-stone-600 hover:text-emerald-700 hover:border-emerald-300 transition-colors text-sm font-bold shadow-sm">
                 🐾 寵物友善
             </a>
         </div>
@@ -94,7 +94,7 @@ const description = "Outdoor Camping World 收錄的全台露營區完整列表�
                        {regionData[city].map(camp => (
                          <li>
                            <a 
-                             href={`/camp/${camp.name}`}
+                             href={`/camp/${camp.name}/`}
                              class="text-stone-600 hover:text-emerald-700 text-sm flex items-center group transition-colors"
                            >
                              <span class="w-1.5 h-1.5 rounded-full bg-stone-300 group-hover:bg-emerald-500 mr-2 transition-colors"></span>
