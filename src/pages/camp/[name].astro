@@ -224,9 +224,17 @@ if (camp.tags.includes('螢火蟲')) {
     featureSentences.push(`每逢四五月，這裡更是賞螢的絕佳秘境，漫天飛舞的螢火蟲將夜晚點綴得如夢似幻。`);
 }
 
-// 隨機選擇開頭，避免每頁都一樣 (利用 camp.name 的長度當作偽隨機數種子，確保同一頁面每次 build 結果一致)
+// 隨機選擇開頭，避免每頁都一樣
 const templateIndex = camp.name.length % introTemplates.length;
 const intro = introTemplates[templateIndex](camp);
+
+// 🟢 [SEO Fix] Meta Description Length Control (150-160 chars)
+// 確保描述不會過長被截斷，也不會過短被視為品質低落
+// 原始 richDescription 會用於 Schema 和頁面內容，這裡產生一個針對 Meta Tag 的精簡版
+let metaDesc = `${intro} ${featureSentences.join('')} 設施包含${keywords}。`.replace(/\s+/g, '');
+if (metaDesc.length > 155) {
+    metaDesc = metaDesc.substring(0, 152) + '...';
+}
 
 const richDescription = `${intro}${camp.description} ${featureSentences.join('')} 此外，營區內設有${keywords}等完善設施，是${currentYear}年值得一訪的優質營地。`;
 
@@ -313,7 +321,7 @@ const nearbyCamps = campgrounds
 const relatedCamps = nearbyCamps;
 ---
 
-<Layout title={seoTitle} description={richDescription} image={shareImage}>
+<Layout title={seoTitle} description={metaDesc} image={shareImage}>
     <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemas)}></script>
     
     {/* PSEO Drip Feed Control */}

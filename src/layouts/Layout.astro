@@ -22,7 +22,14 @@ const {
     image
 } = Astro.props;
 
-const pageTitle = omitSuffix ? title : `${title} | Outdoor Camping World - Since 2004`;
+// 🟢 [SEO Fix] Title Length Optimization (Max 60 chars)
+// 如果 omitSuffix 為 false (通常是內頁)，我們檢查總長度。
+// 如果 title 本身已經很長 (>35 chars)，則使用簡短後綴 (" | OCW") 而非完整後綴
+const BRAND_SUFFIX = " | Outdoor Camping World - Since 2004";
+const SHORT_SUFFIX = " | OCW";
+const pageTitle = omitSuffix 
+    ? title 
+    : (title.length + BRAND_SUFFIX.length > 55 ? `${title}${SHORT_SUFFIX}` : `${title}${BRAND_SUFFIX}`);
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL(image || '/social-card.webp', Astro.url);

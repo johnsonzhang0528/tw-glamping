@@ -11,6 +11,12 @@ export default defineConfig({
   // This matches Vercel's default behavior and prevents 308 redirects
   trailingSlash: 'always',
 
+  // 🟢 [SEO] Sitemap Configuration
+  // Exclude non-indexable pages from sitemap.xml to avoid "Noindex page in sitemap" errors
+  sitemap({
+    filter: (page) => page !== 'https://www.outdoorcampingworld.com/search/',
+  }),
+
   // 🟢 [NEW] 加入這段設定
   build: {
     // 強制將 CSS 寫入 HTML，消除 CSS 轉譯封鎖 (Render Blocking)
