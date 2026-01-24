@@ -5,17 +5,16 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://www.outdoorcampingworld.com',
-  integrations: [tailwind(), sitemap()],
+  integrations: [
+    tailwind(), 
+    sitemap({
+      filter: (page) => page !== 'https://www.outdoorcampingworld.com/search/',
+    })
+  ],
   
   // 🟢 [SEO] Force Trailing Slash behavior
   // This matches Vercel's default behavior and prevents 308 redirects
   trailingSlash: 'always',
-
-  // 🟢 [SEO] Sitemap Configuration
-  // Exclude non-indexable pages from sitemap.xml to avoid "Noindex page in sitemap" errors
-  sitemap({
-    filter: (page) => page !== 'https://www.outdoorcampingworld.com/search/',
-  }),
 
   // 🟢 [NEW] 加入這段設定
   build: {
