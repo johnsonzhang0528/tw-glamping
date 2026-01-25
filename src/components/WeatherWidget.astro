@@ -17,6 +17,7 @@ interface HourlyData {
   pop: number;
   wind: number;
   icon: string;
+  uv?: number;
 }
 
 interface Props {
@@ -239,7 +240,7 @@ const displayTips = uniqueTips.slice(0, 2);
       {/* Hourly Chart */}
       {hourlyForecast.length > 0 && (
           <div class="relative h-64 w-full border-t lg:border-t-0 lg:border-l border-stone-100 pt-6 lg:pt-0 lg:pl-6">
-              <h3 class="text-xs font-bold text-stone-500 mb-2 uppercase tracking-wide">24小時風速與降雨</h3>
+              <h3 class="text-xs font-bold text-stone-500 mb-2 uppercase tracking-wide">48小時詳細預報 (紫外線/降雨)</h3>
               <canvas id="hourlyChart"></canvas>
           </div>
       )}
@@ -333,25 +334,27 @@ const displayTips = uniqueTips.slice(0, 2);
         const rawHourly = JSON.parse(dataEl.dataset.hourly || '[]');
         if (rawHourly.length === 0) return;
 
-        // 🟢 Time Shifting Logic
-        // Filter out past hours to show next 24 hours of FUTURE
+        // 🟢 Time Shifting Logic (Limit to 48h)
         const now = new Date();
-        const futureHourly = rawHourly.filter(h => new Date(h.time) > now).slice(0, 24);
+        const futureHourly = rawHourly.filter(h => new Date(h.time) > now).slice(0, 48);
 
         if (futureHourly.length === 0) return;
 
-        const labels = futureHourly.map(h => {
+        const labels = futureHourly.map((h, idx) => {
             const date = new Date(h.time);
             const hours = date.getHours();
-            // Show date at midnight
-            if (hours === 0) {
-                return `${date.getMonth() + 1}/${date.getDate()}`;
+            // Show simpler labels to save space
+            if (hours === 0 || idx === 0) {
+               return [`${date.getMonth()+1}/${date.getDate()}`, h.icon];
             }
-            return `${hours}:00`;
+            if (hours % 3 === 0) { // Show every 3 hours
+                return [`${hours}:00`, h.icon];
+            }
+            return ''; // Hide other labels
         });
         
-        const windSpeeds = futureHourly.map(h => h.wind);
         const rainProbs = futureHourly.map(h => h.pop);
+        const uvs = futureHourly.map(h => h.uv || 0);
 
         new Chart(ctx, {
             type: 'bar',
@@ -361,20 +364,21 @@ const displayTips = uniqueTips.slice(0, 2);
                     {
                         label: '降雨機率 (%)',
                         data: rainProbs,
-                        type: 'line',
-                        borderColor: '#3b82f6', // Blue 500
-                        backgroundColor: '#3b82f6',
-                        yAxisID: 'y1',
-                        borderWidth: 2,
-                        fill: true,
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                        type: 'bar',
+                        backgroundColor: '#3b82f6', // Blue 500
+                        yAxisID: 'yRain',
+                        borderRadius: 2
                     },
                     {
-                        label: '風速 (km/h)',
-                        data: windSpeeds,
-                        backgroundColor: '#a8a29e', // Stone 400
-                        yAxisID: 'y',
-                        borderRadius: 4
+                        label: '紫外線 (UV)',
+                        data: uvs,
+                        type: 'line',
+                        borderColor: '#f43f5e', // Rose 500
+                        backgroundColor: '#f43f5e',
+                        borderWidth: 2,
+                        pointRadius: 1,
+                        yAxisID: 'yUV',
+                        tension: 0.4
                     }
                 ]
             },
@@ -389,25 +393,38 @@ const displayTips = uniqueTips.slice(0, 2);
                     legend: {
                         position: 'top',
                         labels: { font: { size: 12 }, usePointStyle: true }
+                    },
+                     tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const idx = items[0].dataIndex;
+                                const date = new Date(futureHourly[idx].time);
+                                return `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:00 ${futureHourly[idx].icon}`;
+                            }
+                        }
                     }
                 },
                 scales: {
-                    x: { grid: { display: false } },
-                    y: {
+                    x: { 
+                        grid: { display: false },
+                        ticks: { autoSkip: false, maxRotation: 0, font: {size: 10} }
+                    },
+                    yRain: {
                         type: 'linear',
                         display: true,
                         position: 'left',
-                        title: { display: true, text: '風速' },
-                        grid: { display: false }
+                        max: 100,
+                        grid: { display: true, drawOnChartArea: false },
+                        title: { display: true, text: '降雨 %' }
                     },
-                    y1: {
+                    yUV: {
                         type: 'linear',
                         display: true,
                         position: 'right',
-                        min: 0,
-                        max: 100,
-                        grid: { drawOnChartArea: false }, // only want the grid lines for one axis to show up
-                        ticks: { callback: function(value) { return value + '%'; } }
+                        min: 0, // UV usually 0-11+
+                        max: 12,
+                        grid: { display: false },
+                        title: { display: true, text: 'UV 指數' }
                     },
                 }
             }

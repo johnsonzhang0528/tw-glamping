@@ -100,8 +100,8 @@ def fetch_weather():
         params = {
             "latitude": ",".join(lats),
             "longitude": ",".join(lngs),
-            "daily": "weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
-            "hourly": "temperature_2m,precipitation_probability,windspeed_10m,weathercode",
+            "daily": "weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max",
+            "hourly": "temperature_2m,precipitation_probability,windspeed_10m,weathercode,uv_index",
             "timezone": "auto",
             "forecast_days": "14"
         }
@@ -155,18 +155,20 @@ def fetch_weather():
                             "max_temp": max_temps[k],
                             "min_temp": min_temps[k],
                             "rain_prob": precip_probs[k],
+                            "uv_index": daily.get("uv_index_max", [])[k] if daily.get("uv_index_max") else 0,
                             "weather_code": w_code,
                             "label": w_info["label"],
                             "icon": w_info["icon"]
                         })
 
-                    # 2. Process Hourly (Limit to next 48 hours to save size)
+                    # 2. Process Hourly (Limit to next 72 hours to save size)
                     hourly_data = []
                     h_times = hourly.get("time", [])
                     h_temps = hourly.get("temperature_2m", [])
                     h_probs = hourly.get("precipitation_probability", [])
                     h_winds = hourly.get("windspeed_10m", [])
                     h_codes = hourly.get("weathercode", [])
+                    h_uvs = hourly.get("uv_index", [])
                     
                     if h_times:
                         # Only take first 72 hours for detail view (3 days)
@@ -177,6 +179,7 @@ def fetch_weather():
                                 "temp": h_temps[k],
                                 "pop": h_probs[k], # Probability of Precipitation
                                 "wind": h_winds[k],
+                                "uv": h_uvs[k] if h_uvs else 0,
                                 "icon": get_weather_info(h_codes[k])["icon"]
                             })
 

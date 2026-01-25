@@ -203,6 +203,13 @@ def main():
     except Exception as e:
         print(f"❌ Top Feed 生成失敗: {e}")
 
+    print("\n🤝 同步合作夥伴資料 (Sync Partner Feed)...")
+    try:
+        import sync_partner_feed
+        sync_partner_feed.main()
+    except Exception as e:
+        print(f"❌ 合作夥伴資料同步失敗: {e}")
+
     print("\n✅ 所有更新作業完成！程式結束。", flush=True)
     sys.exit(0)
 

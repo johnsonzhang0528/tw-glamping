@@ -21,8 +21,12 @@ type Campground = {
 };
 
 import { getValidCampgrounds } from '../utils/filterCamps';
+import { getAdRotator } from '../utils/adManager';
 
 const camps = getValidCampgrounds(campgrounds);
+
+// 🟢 [Ad Logic] Get Rotator
+const adRotator = getAdRotator();
 
 // 🟢 動態計算熱門縣市
 const cityStats = camps.reduce((acc, camp) => {
@@ -77,9 +81,6 @@ const homeSchema = {
     }
   ]
 };
-// 🟢 [Ad Logic] Random Start
-const AD_START_INDEX = Math.floor(Math.random() * 10);
-
 // 🟢 [Seasonal Logic]
 const currentMonth = new Date().getMonth() + 1;
 const isWinter = currentMonth >= 11 || currentMonth <= 2;
@@ -191,7 +192,7 @@ const heroBtnIcon = isWinter ? "♨️" : "🔭";
 					<>
 						<CampgroundCard camp={camp} />
 						{/* Insert Native Ad every 6th item (index 5) */}
-						{index === 5 && <NativeAdCard adIndex={AD_START_INDEX} />}
+						{index === 5 && <NativeAdCard adData={adRotator.next()} />}
 					</>
 				))}
 			</div>

@@ -1,9 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import CampgroundCard from '../../components/CampgroundCard.astro';
+import NativeAdCard from '../../components/NativeAdCard.astro';
 import campgrounds from '../../data/campgrounds_smart_clean.json';
-
 import { getValidCampgrounds } from '../../utils/filterCamps';
+import { getAdRotator } from '../../utils/adManager';
 
 export async function getStaticPaths() {
   const validCamps = getValidCampgrounds(campgrounds);
@@ -22,6 +23,9 @@ const cityCamps = allValidCamps.filter(camp => camp.city === city);
 // Layout.astro 會自動附加 "| Outdoor Camping World - Since 2004"，因此這裡不需要重複品牌名稱
 const title = `${city}露營區推薦與景點地圖 - 共 ${cityCamps.length} 個精選營地`;
 const description = `精選 ${city} 露營區推薦，包含高海拔、豪華露營、寵物友善等特色營地。提供完整的${city}露營地圖與詳細資訊。`;
+
+// 🟢 [Ad Logic]
+const adRotator = getAdRotator();
 
 // 🟢 [Thin Content Defense] Neighbor City Mapping
 const neighborMap: Record<string, string> = {
@@ -124,13 +128,21 @@ const schema = {
                         </a>
                     ))}
                 </div>
-            )}
-        </header>
-
         {cityCamps.length > 0 ? (
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {cityCamps.map(camp => (
-                    <CampgroundCard camp={camp} />
+                {cityCamps.map((camp, index) => (
+                    <>
+                        <CampgroundCard camp={camp} />
+                        {/* Insert Ad every 6 items (offset by 2) to break up the grid nicely */}
+                        {index % 6 === 2 && (
+                             <div class="col-span-1 h-full min-h-[380px]">
+                                 <NativeAdCard adData={adRotator.next()} />
+                             </div>
+                        )}
+                    </>
+                ))}
+            </div>
+        ) : (       <CampgroundCard camp={camp} />
                 ))}
             </div>
         ) : (

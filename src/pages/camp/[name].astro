@@ -319,6 +319,30 @@ const nearbyCamps = campgrounds
     .slice(0, 6); // Take top 5 closest (6 to fill grid neatly if needed)
 
 const relatedCamps = nearbyCamps;
+
+// 🟢 [SEO] In-text Keyword Linking
+// Automatically link City and Area keywords to their respective pages to boost internal link structure.
+function autoLinkKeywords(text, city, area) {
+    if (!text) return "";
+    let linkedText = text;
+
+    // Link City (only first occurrence to avoid spam)
+    const cityRegex = new RegExp(city, "i"); // Case insensitive
+    if (city && cityRegex.test(linkedText)) {
+        linkedText = linkedText.replace(cityRegex, `<a href="/city/${city}" class="text-emerald-600 hover:underline font-bold">${city}</a>`);
+    }
+
+    // Link Area (only first occurrence)
+    // Avoid double linking if Area contains City string (unlikely in TW data but safe to be careful)
+    const areaRegex = new RegExp(area, "i");
+    if (area && area !== city && areaRegex.test(linkedText)) {
+         linkedText = linkedText.replace(areaRegex, `<span class="font-bold text-stone-700">${area}</span>`);
+    }
+
+    return linkedText;
+}
+
+const linkedDescription = autoLinkKeywords(camp.description, camp.city, camp.area);
 ---
 
 <Layout title={seoTitle} description={metaDesc} image={shareImage}>
@@ -384,13 +408,10 @@ const relatedCamps = nearbyCamps;
                 {/* Description - Enhanced Typography */}
                 <article class="prose prose-stone prose-lg md:prose-xl max-w-none mb-12 prose-headings:font-bold prose-p:text-stone-700 prose-a:text-emerald-600">
                     <h2 class="text-2xl font-bold text-stone-800 mb-4 border-l-4 border-emerald-500 pl-4">營區介紹</h2>
-                    <p class="text-lg md:text-xl leading-relaxed text-stone-700 tracking-wide">{camp.description}</p>
-                    
+                    <p class="text-lg md:text-xl leading-relaxed text-stone-700 tracking-wide" set:html={linkedDescription}></p>
                     <div class="mt-8 flex flex-wrap gap-2 not-prose">
                         {camp.tags.map(tag => (
-                            <span class="bg-stone-100 text-stone-600 px-3 py-1.5 rounded-full text-base border border-stone-200">
-                                #{tag}
-                            </span>
+                            <a href={`/search?q=${tag}`} class="bg-stone-50 border border-stone-200 text-stone-600 px-3 py-1 rounded-full text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">#{tag}</a>
                         ))}
                     </div>
 

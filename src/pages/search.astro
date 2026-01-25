@@ -5,6 +5,7 @@ import NativeAdCard from '../components/NativeAdCard.astro';
 import campgroundsData from '../data/campgrounds_smart_clean.json';
 
 import { getValidCampgrounds } from '../utils/filterCamps';
+import { getAllAds } from '../utils/adManager';
 
 // 1. 伺服器端預先排序 (CLS 優化)
 const campgrounds = getValidCampgrounds(campgroundsData)
@@ -105,6 +106,8 @@ const filterGroups = [
         ]
     }
 ];
+
+const allAds = getAllAds(); // Get mixed ads server-side for injection
 ---
 
 <Layout 
@@ -314,6 +317,9 @@ const filterGroups = [
                 <NativeAdCard />
             </div>
         </template>
+        
+        {/* Helper Script to Store Ad Pool */}
+        <script id="global-ads-pool" type="application/json" set:html={JSON.stringify(allAds)}></script>
 
         {/* No Results Message */}
         <div id="no-results" class="hidden text-center py-20">
@@ -363,42 +369,62 @@ const filterGroups = [
 
     // Helper to randomize ad content on client-side
     function randomizeAdCard(adElement: Element, sequenceIndex: number) {
-        const article = adElement.querySelector('.js-native-ad') as HTMLElement;
-        if (!article || !article.dataset.adsPool) return;
-
+        // Find JS elements
+        const titleEl = adElement.querySelector('.js-feature-title');
+        const overlayTitleEl = adElement.querySelector('.js-feature-title-overlay');
+        const descEl = adElement.querySelector('.js-feature-desc');
+        const ctaEl = adElement.querySelector('.js-feature-cta');
+        const imgEl = adElement.querySelector('.js-feature-img') as HTMLImageElement;
+        const linkEl = adElement.querySelector('.js-feature-link') as HTMLAnchorElement;
+        const badgesContainer = adElement.querySelector('.js-feature-badges');
+        
+        // 1. Get the pool from global script tag
+        const poolEl = document.getElementById('global-ads-pool');
+        if (!poolEl) return;
+        
         try {
-            // 1. Get the pool
-            const ads = JSON.parse(article.dataset.adsPool);
-            // 2. Pick sequentially using modulo
-            const ad = ads[sequenceIndex % ads.length];
+            const rawPool = JSON.parse(poolEl.textContent || '[]');
+            // Shuffle pool once per page load ideally, but for now just pick by sequence
+            // (Actually we should shuffle in init, but here is fine for simplicity)
+            const adIndex = (AD_START_INDEX + sequenceIndex) % rawPool.length;
+            const ad = rawPool[adIndex];
             
+            if (!ad) return;
+
             // 3. Update DOM Elements
-            const img = article.querySelector('.js-ad-img') as HTMLImageElement;
-            const title = article.querySelector('.js-ad-title');
-            const desc = article.querySelector('.js-ad-desc');
-            const cta = article.querySelector('.js-ad-cta');
-            const link = article.querySelector('.js-ad-link') as HTMLAnchorElement;
-            const badgesContainer = article.querySelector('.js-ad-badges');
-
-            if (img) { img.src = ad.image; img.alt = ad.title; }
-            if (title) title.textContent = ad.title;
-            if (desc) desc.textContent = ad.desc;
-            if (cta) cta.textContent = ad.cta;
-            if (link) {
-                link.href = ad.link;
-                link.setAttribute('aria-label', ad.title);
-            }
-
-            // 4. Update Badges (Rebuild HTML)
+            if (titleEl) titleEl.textContent = ad.title;
+            if (overlayTitleEl) overlayTitleEl.textContent = ad.overlayTitle || ad.title;
+            if (descEl) descEl.textContent = ad.desc;
+            if (ctaEl) ctaEl.textContent = ad.cta;
+            if (imgEl && ad.image) imgEl.src = ad.image;
+            if (linkEl && ad.link) linkEl.href = ad.link;
+            
+            // Badges
             if (badgesContainer && ad.badges) {
-                badgesContainer.innerHTML = ad.badges.map((b: any) => 
-                    `<span class="${b.classString}">${b.text}</span>`
-                ).join('');
+               badgesContainer.innerHTML = ad.badges.map((b: any) => 
+                  `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${getBadgeColorClass(b.color)}">${b.text}</span>`
+               ).join('');
             }
 
         } catch (e) {
-            console.error('Failed to randomize ad', e);
+            console.error(e);
         }
+    }
+
+    // Helper for Badge Colors (Client-side duplicate of getBadgeClasses)
+    function getBadgeColorClass(color: string) {
+        const map: Record<string, string> = {
+            blue: 'bg-blue-100 text-blue-700 border-blue-200',
+            orange: 'bg-orange-100 text-orange-700 border-orange-200',
+            emerald: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            amber: 'bg-amber-100 text-amber-700 border-amber-200',
+            purple: 'bg-purple-100 text-purple-700 border-purple-200',
+            pink: 'bg-pink-100 text-pink-700 border-pink-200',
+            red: 'bg-red-100 text-red-700 border-red-200',
+            cyan: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+            stone: 'bg-stone-100 text-stone-700 border-stone-200'
+        };
+        return map[color] || map['stone'];
     }
 
     // Helper to calculate potential matches

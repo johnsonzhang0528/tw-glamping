@@ -1,15 +1,46 @@
 ---
 // src/components/NativeAdCard.astro
 import { ads, getBadgeClasses } from '../data/adContent';
+import partnerAdsData from '../data/partner_ads.json';
+import type { Ad } from '../utils/adManager';
 
 interface Props {
-    adIndex?: number; // Optional: Force a specific ad by index
+    city?: string;
+    adData?: Ad;
+    // Deprecated props retained for backward compatibility if needed, but ignored logic-wise
+    adIndex?: number;
+    enablePartner?: boolean; 
 }
 
-const { adIndex } = Astro.props;
+const { city, adData } = Astro.props;
 
-// 預先處理廣告資料，把 Badge 的 Class 算好
-const adsWithClasses = ads.map(ad => ({
+// 1. 定義「純地理」鄰居關係 (Geographic Map)
+const GEOGRAPHIC_NEIGHBORS: Record<string, string> = {
+    '基隆市': '新北市',
+    '台北市': '新北市',
+    '新北市': '桃園市',
+    '桃園市': '新竹縣',
+    '新竹市': '新竹縣',
+    '新竹縣': '苗栗縣',
+    '苗栗縣': '台中市',
+    '台中市': '南投縣',
+    '彰化縣': '南投縣',
+    '雲林縣': '嘉義縣',
+    '嘉義市': '嘉義縣',
+    '嘉義縣': '台南市',
+    '台南市': '高雄市',
+    '高雄市': '屏東縣',
+    '屏東縣': '台東縣',
+    '宜蘭縣': '新北市',
+    '花蓮縣': '台東縣',
+    '台東縣': '屏東縣',
+    '澎湖縣': '高雄市',
+    '金門縣': '高雄市',
+    '連江縣': '基隆市'
+};
+
+// 預先處理廣告資料 (Local)
+const localAdsWithClasses = ads.map(ad => ({
     ...ad,
     badges: ad.badges.map(b => ({
         ...b,
@@ -17,31 +48,70 @@ const adsWithClasses = ads.map(ad => ({
     }))
 }));
 
-// Logic:
-// 1. If adIndex is provided, use that (modulo length to be safe).
-// 2. If not, pick a random one (Legacy behavior).
-let selectedIndex = 0;
-if (typeof adIndex === 'number') {
-    selectedIndex = adIndex % ads.length;
+// Server-side Logic
+let selectedAd;
+
+if (adData) {
+    // 🟢 Strategy 1: Explicit Ad Data (Caller Controlled)
+    selectedAd = adData;
+} else if (city) {
+    // 🟢 Strategy 2: Contextual Deep Linking
+    let targetCity = city;
+    let isFallback = false;
+
+    const inventory = partnerAdsData as Record<string, any[]>;
+    // Check if we have surfing spots in this city
+    const hasDirectData = city && inventory[city] && inventory[city].length > 0;
+
+    if (!hasDirectData && city) {
+        const neighbor = GEOGRAPHIC_NEIGHBORS[city];
+        if (neighbor && inventory[neighbor] && inventory[neighbor].length > 0) {
+            targetCity = neighbor;
+            isFallback = true;
+        } else {
+            targetCity = '宜蘭縣'; // Default surfing hub
+            isFallback = true;
+        }
+    }
+
+    selectedAd = {
+        id: 'cross-promo-city-deep-link',
+        badges: [
+             { text: '📍 地區推薦', color: 'blue' },
+             { text: '露營 x 衝浪', color: 'orange' }
+        ],
+        overlayTitle: `推薦${targetCity}衝浪`,
+        
+        title: isFallback ? `露營累了嗎？推薦${targetCity}衝浪！` : `露營累了嗎？來去${targetCity}衝浪吧！`,
+        desc: isFallback 
+            ? `${city}周邊推薦！精選 ${targetCity} 優質浪點，新手友善、沙岸地形，立刻預訂您的下一趟旅程。`
+            : `精選 ${targetCity} 優質浪點，新手友善、沙岸地形，立刻預訂您的下一趟旅程。`,
+        image: '/go-surf.webp',
+        cta: `找 ${targetCity} 浪點`,
+        link: `https://www.outdoorfun.com.tw/city/${targetCity}?utm_source=camping_site&utm_medium=content_grid&utm_campaign=deep_link`
+    };
 } else {
-    selectedIndex = Math.floor(Math.random() * ads.length);
+    // Fallback Random
+    selectedAd = localAdsWithClasses[Math.floor(Math.random() * localAdsWithClasses.length)];
 }
 
-const selectedAd = adsWithClasses[selectedIndex];
+// Calculate badge classes for the selected ad (if not already done)
+if (selectedAd && selectedAd.badges) {
+    selectedAd.badges = selectedAd.badges.map(b => ({
+        ...b,
+        classString: b.classString || `text-[10px] font-bold px-2 py-0.5 rounded-full border ${getBadgeClasses(b.color)}`
+    }));
+}
 ---
 
 <article 
-  class="bg-white rounded-2xl shadow-sm border border-stone-100 h-full flex flex-col relative group hover:shadow-lg hover:border-emerald-200 transition-all duration-300 overflow-hidden js-native-ad"
-  data-ads-pool={JSON.stringify(adsWithClasses)}
+  class="group relative w-full rounded-2xl overflow-hidden shadow-sm border border-stone-100 bg-white flex flex-col h-full hover:shadow-md transition-all duration-300 active:scale-[0.98] js-feature-card"
+  data-items-pool={JSON.stringify(localAdsWithClasses)} 
+  /* Note: items pool here is legacy for search CSR, we will update search page to inject global pool */
 >
   
-  <div class="absolute top-3 right-3 z-10">
-    <span class="bg-stone-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/20 tracking-wider">
-      SPONSORED
-    </span>
-  </div>
-  
-  <div class="h-48 relative overflow-hidden bg-stone-200">
+  <div class="h-40 relative overflow-hidden bg-stone-200 animate-pulse group-hover:shadow-inner transition-all duration-500">
+     {/* Image Layer */}
      <img 
         src={selectedAd.image} 
         alt={selectedAd.title} 
@@ -49,35 +119,61 @@ const selectedAd = adsWithClasses[selectedIndex];
         height="450"
         loading="lazy" 
         decoding="async"
-        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 js-ad-img"
+        class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 js-feature-img"
+        onload="this.parentElement.classList.remove('animate-pulse')"
      />
-     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+     
+     {/* Overlay for Text Legibility */}
+     <div class="absolute inset-0 bg-stone-900/40 group-hover:bg-stone-900/30 transition-colors duration-300"></div>
+
+     {/* Central Content (Matching SpotCard Style) */}
+     <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
+         <span class="text-[10px] font-bold tracking-[0.25em] uppercase border-b border-white/50 pb-1 mb-1 text-white/90 drop-shadow-sm">
+             SPONSORED
+         </span>
+         
+         <div class="font-bold tracking-wide leading-tight text-white drop-shadow-lg font-sans text-2xl js-feature-title-overlay">
+             {selectedAd.overlayTitle || selectedAd.title}
+         </div>
+
+         <div class="w-6 h-1 bg-white/70 rounded-full mt-1 backdrop-blur-sm shadow-sm"></div>
+     </div>
+
+     {/* Top Right Badge (Matching SpotCard Position/Style) */}
+     <div class="absolute top-2 right-2 z-20 flex gap-1">
+        <span class="bg-black/40 backdrop-blur-sm text-stone-200 text-[10px] font-bold px-1.5 py-0.5 rounded border border-white/10 flex items-center">
+            Ad
+        </span>
+        <span class="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded shadow-sm border border-white/10">
+          推薦
+        </span>
+     </div>
   </div>
 
-  <div class="p-6 flex-1 flex flex-col justify-between">
+  <div class="p-5 flex-1 flex flex-col justify-between">
     <div>
-        <div class="flex gap-2 mb-3 js-ad-badges">
+        <div class="flex gap-2 mb-3 js-feature-badges">
              {selectedAd.badges.map(badge => (
-                <span class={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getBadgeClasses(badge.color)}`}>
+                <span class={badge.classString}>
                     {badge.text}
                 </span>
              ))}
         </div>
 
-        <h3 class="font-bold text-xl text-stone-800 mb-2 group-hover:text-emerald-700 transition-colors js-ad-title">
+        <h3 class="font-bold text-xl text-stone-800 mb-2 group-hover:text-emerald-700 transition-colors js-feature-title">
             {selectedAd.title}
         </h3>
-        <p class="text-stone-600 text-sm line-clamp-2 mb-4 leading-relaxed js-ad-desc">
+        <p class="text-stone-600 text-sm line-clamp-2 mb-4 leading-relaxed js-feature-desc">
             {selectedAd.desc}
         </p>
     </div>
     
     <div class="mt-auto">
-        <span class="w-full block text-center bg-stone-100 group-hover:bg-emerald-600 group-hover:text-white text-stone-600 text-sm font-bold py-2.5 rounded-lg transition-colors duration-300 js-ad-cta">
+        <span class="w-full block text-center bg-stone-100 group-hover:bg-emerald-600 group-hover:text-white text-stone-600 text-sm font-bold py-2.5 rounded-lg transition-colors duration-300 js-feature-cta">
             {selectedAd.cta}
         </span>
     </div>
   </div>
 
-  <a href={selectedAd.link} target="_blank" rel="nofollow sponsored" class="absolute inset-0 z-0 js-ad-link" aria-label={selectedAd.title}></a>
+  <a href={selectedAd.link} target="_blank" rel="noopener" class="absolute inset-0 z-0 js-feature-link" aria-label={selectedAd.title}></a>
 </article>
