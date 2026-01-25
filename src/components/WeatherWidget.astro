@@ -240,7 +240,7 @@ const displayTips = uniqueTips.slice(0, 2);
       {/* Hourly Chart */}
       {hourlyForecast.length > 0 && (
           <div class="relative h-64 w-full border-t lg:border-t-0 lg:border-l border-stone-100 pt-6 lg:pt-0 lg:pl-6">
-              <h3 class="text-xs font-bold text-stone-500 mb-2 uppercase tracking-wide">48小時詳細預報 (紫外線/降雨)</h3>
+              <h3 class="text-xs font-bold text-stone-500 mb-2 uppercase tracking-wide">24小時詳細預報 (紫外線/降雨)</h3>
               <canvas id="hourlyChart"></canvas>
           </div>
       )}
@@ -334,23 +334,34 @@ const displayTips = uniqueTips.slice(0, 2);
         const rawHourly = JSON.parse(dataEl.dataset.hourly || '[]');
         if (rawHourly.length === 0) return;
 
-        // 🟢 Time Shifting Logic (Limit to 48h)
+        // 🟢 Time Shifting Logic (Limit to 24h as requested)
         const now = new Date();
-        const futureHourly = rawHourly.filter(h => new Date(h.time) > now).slice(0, 48);
+        const futureHourly = rawHourly.filter(h => new Date(h.time) > now).slice(0, 24);
 
         if (futureHourly.length === 0) return;
 
         const labels = futureHourly.map((h, idx) => {
             const date = new Date(h.time);
             const hours = date.getHours();
-            // Show simpler labels to save space
-            if (hours === 0 || idx === 0) {
-               return [`${date.getMonth()+1}/${date.getDate()}`, h.icon];
-            }
-            if (hours % 3 === 0) { // Show every 3 hours
-                return [`${hours}:00`, h.icon];
-            }
-            return ''; // Hide other labels
+            
+            // Format: 14:00 (Always show hour)
+            const timeStr = `${hours.toString().padStart(2, '0')}:00`;
+
+            const weatherMap = {
+                'clear-day': '晴天',
+                'partly-cloudy-day': '多雲',
+                'cloudy': '多雲',
+                'overcast': '陰天',
+                'fog': '起霧',
+                'drizzle': '毛毛雨',
+                'sleet': '凍雨',
+                'rain': '下雨',
+                'snow': '下雪',
+                'thunderstorm': '雷雨'
+            };
+            const weatherLabel = weatherMap[h.icon] || h.icon;
+
+            return [timeStr, weatherLabel]; // Multi-line label with Chinese text
         });
         
         const rainProbs = futureHourly.map(h => h.pop);
@@ -365,9 +376,16 @@ const displayTips = uniqueTips.slice(0, 2);
                         label: '降雨機率 (%)',
                         data: rainProbs,
                         type: 'bar',
-                        backgroundColor: '#3b82f6', // Blue 500
+                        backgroundColor: (ctx) => {
+                           const val = ctx.raw;
+                           // Gradient color for rain probability
+                           if (val >= 70) return '#ef4444'; // Red-500
+                           if (val >= 40) return '#f59e0b'; // Amber-500
+                           return '#3b82f6'; // Blue-500
+                        },
                         yAxisID: 'yRain',
-                        borderRadius: 2
+                        borderRadius: 4,
+                        maxBarThickness: 20
                     },
                     {
                         label: '紫外線 (UV)',
@@ -376,9 +394,9 @@ const displayTips = uniqueTips.slice(0, 2);
                         borderColor: '#f43f5e', // Rose 500
                         backgroundColor: '#f43f5e',
                         borderWidth: 2,
-                        pointRadius: 1,
+                        pointRadius: 2, // Slightly larger points
                         yAxisID: 'yUV',
-                        tension: 0.4
+                        tension: 0.3
                     }
                 ]
             },
@@ -392,7 +410,7 @@ const displayTips = uniqueTips.slice(0, 2);
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: { font: { size: 12 }, usePointStyle: true }
+                        labels: { boxWidth: 12, font: { size: 11 }, usePointStyle: true }
                     },
                      tooltip: {
                         callbacks: {
@@ -405,27 +423,33 @@ const displayTips = uniqueTips.slice(0, 2);
                     }
                 },
                 scales: {
-                    x: { 
+                    x: {
                         grid: { display: false },
-                        ticks: { autoSkip: false, maxRotation: 0, font: {size: 10} }
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 8, // Avoid overcrowding
+                            font: { size: 10 }
+                        }
                     },
                     yRain: {
                         type: 'linear',
                         display: true,
                         position: 'left',
+                        title: { display: true, text: '降雨 %', font: { size: 10 } },
+                        min: 0,
                         max: 100,
-                        grid: { display: true, drawOnChartArea: false },
-                        title: { display: true, text: '降雨 %' }
+                        grid: { display: false }
                     },
                     yUV: {
                         type: 'linear',
                         display: true,
                         position: 'right',
-                        min: 0, // UV usually 0-11+
-                        max: 12,
-                        grid: { display: false },
-                        title: { display: true, text: 'UV 指數' }
-                    },
+                        title: { display: true, text: 'UV 指數', font: { size: 10 } },
+                        min: 0,
+                        max: 12, // Standard UV Index max
+                        grid: { borderDash: [2, 4], color: '#f3f4f6' }
+                    }
                 }
             }
         });
