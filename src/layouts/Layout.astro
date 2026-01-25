@@ -2,6 +2,7 @@
 // src/layouts/Layout.astro
 
 import MobileHeader from '../components/MobileHeader.astro';
+import CookieConsent from '../components/CookieConsent.astro'; // 🟢 [NEW]
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
@@ -82,6 +83,11 @@ const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
 
                 function loadGTM() {
                     if (gtmLoaded) return;
+                    
+                    // 🟢 Check Consent
+                    const consent = localStorage.getItem('cookie_consent');
+                    if (consent === 'rejected') return; // Strictly block if rejected
+                    
                     gtmLoaded = true;
 
                     const script = document.createElement('script');
@@ -94,6 +100,9 @@ const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
                     gtag('js', new Date());
                     gtag('config', gtmId);
                 }
+
+                // 🟢 Listen for Cookie Acceptance (Immediate Load)
+                window.addEventListener('cookie-accepted', loadGTM);
 
                 // 定義會觸發載入的「使用者互動」事件
                 const userEvents = ['mousemove', 'click', 'keydown', 'scroll', 'touchstart'];
@@ -256,5 +265,7 @@ Outdoor Camping World 台灣站 (Since 2004) 致力於提供最透明、最準�
             document.addEventListener('astro:page-load', startObserver);
             document.addEventListener('DOMContentLoaded', startObserver);
         </script>
+        
+        <CookieConsent />
 </body>
 </html>

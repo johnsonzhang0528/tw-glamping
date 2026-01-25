@@ -101,6 +101,7 @@ def fetch_weather():
             "latitude": ",".join(lats),
             "longitude": ",".join(lngs),
             "daily": "weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
+            "hourly": "temperature_2m,precipitation_probability,windspeed_10m,weathercode",
             "timezone": "auto",
             "forecast_days": "14"
         }
@@ -134,6 +135,9 @@ def fetch_weather():
                         continue
 
                     daily = item.get("daily", {})
+                    hourly = item.get("hourly", {})
+                    
+                    # 1. Process Daily
                     forecast = []
                     times = daily.get("time", [])
                     codes = daily.get("weathercode", [])
@@ -148,15 +152,40 @@ def fetch_weather():
                         w_info = get_weather_info(w_code)
                         forecast.append({
                             "date": times[k],
-                            "max_temp": round(max_temps[k]) if max_temps[k] is not None else 0,
-                            "min_temp": round(min_temps[k]) if min_temps[k] is not None else 0,
-                            "rain_prob": precip_probs[k] if precip_probs[k] is not None else 0,
+                            "max_temp": max_temps[k],
+                            "min_temp": min_temps[k],
+                            "rain_prob": precip_probs[k],
                             "weather_code": w_code,
                             "label": w_info["label"],
                             "icon": w_info["icon"]
                         })
+
+                    # 2. Process Hourly (Limit to next 48 hours to save size)
+                    hourly_data = []
+                    h_times = hourly.get("time", [])
+                    h_temps = hourly.get("temperature_2m", [])
+                    h_probs = hourly.get("precipitation_probability", [])
+                    h_winds = hourly.get("windspeed_10m", [])
+                    h_codes = hourly.get("weathercode", [])
                     
-                    weather_data[camp_name] = forecast
+                    if h_times:
+                        # Only take first 72 hours for detail view (3 days)
+                        limit = min(72, len(h_times))
+                        for k in range(limit):
+                            hourly_data.append({
+                                "time": h_times[k], # ISO 8601
+                                "temp": h_temps[k],
+                                "pop": h_probs[k], # Probability of Precipitation
+                                "wind": h_winds[k],
+                                "icon": get_weather_info(h_codes[k])["icon"]
+                            })
+
+                    weather_data[camp_name] = {
+                        "daily": forecast,
+                        "hourly": hourly_data,
+                        "updated_at": datetime.datetime.now().isoformat()
+                    }
+                    
                     success_count += 1
                 
                 log(f"✅ [Batch {i+1}/{total_batches}] Batch complete.")

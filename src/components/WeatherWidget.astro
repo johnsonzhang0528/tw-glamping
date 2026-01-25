@@ -11,13 +11,25 @@ interface ForecastDay {
   icon: string;
 }
 
+interface HourlyData {
+  time: string;
+  temp: number;
+  pop: number;
+  wind: number;
+  icon: string;
+}
+
 interface Props {
-  forecast: ForecastDay[];
+  forecast: ForecastDay[] | { daily: ForecastDay[], hourly: HourlyData[] };
   city?: string; // Used for fallback message
   updatedAt?: string; // ISO string
 }
 
 const { forecast, city, updatedAt } = Astro.props;
+
+// Normalize Data
+const dailyForecast = Array.isArray(forecast) ? forecast : (forecast?.daily || []);
+const hourlyForecast = Array.isArray(forecast) ? [] : (forecast?.hourly || []);
 
 // Formatting Helpers
 function formatDate(dateStr: string) {
@@ -59,7 +71,7 @@ const getSimpleDate = (dStr: string) => {
 
 // 1. Extreme Weather Checks (Priority: Warning > Heavy Rain)
 // Rain Check (High Probability > 60%)
-const rainyDays = forecast.filter(d => d.rain_prob >= 60);
+const rainyDays = dailyForecast.filter(d => d.rain_prob >= 60);
 if (rainyDays.length > 0) {
     const firstRain = rainyDays[0];
      tips.push({ 
@@ -69,7 +81,7 @@ if (rainyDays.length > 0) {
 }
 
 // Cold Check (Min Temp <= 10)
-const coldDays = forecast.filter(d => d.min_temp <= 8);
+const coldDays = dailyForecast.filter(d => d.min_temp <= 8);
 if (coldDays.length > 0) {
     // Find the coldest day
     const coldest = coldDays.reduce((prev, curr) => prev.min_temp < curr.min_temp ? prev : curr);
@@ -80,7 +92,7 @@ if (coldDays.length > 0) {
 }
 
 // Heat Check (Max Temp >= 32)
-const hotDays = forecast.filter(d => d.max_temp >= 32);
+const hotDays = dailyForecast.filter(d => d.max_temp >= 32);
 if (hotDays.length > 0) {
      const firstHot = hotDays[0];
      tips.push({ 
@@ -94,7 +106,7 @@ if (hotDays.length > 0) {
 const weekendGroups: ForecastDay[][] = [];
 let currentGroup: ForecastDay[] = [];
 
-forecast.forEach((d, idx) => {
+dailyForecast.forEach((d, idx) => {
     const date = new Date(d.date);
     const day = date.getDay();
     if (day === 5 || day === 6 || day === 0) { // Fri, Sat, Sun
@@ -140,9 +152,9 @@ if (targetWeekend && targetWeekend.length > 0) {
 }
 
 // 3. Fallback / General Generalization
-if (tips.length === 0) {
-     const isGenerallyGood = forecast.every(d => d.rain_prob < 45); // Relaxed threshold
-     const range = `${getSimpleDate(forecast[0].date)}~${getSimpleDate(forecast[forecast.length-1].date)}`;
+if (tips.length === 0 && dailyForecast.length > 0) {
+     const isGenerallyGood = dailyForecast.every(d => d.rain_prob < 45); // Relaxed threshold
+     const range = `${getSimpleDate(dailyForecast[0].date)}~${getSimpleDate(dailyForecast[dailyForecast.length-1].date)}`;
      
      if (isGenerallyGood) {
          tips.push({ 
@@ -217,21 +229,36 @@ const displayTips = uniqueTips.slice(0, 2);
   )}
 
   {/* Chart Section */}
-  <div class="px-4 pb-6 mt-4">
+  <div class="px-4 pb-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Daily Chart */}
       <div class="relative h-64 w-full">
+          <h3 class="text-xs font-bold text-stone-500 mb-2 uppercase tracking-wide">兩週氣溫趨勢</h3>
           <canvas id="weatherChart"></canvas>
       </div>
+
+      {/* Hourly Chart */}
+      {hourlyForecast.length > 0 && (
+          <div class="relative h-64 w-full border-t lg:border-t-0 lg:border-l border-stone-100 pt-6 lg:pt-0 lg:pl-6">
+              <h3 class="text-xs font-bold text-stone-500 mb-2 uppercase tracking-wide">24小時風速與降雨</h3>
+              <canvas id="hourlyChart"></canvas>
+          </div>
+      )}
   </div>
 
   {/* Hidden Data for JS */}
-  <div id="weather-data" data-forecast={JSON.stringify(forecast)} class="hidden"></div>
+  <div id="weather-data" data-forecast={JSON.stringify(dailyForecast)} data-hourly={JSON.stringify(hourlyForecast)} class="hidden"></div>
   
   <script is:inline src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script is:inline>
-    document.addEventListener('astro:page-load', initChart);
-    document.addEventListener('DOMContentLoaded', initChart);
+    document.addEventListener('astro:page-load', initCharts);
+    document.addEventListener('DOMContentLoaded', initCharts);
 
-    function initChart() {
+    function initCharts() {
+        initDailyChart();
+        initHourlyChart();
+    }
+
+    function initDailyChart() {
         const ctx = document.getElementById('weatherChart');
         const dataEl = document.getElementById('weather-data');
         
@@ -280,26 +307,103 @@ const displayTips = uniqueTips.slice(0, 2);
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: {
-                            font: { size: 12 },
-                            usePointStyle: true
-                        }
+                        labels: { font: { size: 12 }, usePointStyle: true }
                     },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: { 
+                        display: true,
+                        ticks: { callback: function(value) { return value + '°C'; } }     
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    function initHourlyChart() {
+        const ctx = document.getElementById('hourlyChart');
+        const dataEl = document.getElementById('weather-data');
+
+        if (!ctx || !dataEl) return;
+        if (ctx.classList.contains('chart-initialized')) return;
+        ctx.classList.add('chart-initialized');
+
+        const rawHourly = JSON.parse(dataEl.dataset.hourly || '[]');
+        if (rawHourly.length === 0) return;
+
+        // 🟢 Time Shifting Logic
+        // Filter out past hours to show next 24 hours of FUTURE
+        const now = new Date();
+        const futureHourly = rawHourly.filter(h => new Date(h.time) > now).slice(0, 24);
+
+        if (futureHourly.length === 0) return;
+
+        const labels = futureHourly.map(h => {
+            const date = new Date(h.time);
+            return `${date.getHours()}:00`;
+        });
+        
+        const windSpeeds = futureHourly.map(h => h.wind);
+        const rainProbs = futureHourly.map(h => h.pop);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '降雨機率 (%)',
+                        data: rainProbs,
+                        type: 'line',
+                        borderColor: '#3b82f6', // Blue 500
+                        backgroundColor: '#3b82f6',
+                        yAxisID: 'y1',
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                    },
+                    {
+                        label: '風速 (km/h)',
+                        data: windSpeeds,
+                        backgroundColor: '#a8a29e', // Stone 400
+                        yAxisID: 'y',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { font: { size: 12 }, usePointStyle: true }
                     }
                 },
                 scales: {
+                    x: { grid: { display: false } },
                     y: {
-                        display: true, // Show Y axis labels
-                        ticks: {
-                            callback: function(value) { return value + '°C'; }
-                        }
-                    },
-                    x: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: '風速' },
                         grid: { display: false }
-                    }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        grid: { drawOnChartArea: false }, // only want the grid lines for one axis to show up
+                        ticks: { callback: function(value) { return value + '%'; } }
+                    },
                 }
             }
         });
