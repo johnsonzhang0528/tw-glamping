@@ -1,0 +1,162 @@
+{
+  "source": "Outdoor Camping World",
+  "generated_at": "0.0",
+  "items": [
+    {
+      "id": "cw-7848469055197716828",
+      "title": "阿貴營地",
+      "description": "位於海拔 1200 公尺的新竹五峰，阿貴營地擁有令人屏息的雲海大景。營區提供室內營位選擇，讓新手也能輕鬆體驗高山露營樂趣。春賞櫻花、夏避酷暑，四季皆有不同風情，...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_3.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/阿貴營地/",
+      "tags": [
+        "新竹賞櫻",
+        "避暑",
+        "新竹室內營位"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-5594655431873355993",
+      "title": "ㄠ嶩民宿露營區",
+      "description": "結合民宿與露營的複合式莊園，ㄠ嶩提供多元的住宿體驗。位於中高海拔，視野開闊，雲海季時美不勝收。營主熱情提供的導覽解說，能讓您更深入了解泰安當地的原民文化與自然生...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_4.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/ㄠ嶩民宿露營區/",
+      "tags": [
+        "寵物同行",
+        "民宿",
+        "櫻花"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-8313155265407059509",
+      "title": "巴棍民宿露營區",
+      "description": "新竹五峰老字號的高海拔營地，巴棍民宿擁有豐富的營運經驗。海拔 1240 公尺讓這裡夏季如秋，是絕佳避暑勝地。提供民宿、室內營位與裝備租借，無論是露營新手或長輩同...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_4.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/巴棍民宿露營區/",
+      "tags": [
+        "避暑",
+        "新竹雨棚",
+        "可租裝備"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-8585776932736104926",
+      "title": "巴斯瓜藍露營區",
+      "description": "隱身杉林間的高海拔秘境，巴斯瓜藍擁有得天獨厚的自然環境。早晨被鳥鳴喚醒，午後享受森林芬多精。營區規劃了室內營位，適合長輩或不想搭帳的旅人。夜晚無光害，是觀賞銀河...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_2.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/巴斯瓜藍露營區/",
+      "tags": [
+        "森林系",
+        "高海拔",
+        "新竹室內營位"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-4170505307999502443",
+      "title": "巴萬五峰",
+      "description": "位於五峰山區的清幽營地，海拔近千米，視野開闊。營區提供小包區服務，適合三五好友相聚。設有室內營位與戲水池，無論晴雨都能享受露營樂趣。周邊自然步道豐富，適合喜愛散...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_1.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/巴萬五峰/",
+      "tags": [
+        "部份區域可車露",
+        "可租裝備",
+        "有冰櫃"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-7593413623214461344",
+      "title": "清心忘憂露營區",
+      "description": "位於尖石海拔 940 公尺處，這裡擁有百萬級的夜景與無敵雲海。清心忘憂營區環境整理得一塵不染，衛浴設施乾淨舒適。春天賞櫻、秋天賞楓，四季景色宜人。提供室內營位，...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_4.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/清心忘憂露營區/",
+      "tags": [
+        "新竹賞櫻",
+        "新竹螢火蟲",
+        "寵物同行"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-3600395441834731466",
+      "title": "逢雲露營區",
+      "description": "泰安鄉最高海拔的營地之一，逢雲露營區擁有傲人的 1200 公尺高度。這裡的雲海景觀壯闊震撼，彷彿漫步雲端。除了草皮營位，也提供舒適的室內營位與民宿選擇。設施包含...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_5.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/逢雲露營區/",
+      "tags": [
+        "海景",
+        "大草皮",
+        "苗栗室內營位"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-3946533026499229604",
+      "title": "格步霧露營區",
+      "description": "格步霧在泰雅語意為「霧氣繚繞之地」，海拔 1160 公尺讓這裡常年雲霧飄渺，充滿仙氣。營區設施包含雨棚與室內營位，並提供在地手作體驗與導覽。這裡也是觀賞白蘭部落...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_4.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/格步霧露營區/",
+      "tags": [
+        "新竹雨棚",
+        "有WIFI",
+        "部落文化"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-1266988713551733740",
+      "title": "谷關365露營區",
+      "description": "位於台中谷關風景區周邊，露營之餘還能享受著名的谷關溫泉。營區內設有雨棚與室內營位，適合全家大小。周邊景點豐富，包含稍來步道與谷關吊橋。春天賞櫻、冬天泡湯，是一年...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_1.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/谷關365露營區/",
+      "tags": [
+        "溫泉",
+        "台中雨棚",
+        "台中螢火蟲"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-4944032667011218819",
+      "title": "愛莉絲森林露營區",
+      "description": "彷彿走進童話故事般的森林秘境，愛莉絲森林位於高雄桃源高海拔山區。這裡保留了原始森林風貌，空氣中充滿芬多精。海拔 1100 公尺讓夏天也能享受涼意。提供室內營位與...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_5.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/愛莉絲森林露營區/",
+      "tags": [
+        "森林系",
+        "避暑",
+        "寵物同行"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-2203812879051898022",
+      "title": "家霖農場",
+      "description": "位於台中和平區的高海拔農場營地，家霖農場以在地美味餐飲與農產著稱。海拔 1050 公尺氣候涼爽。提供室內營位與民宿選擇，適合長輩同行。這裡的登山步道規劃完善，是...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_3.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/家霖農場/",
+      "tags": [
+        "美食",
+        "在地美味",
+        "登山步道"
+      ],
+      "score": 60
+    },
+    {
+      "id": "cw-3157837743730336779",
+      "title": "司馬庫斯拉娃露營區",
+      "description": "位於「上帝的部落」司馬庫斯內，海拔高達 1610 公尺。這裡是前往巨木群步道的最佳住宿點，讓您一早就能避開人潮進入神木區。營區提供室內營位與餐廳販賣部，雖然地處...",
+      "image": "https://www.outdoorcampingworld.com/images/placeholders/camp_1.webp",
+      "url": "https://www.outdoorcampingworld.com/camp/司馬庫斯拉娃露營區/",
+      "tags": [
+        "司馬庫斯",
+        "高海拔",
+        "寵物同行"
+      ],
+      "score": 60
+    }
+  ]
+}

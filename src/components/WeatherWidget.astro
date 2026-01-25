@@ -216,49 +216,93 @@ const displayTips = uniqueTips.slice(0, 2);
     </div>
   )}
 
-  {/* Forecast List */}
-  <div class="p-4 overflow-x-auto pb-6 scrollbar-hide">
-    {(!forecast || forecast.length === 0) ? (
-        <div class="text-center py-8 text-stone-500 text-sm">
-            暫無詳細氣象資料，請參考 <span class="font-bold">{city}</span> 天氣預報。
-        </div>
-    ) : (
-        <div class="flex gap-4 min-w-max">
-            {forecast.map((day, idx) => (
-                <div class={`flex flex-col items-center min-w-[70px] p-2 rounded-xl border ${idx === 0 ? 'bg-emerald-50/30 border-emerald-200 ring-1 ring-emerald-100' : 'bg-transparent border-transparent'}`}>
-                    <span class={`text-xs font-bold mb-1 ${idx === 0 ? 'text-emerald-700' : 'text-stone-500'}`}>
-                        {formatDate(day.date)}
-                    </span>
-                    <span class="text-[10px] text-stone-400 mb-2">{getDayName(day.date)}</span>
-                    
-                    <span class="text-3xl mb-1 filter drop-shadow-sm transform hover:scale-110 transition cursor-default" title={day.label}>
-                        {ICONS[day.icon] || "☁️"}
-                    </span>
-                    <span class="text-xs text-stone-800 font-bold mb-1 text-center h-8 flex items-center justify-center leading-tight">
-                        {day.label}
-                    </span>
-                    
-                    {/* Temperature Bar Visualization - Simplified to Text Only */}
-                    <div class="flex flex-col items-center w-full gap-1">
-                         <div class="text-xs font-bold text-stone-700">
-                            <span class="text-sky-600">{day.min_temp}°</span>
-                            <span class="text-stone-300 mx-0.5">/</span>
-                            <span class="text-orange-500">{day.max_temp}°</span>
-                         </div>
-                    </div>
-
-                    {/* Rain Probability */}
-                    <div class="mt-3 h-4 flex items-center">
-                        {day.rain_prob > 0 && (
-                            <span class={`text-[10px] font-bold flex items-center gap-0.5 
-                                ${day.rain_prob >= 50 ? 'text-blue-600' : 'text-stone-400'}`}>
-                                💧 {day.rain_prob}%
-                            </span>
-                        )}
-                    </div>
-                </div>
-            ))}
-        </div>
-    )}
+  {/* Chart Section */}
+  <div class="px-4 pb-6 mt-4">
+      <div class="relative h-64 w-full">
+          <canvas id="weatherChart"></canvas>
+      </div>
   </div>
+
+  {/* Hidden Data for JS */}
+  <div id="weather-data" data-forecast={JSON.stringify(forecast)} class="hidden"></div>
+  
+  <script is:inline src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script is:inline>
+    document.addEventListener('astro:page-load', initChart);
+    document.addEventListener('DOMContentLoaded', initChart);
+
+    function initChart() {
+        const ctx = document.getElementById('weatherChart');
+        const dataEl = document.getElementById('weather-data');
+        
+        if (!ctx || !dataEl) return;
+        
+        // Prevent double init
+        if (ctx.classList.contains('chart-initialized')) return;
+        ctx.classList.add('chart-initialized');
+
+        const rawData = JSON.parse(dataEl.dataset.forecast || '[]');
+        if (rawData.length === 0) return;
+
+        const labels = rawData.map(d => {
+            const date = new Date(d.date);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        });
+        const maxTemps = rawData.map(d => d.max_temp);
+        const minTemps = rawData.map(d => d.min_temp);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '最高溫',
+                        data: maxTemps,
+                        borderColor: '#f97316', // Orange 500
+                        backgroundColor: '#f97316',
+                        tension: 0.4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: '最低溫',
+                        data: minTemps,
+                        borderColor: '#0284c7', // Sky 600
+                        backgroundColor: '#0284c7',
+                        tension: 0.4,
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: 12 },
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        display: true, // Show Y axis labels
+                        ticks: {
+                            callback: function(value) { return value + '°C'; }
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+  </script>
 </div>

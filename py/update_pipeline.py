@@ -4,6 +4,9 @@ import time
 from datetime import datetime
 from google import genai
 from scrape_icamping import scrape_data  # 復用你原本的爬蟲邏輯
+import smart_clean_spots
+import generate_cross_promo_data
+import generate_camp_feed
 
 import sys
 
@@ -176,12 +179,31 @@ def main():
             # 避免 Rate Limit
             time.sleep(2)
             
-    # 4. 存檔
+    # 4. 存檔 (Enriched Data)
     print(f"💾 儲存中... (新增 {new_count} 筆, 總計 {len(updated_list)} 筆)", flush=True)
     with open(ENRICHED_DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(updated_list, f, ensure_ascii=False, indent=2)
     
-    print("✅ 更新完成！程式結束。", flush=True)
+    # 5. 執行後續 Pipeline
+    print("\n🚿 執行智慧清洗 (Smart Clean)...")
+    try:
+        smart_clean_spots.main()
+    except Exception as e:
+        print(f"❌ 清洗失敗: {e}")
+
+    print("\n📢 生成 Cross-Promo 資料...")
+    try:
+        generate_cross_promo_data.main()
+    except Exception as e:
+        print(f"❌ 廣告資料生成失敗: {e}")
+
+    print("\n📊 生成 Top Camp Feed...")
+    try:
+        generate_camp_feed.main()
+    except Exception as e:
+        print(f"❌ Top Feed 生成失敗: {e}")
+
+    print("\n✅ 所有更新作業完成！程式結束。", flush=True)
     sys.exit(0)
 
 if __name__ == "__main__":
