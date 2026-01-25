@@ -342,7 +342,12 @@ const displayTips = uniqueTips.slice(0, 2);
 
         const labels = futureHourly.map(h => {
             const date = new Date(h.time);
-            return `${date.getHours()}:00`;
+            const hours = date.getHours();
+            // Show date at midnight
+            if (hours === 0) {
+                return `${date.getMonth() + 1}/${date.getDate()}`;
+            }
+            return `${hours}:00`;
         });
         
         const windSpeeds = futureHourly.map(h => h.wind);
