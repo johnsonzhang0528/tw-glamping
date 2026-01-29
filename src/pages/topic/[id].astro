@@ -168,7 +168,7 @@ const schema = {
              "itemListElement": camps.slice(0, 10).map((camp, index) => ({
              "@type": "ListItem",
              "position": index + 1,
-             "url": new URL(`/camp/${camp.name}`, Astro.site).toString(),
+             "url": new URL(`/camp/${camp.name}/`, Astro.site).toString(),
              "name": camp.name
              }))
         }
