@@ -344,6 +344,27 @@ function autoLinkKeywords(text, city, area) {
 }
 
 const linkedDescription = autoLinkKeywords(camp.description, camp.city, camp.area);
+
+// 🟢 [SEO] Reverse Silo: Compute which topic pages this camp belongs to
+// This creates bidirectional links between camp detail and topic hub pages
+const activeTopics = [];
+if (camp.features.has_glamping) activeTopics.push({ slug: 'glamping', label: '✨ 豪華露營', desc: '免搭帳、星級體驗' });
+if (camp.features.high_altitude) activeTopics.push({ slug: 'high-altitude', label: '⛰️ 高海拔避暑', desc: '雲海、星空、涼爽' });
+if (camp.features.pet_friendly) activeTopics.push({ slug: 'pet-friendly', label: '🐾 寵物友善', desc: '帶著毛小孩一起' });
+if (camp.tags.some(t => t.includes('森林') || t.includes('樹林'))) activeTopics.push({ slug: 'forest', label: '🌲 森林系露營', desc: '芬多精療癒' });
+
+// City × Feature combo topics (programmatic SEO pages)
+const citySlugMap: Record<string, string> = {
+  '苗栗縣': 'miaoli', '新竹縣': 'hsinchu', '南投縣': 'nantou', '宜蘭縣': 'yilan',
+  '台中市': 'taichung', '桃園市': 'taoyuan', '新北市': 'new-taipei', '嘉義縣': 'chiayi',
+  '高雄市': 'kaohsiung', '屏東縣': 'pingtung', '花蓮縣': 'hualien', '台東縣': 'taitung'
+};
+const citySlug = citySlugMap[camp.city];
+if (citySlug) {
+  if (camp.features.has_glamping) activeTopics.push({ slug: `${citySlug}-glamping`, label: `${camp.city}豪華露營`, desc: '' });
+  if (camp.features.high_altitude) activeTopics.push({ slug: `${citySlug}-high-altitude`, label: `${camp.city}高海拔`, desc: '' });
+  if (camp.features.pet_friendly) activeTopics.push({ slug: `${citySlug}-pet-friendly`, label: `${camp.city}寵物友善`, desc: '' });
+}
 ---
 
 <Layout title={seoTitle} description={metaDesc} image={shareImage}>
@@ -415,6 +436,21 @@ const linkedDescription = autoLinkKeywords(camp.description, camp.city, camp.are
                             <a href={`/search?q=${tag}`} class="bg-stone-50 border border-stone-200 text-stone-600 px-3 py-1 rounded-full text-sm hover:bg-emerald-50 hover:text-emerald-700 transition">#{tag}</a>
                         ))}
                     </div>
+
+                    {/* 🟢 [SEO] Reverse Silo: Topic Hub Links */}
+                    {activeTopics.length > 0 && (
+                        <div class="mt-6 not-prose">
+                            <p class="text-sm text-stone-500 mb-2 font-medium">📂 此營區收錄於以下主題：</p>
+                            <div class="flex flex-wrap gap-2">
+                                {activeTopics.map(topic => (
+                                    <a href={`/topic/${topic.slug}/`}
+                                       class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 hover:border-emerald-300 transition-colors">
+                                        {topic.label}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* ✨ New Section: Camp Facilities & Features */}
                     {campFacilities.length > 0 && (
@@ -517,16 +553,5 @@ const linkedDescription = autoLinkKeywords(camp.description, camp.city, camp.are
         </div>
     </div>
 
-    {/* Sticky Bottom Bar for Mobile Conversion */}
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 pb-safe z-50 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <div class="grid grid-cols-5 gap-4 items-center h-12">
-            <div class="col-span-2 text-xs text-stone-500">
-                <p>每晚參考價</p>
-                <p class="text-lg font-bold text-red-600">NT$ 1200 <span class="text-xs font-normal text-stone-400">起</span></p>
-            </div>
-            <a href="#" class="col-span-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg h-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
-                前往預訂 / 查看優惠
-            </a>
-        </div>
-    </div>
+
 </Layout>

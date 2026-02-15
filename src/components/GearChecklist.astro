@@ -127,7 +127,10 @@ if (recommendedCategories.length === 0) {
                         <a 
                             href={item.link} 
                             target="_blank" 
-                            rel="nofollow noopener noreferrer"
+                            rel="nofollow noopener noreferrer sponsored"
+                            data-track-affiliate="gear"
+                            data-item-name={item.name}
+                            data-item-price={item.price}
                             class="flex items-center justify-between p-2 rounded-md hover:bg-emerald-50/50 transition-colors group/item"
                         >
                             <div class="flex-1 min-w-0 pr-3">

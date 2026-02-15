@@ -13,5 +13,37 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/modules/(.*)",
+      "destination": "/",
+      "statusCode": 410
+    },
+    {
+      "source": "/upload/(.*)",
+      "destination": "/",
+      "statusCode": 410
+    },
+    {
+      "source": "/product/(.*)",
+      "destination": "/",
+      "statusCode": 410
+    },
+    {
+      "source": "/member/(.*)",
+      "destination": "/",
+      "statusCode": 410
+    },
+    {
+      "source": "/(.*)\\.php",
+      "destination": "/",
+      "statusCode": 410
+    },
+    {
+      "source": "/(.*)\\.html",
+      "destination": "/",
+      "statusCode": 410
+    }
   ]
 }

@@ -56,13 +56,7 @@ const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
     <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossorigin />
     <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossorigin />
 
-        {/* 🟢 [LCP FIX] 加入 fetchpriority="high" 以消除 LCP 警告 */}
-        <link 
-            rel="preload" 
-            href="https://www.transparenttextures.com/patterns/stardust.png" 
-            as="image" 
-            fetchpriority="high"
-        />
+        {/* stardust.png 預載已移除：該紋理為裝飾性背景，不應佔用 LCP 最高優先資源 */}
 
         {preloadImage && (
             <link rel="preload" href={preloadImage} as="image" fetchpriority="high" />
@@ -74,6 +68,8 @@ const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 )}
 {!noindex && <link rel="canonical" href={canonicalURL} />}
+<link rel="alternate" hreflang="zh-TW" href={canonicalURL} />
+<link rel="alternate" hreflang="x-default" href={canonicalURL} />
 
 		<script is:inline>
             (function() {
@@ -179,6 +175,14 @@ Outdoor Camping World 台灣站 (Since 2004) 致力於提供最透明、最準�
 							<li><a href="/city/南投縣/" class="hover:text-white transition">南投露營</a></li>
 <li><a href="/city/新竹縣/" class="hover:text-white transition">新竹露營</a></li>
 <li><a href="/city/宜蘭縣/" class="hover:text-white transition">宜蘭露營</a></li>
+<li><a href="/city/台中市/" class="hover:text-white transition">台中露營</a></li>
+<li><a href="/city/新北市/" class="hover:text-white transition">新北露營</a></li>
+<li><a href="/city/桃園市/" class="hover:text-white transition">桃園露營</a></li>
+<li><a href="/city/屏東縣/" class="hover:text-white transition">屏東露營</a></li>
+<li><a href="/city/花蓮縣/" class="hover:text-white transition">花蓮露營</a></li>
+<li><a href="/city/台東縣/" class="hover:text-white transition">台東露營</a></li>
+<li><a href="/city/嘉義縣/" class="hover:text-white transition">嘉義露營</a></li>
+<li><a href="/city/高雄市/" class="hover:text-white transition">高雄露營</a></li>
 </ul>
 </div>
 <div>
@@ -264,6 +268,21 @@ Outdoor Camping World 台灣站 (Since 2004) 致力於提供最透明、最準�
 
             document.addEventListener('astro:page-load', startObserver);
             document.addEventListener('DOMContentLoaded', startObserver);
+
+            // 🟢 [GA4] Affiliate Click Event Tracking
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[data-track-affiliate]');
+                if (!link) return;
+                if (typeof gtag === 'function') {
+                    gtag('event', 'affiliate_click', {
+                        affiliate_type: link.dataset.trackAffiliate || 'unknown',
+                        item_name: link.dataset.itemName || '',
+                        item_price: link.dataset.itemPrice || '',
+                        link_url: link.href,
+                        page_path: window.location.pathname
+                    });
+                }
+            }, true);
         </script>
         
         <CookieConsent />
