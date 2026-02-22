@@ -46,10 +46,10 @@
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=coleman%20%E7%BE%BD%E7%B5%A8%E7%9D%A1%E8%A2%8B&searchType=1"
       },
       {
-        "name": "【Naturehike】U350全開式保暖睡袋 MSD07(台灣總代理公司貨)",
-        "price": "$850",
+        "name": "【Naturehike】PS200LITE睡餅伸手可機洗帶帽睡袋 WS026 (台灣總代理公司貨)",
+        "price": "$2,080",
         "search_keyword": "naturehike 羽絨睡袋",
-        "desc": "滿1件享85折",
+        "desc": "可伸手伸腳，自由伸展",
         "cta": "查優惠",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=naturehike%20%E7%BE%BD%E7%B5%A8%E7%9D%A1%E8%A2%8B&searchType=1"
       },
@@ -72,12 +72,12 @@
     "keywords": [
       "煤油暖爐",
       "露營暖爐",
-      "保暖爐",
       "圍爐",
-      "暖爐推薦",
+      "暖爐",
       "煤油爐",
+      "保暖神器",
       "露營保暖",
-      "冬季露營"
+      "圍爐火鍋"
     ],
     "title": "🔥 圍爐暖心：冬季露營暖爐專區",
     "items": [
@@ -98,12 +98,12 @@
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=toyotomi%20%E6%9A%96%E7%88%90&searchType=1"
       },
       {
-        "name": "【aladdin】煤油暖爐(BF3912-G)",
-        "price": "$32,900 (下單再折)",
-        "search_keyword": "gstove 暖爐",
-        "desc": "滿1件享95折",
+        "name": "G-Stove 圍爐暖爐",
+        "price": "$4800起",
+        "search_keyword": "gstove 圍爐",
+        "desc": "一爐多用，煮食暖爐！",
         "cta": "立即選購",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=gstove%20%E6%9A%96%E7%88%90&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=gstove%20%E5%9C%8D%E7%88%90&searchType=1"
       }
     ]
   },
@@ -127,9 +127,9 @@
     "items": [
       {
         "name": "Naturehike 電火鍋組",
-        "price": "$1500起",
+        "price": "$1800起",
         "search_keyword": "naturehike 火鍋",
-        "desc": "方便攜帶，隨時享受暖心火鍋！",
+        "desc": "方便攜帶，隨時開火！",
         "cta": "查優惠",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=naturehike%20%E7%81%AB%E9%8D%8B&searchType=1"
       },
@@ -137,15 +137,15 @@
         "name": "Coleman 瓦斯火鍋組",
         "price": "$2200起",
         "search_keyword": "coleman 火鍋",
-        "desc": "火力強勁，戶外火鍋更美味！",
+        "desc": "火力強勁，熱情滾滾！",
         "cta": "看評價",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=coleman%20%E7%81%AB%E9%8D%8B&searchType=1"
       },
       {
         "name": "Logitech 露營電火鍋",
-        "price": "$1800起",
+        "price": "$2500起",
         "search_keyword": "logitech 火鍋",
-        "desc": "安全方便，全家共享暖心時刻！",
+        "desc": "安全方便，美味暖心！",
         "cta": "立即選購",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=logitech%20%E7%81%AB%E9%8D%8B&searchType=1"
       }
@@ -154,36 +154,36 @@
   {
     "id": "category-4",
     "tags": [
-      "sleep",
-      "general"
+      "general",
+      "sleep"
     ],
     "keywords": [
       "保暖墊",
       "露營保暖",
-      "地墊",
       "防潮墊",
+      "地墊",
       "保暖地墊",
-      "露營必備",
+      "鋁箔墊",
       "保暖層",
-      "保暖墊推薦"
+      "露營必備"
     ],
-    "title": "🛡️ 告別寒冷地面：保暖墊大集合",
+    "title": "🛡️ 告別寒冷：露營保暖墊升級",
     "items": [
       {
-        "name": "【HongYew 鴻宇】科技發熱保暖墊 獨家四層工藝 免插電 蓄熱保暖-多款任選(雙人)",
-        "price": "$1,344",
-        "search_keyword": "thermarest 保暖墊",
-        "desc": "獨家鋁點保溫 抗寒保暖",
+        "name": "【ADISI】輕量折疊鋁箔睡墊 軍綠色+鋁箔 AS25063(登山 露營 舒適 舒眠 山屋 帳篷 摺疊 收納 輕量)",
+        "price": "$990",
+        "search_keyword": "thermarest 鋁箔墊",
+        "desc": "最高折300",
         "cta": "查優惠",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=thermarest%20%E4%BF%9D%E6%9A%96%E5%A2%8A&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=thermarest%20%E9%8B%81%E7%AE%94%E5%A2%8A&searchType=1"
       },
       {
-        "name": "Sea to Summit Comfort Plus 自充氣保暖墊",
-        "price": "$2500起",
-        "search_keyword": "sea to summit 保暖墊",
-        "desc": "舒適自充，提升睡眠品質！",
+        "name": "【SEA TO SUMMIT】自動充氣睡墊-野營plus系列-R-深苔綠(SEA TO SUMMIT/登山/露營/睡墊/輕量/充氣款)",
+        "price": "$3,402",
+        "search_keyword": "sea to summit 充氣墊",
+        "desc": "提供全方位的舒適與耐用度",
         "cta": "看評價",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=sea%20to%20summit%20%E4%BF%9D%E6%9A%96%E5%A2%8A&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=sea%20to%20summit%20%E5%85%85%E6%B0%A3%E5%A2%8A&searchType=1"
       },
       {
         "name": "Coleman 氣候達人COCOON地布【好勢露營】地墊 防潮墊 達人系列 CM-10480",
@@ -205,13 +205,13 @@
       "保暖衣",
       "發熱衣",
       "保暖內衣",
-      "冬季露營",
+      "露營保暖",
+      "禦寒衣",
       "發熱內衣",
-      "保暖層",
-      "保暖衣推薦",
-      "露營保暖"
+      "保暖褲",
+      "冬季衣物"
     ],
-    "title": "🧥 冬季露營暖呼呼：保暖衣物精選",
+    "title": "🧥 冬季露營：保暖衣物大推廣",
     "items": [
       {
         "name": "【Healthya】日本製吸濕發熱九分袖男發熱衣(日本進口保暖發熱衣)",
@@ -223,19 +223,19 @@
       },
       {
         "name": "【Columbia 哥倫比亞】鋁點 保暖女外套 內 背心 三合一外套 兩件式 防水外套 防風外套  哥倫比亞(1685)",
-        "price": "$5,614",
+        "price": "$6,380",
         "search_keyword": "columbia 保暖外套",
-        "desc": "滿1件享88折",
+        "desc": "防水女外套 鋁點款",
         "cta": "看評價",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=columbia%20%E4%BF%9D%E6%9A%96%E5%A4%96%E5%A5%97&searchType=1"
       },
       {
-        "name": "Montbell EX Light Down 保暖外套",
-        "price": "$4000起",
-        "search_keyword": "montbell 羽絨外套",
-        "desc": "極輕極暖，戶外活動首選！",
+        "name": "Montbell Thermal Stretch 發熱衣",
+        "price": "$1800起",
+        "search_keyword": "montbell 發熱衣",
+        "desc": "彈性舒適，活動自如！",
         "cta": "立即選購",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=montbell%20%E7%BE%BD%E7%B5%A8%E5%A4%96%E5%A5%97&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=montbell%20%E7%99%BC%E7%86%B1%E8%A1%A3&searchType=1"
       }
     ]
   }
