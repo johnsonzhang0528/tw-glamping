@@ -32,12 +32,12 @@
       "櫻花野餐",
       "防水野餐墊",
       "加大野餐墊",
-      "野餐椅"
+      "野餐收納"
     ],
     "title": "🌸 春日野餐必備！超夯野餐墊大集合",
     "items": [
       {
-        "name": "【麥瑞】加厚皮革綁帶防水野餐墊(野餐墊 野餐布 露營墊 沙灘墊 爬行墊 防水墊 防潮地墊 帳篷內墊)",
+        "name": "【麥瑞】加厚皮革綁帶防水野餐墊(野餐墊 野餐布 露營墊 沙灘墊 爬行墊 遊戲墊 防水墊 防潮地墊 帳篷內墊)",
         "price": "$546",
         "search_keyword": "防水野餐墊",
         "desc": "滿1件享8折",
@@ -46,15 +46,15 @@
       },
       {
         "name": "【Horizon 天際線】200x200cm法式格紋款輕便防潮野餐墊(附專屬收納袋/牛津布野餐墊/加大野餐墊)",
-        "price": "$499",
+        "price": "$424",
         "search_keyword": "加大野餐墊",
-        "desc": "格紋經典，百搭好拍",
+        "desc": "滿1件享85折",
         "cta": "看評價",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%8A%A0%E5%A4%A7%E9%87%8E%E9%A4%90%E5%A2%8A&searchType=1"
       },
       {
-        "name": "【TengYue】露營折疊輕便秒收月亮椅-高背款 2入組(折疊椅 露營椅 釣魚椅 導演椅 野餐)",
-        "price": "$992",
+        "name": "【VENCEDOR】露營折疊扶手椅(烤肉 戶外 露營折疊扶手收納椅 釣魚椅 露營椅 戶外椅 野餐-1入)",
+        "price": "$454",
         "search_keyword": "野餐椅",
         "desc": "滿1件享8折",
         "cta": "立即選購",
@@ -72,12 +72,12 @@
       "露營爐",
       "卡式爐",
       "瓦斯爐",
-      "露營用爐",
+      "露營料理",
+      "戶外料理",
       "行動電源瓦斯爐",
-      "野餐爐",
       "燒烤爐"
     ],
-    "title": "🔥 櫻花季露營美食！必備行動廚房",
+    "title": "🍳 露營美食輕鬆煮！必備露營爐組",
     "items": [
       {
         "name": "【Iwatani 岩谷】岩峰卡式爐3.4kW(CB-AK-1)",
@@ -88,20 +88,20 @@
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%8D%A1%E5%BC%8F%E7%88%90&searchType=1"
       },
       {
-        "name": "韓國KOVEA CONTAINER STOVE 貨櫃爐/折疊卡式爐 附收納袋『野道家』",
-        "price": "$3,132售價已折",
-        "search_keyword": "露營用爐",
-        "desc": "滿1,500元享9折",
+        "name": "【BULIN 步林】S2400-A 集熱鍋高山爐(3800W大火力 露營 鍋爐 登山爐 瓦斯爐 卡式爐)",
+        "price": "$1,351",
+        "search_keyword": "露營爐",
+        "desc": "滿1件享85折",
         "cta": "看評價",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%9C%B2%E7%87%9F%E7%94%A8%E7%88%90&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%9C%B2%E7%87%9F%E7%88%90&searchType=1"
       },
       {
-        "name": "【emirai】露營 戶外 儲能小瓦力 PRO(NEX430 行動電源 戶外電源 便攜型行動電源 掌上型 電源)",
-        "price": "$7,610 (下單再折)",
-        "search_keyword": "行動電源瓦斯爐",
-        "desc": "滿1件享9折",
+        "name": "電烤盤 機械版 自動轉無煙電燒烤爐 紅外線烤盤(光波爐燒烤神燈旋轉燒烤盤無煙烤盤 BBQ)",
+        "price": "$3,943",
+        "search_keyword": "燒烤爐",
+        "desc": "無油煙健康派對",
         "cta": "立即選購",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E8%A1%8C%E5%8B%95%E9%9B%BB%E6%BA%90%E7%93%A6%E6%96%AF%E7%88%90&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E7%87%92%E7%83%A4%E7%88%90&searchType=1"
       }
     ]
   },
@@ -112,15 +112,58 @@
       "sleep"
     ],
     "keywords": [
+      "防雨天幕",
+      "遮陽棚",
+      "露營天幕",
+      "防水天幕",
+      "露營帳篷配件",
+      "遮陽布",
+      "防曬天幕"
+    ],
+    "title": "☔️ 梅雨季露營救星！防水天幕大推薦",
+    "items": [
+      {
+        "name": "【Naturehike】云霄Lite150D黑膠防水遮陽天幕 附帳桿 六邊形500x380cm WS015(台灣總代理公司貨)",
+        "price": "$1,440",
+        "search_keyword": "防水天幕",
+        "desc": "滿1件享8折",
+        "cta": "查優惠",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%98%B2%E6%B0%B4%E5%A4%A9%E5%B9%95&searchType=1"
+      },
+      {
+        "name": "【Aerogogo】一鍵自動充氣黑翼天幕 7分鐘快速搭建 防水防風防曬 尊爵級享受(附贈GIGA PUMP 80充氣幫浦)",
+        "price": "$15,800 (下單再折)",
+        "search_keyword": "露營天幕",
+        "desc": "滿1件享9折",
+        "cta": "看評價",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%9C%B2%E7%87%9F%E5%A4%A9%E5%B9%95&searchType=1"
+      },
+      {
+        "name": "【LEMU 樂牧】露營天幕 22㎡-35㎡大型六角黑膠天幕 車邊天幕 穹頂天幕 延伸天幕 牛津布 全遮陽天幕 露營戶外野營",
+        "price": "$2,199",
+        "search_keyword": "遮陽棚",
+        "desc": "太陽在動 你的陰涼不動~",
+        "cta": "立即選購",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%81%AE%E9%99%BD%E6%A3%9A&searchType=1"
+      }
+    ]
+  },
+  {
+    "id": "category-4",
+    "tags": [
+      "general",
+      "sleep"
+    ],
+    "keywords": [
       "輕量化帳篷",
       "單人帳篷",
       "雙人帳篷",
       "露營帳篷",
-      "快速帳篷",
-      "櫻花季帳篷",
-      "防水帳篷"
+      "快開帳篷",
+      "背包客帳篷",
+      "輕便帳篷"
     ],
-    "title": "🏕️ 輕巧舒適！賞櫻露營帳篷推薦",
+    "title": "🏕️ 輕量化露營帳篷！賞櫻露營輕鬆走",
     "items": [
       {
         "name": "【BUNDOK】SOLO DOME 1 單人圓頂帳篷(BDK-08KA)",
@@ -131,62 +174,20 @@
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%96%AE%E4%BA%BA%E5%B8%B3%E7%AF%B7&searchType=1"
       },
       {
-        "name": "ODT R11 旗艦充氣帳(帳篷 充氣帳篷 露營帳篷 充氣帳 雙人帳篷 快速帳 充氣客廳帳 露營 逐露天下)",
-        "price": "$29,800",
-        "search_keyword": "快速帳篷",
-        "desc": "1:1等長延伸",
-        "cta": "看評價",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%BF%AB%E9%80%9F%E5%B8%B3%E7%AF%B7&searchType=1"
-      },
-      {
-        "name": "【OWL CAMP】OWL CAMP OWL Wing 隧道帳 ST-20F 黑/沙/灰 帳篷 科技棉 防水透氣 四季帳 露營 悠遊戶外",
-        "price": "$39,800",
-        "search_keyword": "防水帳篷",
-        "desc": "前庭擴展設計，直立進出無需低頭",
-        "cta": "立即選購",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%98%B2%E6%B0%B4%E5%B8%B3%E7%AF%B7&searchType=1"
-      }
-    ]
-  },
-  {
-    "id": "category-4",
-    "tags": [
-      "general"
-    ],
-    "keywords": [
-      "防雨天幕",
-      "露營天幕",
-      "遮陽天幕",
-      "防水天幕",
-      "露營配件",
-      "梅雨季露營",
-      "遮雨棚"
-    ],
-    "title": "☔️ 梅雨季露營救星！防水天幕大集合",
-    "items": [
-      {
-        "name": "【SHANER】超抗雨遮陽天幕特大款400cmX450cm(抗雨+銀膠防曬/附收納袋+天幕杆地釘一套/客廳帳/炊事帳)",
-        "price": "$1,580",
-        "search_keyword": "防雨天幕",
-        "desc": "特大款天幕適合當作聚會客廳帳",
-        "cta": "查優惠",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%98%B2%E9%9B%A8%E5%A4%A9%E5%B9%95&searchType=1"
-      },
-      {
-        "name": "HELLOS 卡特萊特庇護所 BUTTERFLY TARP 哈比天幕 露營帳篷 車露車尾帳 客廳帳 炊事帳",
-        "price": "$19,500",
-        "search_keyword": "露營天幕",
-        "desc": "遮風避雨，露營野營的最佳選擇！",
-        "cta": "看評價",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%9C%B2%E7%87%9F%E5%A4%A9%E5%B9%95&searchType=1"
-      },
-      {
-        "name": "【Naturehike】云霄Lite150D黑膠防水遮陽天幕 附帳桿 六邊形500x380cm WS015(台灣總代理公司貨)",
-        "price": "$1,440",
-        "search_keyword": "防水天幕",
+        "name": "【Petvibe】2-3人全自動秒開液壓帳篷(速開帳篷/露營帳蓬/秒開帳/簡易帳篷/快速帳篷/野餐帳篷/自動帳篷)",
+        "price": "$719",
+        "search_keyword": "快開帳篷",
         "desc": "滿1件享8折",
+        "cta": "看評價",
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E5%BF%AB%E9%96%8B%E5%B8%B3%E7%AF%B7&searchType=1"
+      },
+      {
+        "name": "【LEMU 樂牧】AOLE 兩房一廳大帳篷 露營帳篷 戶外野營 防曬防蚊帳篷 露營帳 大號折叠帳篷 野餐帳篷",
+        "price": "$2,999",
+        "search_keyword": "露營帳篷",
+        "desc": "【空間王者】兩房一廳 露營別墅",
         "cta": "立即選購",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%98%B2%E6%B0%B4%E5%A4%A9%E5%B9%95&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%9C%B2%E7%87%9F%E5%B8%B3%E7%AF%B7&searchType=1"
       }
     ]
   },
@@ -198,37 +199,37 @@
     "keywords": [
       "防水噴霧",
       "防水劑",
+      "防潑水噴霧",
       "鞋子防水",
       "衣物防水",
       "露營防水",
-      "防潮",
-      "防水保護"
+      "戶外防水"
     ],
-    "title": "💧 告別濕漉漉！露營防水噴霧推薦",
+    "title": "💧 告別濕漉漉！防水噴霧讓你安心賞花",
     "items": [
       {
-        "name": "【hoda】3入組 防水疏油噴霧劑 500ml(防潑水 鍍膜 抗油汙 氟素強效配方)",
-        "price": "$899",
+        "name": "【防御工事】T-FENCE 透氣長效防水噴霧 280ml",
+        "price": "$360",
         "search_keyword": "防水噴霧",
-        "desc": "奈米級防水防污，保持透氣",
+        "desc": "滿2件享9折",
         "cta": "查優惠",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%98%B2%E6%B0%B4%E5%99%B4%E9%9C%A7&searchType=1"
       },
       {
-        "name": "鞋子專用防水噴霧",
-        "price": "$399起",
+        "name": "奈米防水噴霧 長效 260ml(鞋子 防塵 防髒 防氧化 噴劑)",
+        "price": "$99",
         "search_keyword": "鞋子防水",
-        "desc": "保護愛鞋，無懼雨水侵襲。",
+        "desc": "透氣·便攜·防油·使用方便",
         "cta": "看評價",
         "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%9E%8B%E5%AD%90%E9%98%B2%E6%B0%B4&searchType=1"
       },
       {
-        "name": "【防御工事】T-FENCE 透氣長效防水噴霧 280ml",
-        "price": "$360",
-        "search_keyword": "衣物防水",
-        "desc": "滿2件享9折",
+        "name": "【hoda】3入組 防水疏油噴霧劑 500ml(防潑水 鍍膜 抗油汙 氟素強效配方)",
+        "price": "$899",
+        "search_keyword": "防潑水噴霧",
+        "desc": "奈米級防水防污，保持透氣",
         "cta": "立即選購",
-        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E8%A1%A3%E7%89%A9%E9%98%B2%E6%B0%B4&searchType=1"
+        "link": "https://www.momoshop.com.tw/search/searchShop.jsp?keyword=%E9%98%B2%E6%BD%91%E6%B0%B4%E5%99%B4%E9%9C%A7&searchType=1"
       }
     ]
   }
