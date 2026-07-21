@@ -2,9 +2,13 @@
 import Layout from '../../layouts/Layout.astro';
 import CampgroundCard from '../../components/CampgroundCard.astro';
 import NativeAdCard from '../../components/NativeAdCard.astro';
+import DataFacts from '../../components/DataFacts.astro';
+import CampCompareTable from '../../components/CampCompareTable.astro';
 import campgrounds from '../../data/campgrounds_smart_clean.json';
+import weatherData from '../../data/weather_forecast.json';
 import { getValidCampgrounds } from '../../utils/filterCamps';
 import { getAdRotator } from '../../utils/adManager';
+import { getElevationStats, summarizeRegionWeather, isInSeason, getSeasons } from '../../utils/campData';
 
 export async function getStaticPaths() {
   const validCamps = getValidCampgrounds(campgrounds);
@@ -20,9 +24,23 @@ const { city } = Astro.props;
 // Re-filter for run-time usage to ensure consistency
 const allValidCamps = getValidCampgrounds(campgrounds);
 const cityCamps = allValidCamps.filter(camp => camp.city === city);
-// Layout.astro 會自動附加 "| Outdoor Camping World - Since 2004"，因此這裡不需要重複品牌名稱
-const title = `${city}露營區推薦與景點地圖 - 共 ${cityCamps.length} 個精選營地`;
-const description = `精選 ${city} 露營區推薦，包含高海拔、豪華露營、寵物友善等特色營地。提供完整的${city}露營地圖與詳細資訊。`;
+
+// 🟢 [Data-Driven] 由真實資料計算 Hub 頁專屬統計
+const stats = getElevationStats(cityCamps);
+const weatherMap = weatherData as Record<string, any>;
+const regionWeather = summarizeRegionWeather(weatherMap, cityCamps, city);
+const weatherUpdatedAt = (weatherMap._metadata?.generated_at || '').slice(0, 10);
+
+// 當月當季營區(依真實標籤 + 當月)
+const currentMonth = new Date().getMonth() + 1;
+const inSeasonCamps = cityCamps.filter(c => isInSeason(c, currentMonth));
+// 當季主題名稱(取第一個當季營區的季節標籤,用於標題點綴)
+const seasonLabels = [...new Set(cityCamps.flatMap(c => getSeasons(c).filter(s => s.months.includes(currentMonth)).map(s => s.label)))];
+
+// Layout.astro 會自動附加 "| Outdoor Camping World 台灣站"，因此這裡不需要重複品牌名稱
+const elevRange = stats.maxElev > 0 ? `海拔 ${stats.minElev}–${stats.maxElev}m` : '';
+const title = `${city}露營區推薦｜${stats.count} 個精選營地${stats.highAltitude > 0 ? `，含 ${stats.highAltitude} 個高海拔避暑` : ''}`;
+const description = `${city}露營區完整清單:收錄 ${stats.count} 個營地${elevRange ? `（${elevRange}）` : ''}，其中高海拔 ${stats.highAltitude} 個、豪華露營 ${stats.glamping} 個。附即時天氣、海拔比較表與地圖。`;
 
 // 🟢 [Ad Logic]
 const adRotator = getAdRotator();
@@ -69,7 +87,33 @@ const availableTopics = FEATURE_CONFIG.map(feat => {
     };
 }).filter(t => t.count >= 3 && CITY_SLUG_MAP[city]); // 確保有對應的 slug 且數量足夠
 
-// 🟢 [SEO] City Page Schemas (CollectionPage + Breadcrumb)
+// 🟢 [Data-Driven FAQ] 只用真實資料佐證的問答(可見 + schema 一致)
+const highestCamp = [...cityCamps].sort((a, b) => (b.elevation ?? 0) - (a.elevation ?? 0))[0];
+const faqItems: { q: string; a: string }[] = [];
+faqItems.push({
+  q: `${city}有幾個露營區可以選擇？`,
+  a: `本站目前收錄 ${city} 共 ${stats.count} 個露營區，海拔範圍從 ${stats.minElev} 到 ${stats.maxElev} 公尺，涵蓋高海拔避暑、豪華露營、森林系等不同類型。`,
+});
+if (stats.highAltitude > 0 && highestCamp) {
+  faqItems.push({
+    q: `${city}有適合夏天避暑的高海拔露營區嗎？`,
+    a: `有的，${city} 有 ${stats.highAltitude} 個海拔 1000 公尺以上的高海拔營區，其中海拔最高的是「${highestCamp.name}」（海拔 ${highestCamp.elevation} 公尺），夏季明顯比平地涼爽。`,
+  });
+}
+if (stats.glamping > 0) {
+  faqItems.push({
+    q: `${city}有免搭帳的豪華露營（Glamping）嗎？`,
+    a: `${city} 有 ${stats.glamping} 個提供豪華露營的營區，免自備裝備即可入住，適合露營新手與親子家庭。`,
+  });
+}
+if (regionWeather) {
+  faqItems.push({
+    q: `最近去${city}露營，天氣如何？`,
+    a: `${regionWeather}（天氣資料每日更新，最後更新：${weatherUpdatedAt}）`,
+  });
+}
+
+// 🟢 [SEO] City Page Schemas (CollectionPage + Breadcrumb + FAQ)
 const schema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -94,6 +138,14 @@ const schema = {
           "name": camp.name
         }))
       }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": faqItems.map(f => ({
+        "@type": "Question",
+        "name": f.q,
+        "acceptedAnswer": { "@type": "Answer", "text": f.a }
+      }))
     }
   ]
 };
@@ -111,11 +163,12 @@ const schema = {
     </div>
 
     <div class="container mx-auto px-4 py-12">
-        <header class="mb-10 text-center">
+        <header class="mb-8 text-center">
             <h1 class="text-3xl md:text-4xl font-extrabold text-stone-900 mb-4">{city} 露營區推薦</h1>
             <p class="text-lg text-stone-600 max-w-2xl mx-auto mb-8">
-                收錄 {cityCamps.length} 個位於 {city} 的精選露營地，
-                適合親子旅遊、高山避暑或豪華露營體驗。
+                本站收錄 {city} 共 <strong class="text-emerald-700">{stats.count}</strong> 個露營地，
+                {stats.maxElev > 0 && <>海拔從 {stats.minElev} 到 {stats.maxElev} 公尺，</>}
+                其中高海拔避暑 {stats.highAltitude} 個、豪華露營 {stats.glamping} 個。
             </p>
 
             {/* 🟢 [SEO] pSEO Internal Links Hub */}
@@ -130,6 +183,26 @@ const schema = {
                 </div>
             )}
         </header>
+
+        {/* 🟢 [Data-Driven] 真實統計 + 區域天氣 */}
+        <DataFacts camps={cityCamps} weatherSummary={regionWeather} />
+
+        {/* 🟢 [Data-Driven] 當季推薦(依當月 + 真實標籤) */}
+        {inSeasonCamps.length > 0 && seasonLabels.length > 0 && (
+            <div class="my-8 bg-amber-50 border border-amber-200 rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-amber-900 mb-1 flex items-center gap-2">
+                    <span>🗓️</span> {currentMonth} 月當季推薦：{seasonLabels.join('、')}
+                </h2>
+                <p class="text-sm text-amber-800/80 mb-4">依營區特色與當月季節自動推薦，共 {inSeasonCamps.length} 個當季營區。</p>
+                <div class="flex flex-wrap gap-2">
+                    {inSeasonCamps.slice(0, 12).map(c => (
+                        <a href={`/camp/${c.name}/`} class="inline-block bg-white border border-amber-200 text-amber-900 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-amber-100 transition">
+                            {c.name}{c.elevation ? <span class="text-amber-500 text-xs"> · {c.elevation}m</span> : null}
+                        </a>
+                    ))}
+                </div>
+            </div>
+        )}
 
         {cityCamps.length > 0 ? (
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -147,6 +220,30 @@ const schema = {
             </div>
         ) : (
             <p class="text-center text-stone-500 py-20">目前 {city} 尚無收錄營區資料。</p>
+        )}
+
+        {/* 🟢 [Data-Driven] 海拔比較表(可排序) */}
+        {cityCamps.length > 1 && (
+            <div class="mt-16">
+                <h2 class="text-2xl font-bold text-stone-800 mb-2">{city}露營區海拔比較表</h2>
+                <p class="text-stone-500 text-sm mb-2">依海拔高低排序,快速比較 {city} 各營區的高度與特色。</p>
+                <CampCompareTable camps={cityCamps} />
+            </div>
+        )}
+
+        {/* 🟢 [Data-Driven] 可見 FAQ(與 schema 一致) */}
+        {faqItems.length > 0 && (
+            <div class="mt-16 max-w-3xl">
+                <h2 class="text-2xl font-bold text-stone-800 mb-6">關於 {city} 露營，常見問題</h2>
+                <div class="space-y-4">
+                    {faqItems.map(f => (
+                        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm">
+                            <h3 class="font-bold text-stone-800 mb-2">{f.q}</h3>
+                            <p class="text-stone-600 leading-relaxed">{f.a}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
         )}
 
         {/* 🟢 [Thin Content Defense] Neighboring City Recommendations */}

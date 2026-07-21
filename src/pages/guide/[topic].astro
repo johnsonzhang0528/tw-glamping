@@ -1,0 +1,138 @@
+---
+// src/pages/guide/[topic].astro
+// 🟢 [T4.1] 可被引用的資料資產頁 (linkable assets)
+// 全部由真實資料自動生成:排行榜、季節清單。這類「有原創資料價值」的頁面
+// 是白帽自然連結誘因(別人會想引用/分享),而非連結操縱。
+import Layout from '../../layouts/Layout.astro';
+import CampCompareTable from '../../components/CampCompareTable.astro';
+import DataFacts from '../../components/DataFacts.astro';
+import campgrounds from '../../data/campgrounds_smart_clean.json';
+import { getValidCampgrounds } from '../../utils/filterCamps';
+import { getElevationStats } from '../../utils/campData';
+
+export async function getStaticPaths() {
+  const all = getValidCampgrounds(campgrounds);
+  const byTag = (kw: string) => all.filter((c: any) => (c.tags ?? []).some((t: string) => t.includes(kw)));
+
+  const topics = [
+    {
+      id: 'high-altitude-ranking',
+      title: '全台高海拔露營區排行榜',
+      lead: '依實測海拔由高到低排序,收錄全台海拔 1000 公尺以上的高山露營區。海拔越高,夏季越涼爽、越容易觀賞雲海與星空。',
+      camps: all.filter((c: any) => c.features?.high_altitude).sort((a: any, b: any) => (b.elevation ?? 0) - (a.elevation ?? 0)),
+      emoji: '⛰️',
+    },
+    {
+      id: 'firefly',
+      title: '全台賞螢露營區清單',
+      lead: '收錄具備賞螢生態的露營區。台灣螢火蟲季約在每年 4-5 月,入夜後在低光害的山區可見螢光點點,是親子夜間生態的熱門選擇。',
+      camps: byTag('螢火蟲'),
+      emoji: '✨',
+    },
+    {
+      id: 'sakura',
+      title: '全台櫻花季露營區清單',
+      lead: '收錄園區內或周邊有櫻花的露營區。台灣中高海拔櫻花約在 2-3 月盛開,適合安排賞櫻露營。',
+      camps: byTag('櫻花'),
+      emoji: '🌸',
+    },
+    {
+      id: 'cloud-sea',
+      title: '全台雲海露營區清單',
+      lead: '收錄可觀賞雲海的露營區。雲海多見於秋冬清晨、中高海拔且日夜溫差大的營地,清晨雲霧翻騰於山谷之間。',
+      camps: byTag('雲海'),
+      emoji: '☁️',
+    },
+  ];
+
+  return topics.map((t) => ({ params: { topic: t.id }, props: t }));
+}
+
+const { title, lead, camps, emoji } = Astro.props;
+const stats = getElevationStats(camps);
+const top3 = camps.slice(0, 3);
+
+const description = `${title}:本站收錄 ${stats.count} 個營區${stats.maxElev > 0 ? `,海拔範圍 ${stats.minElev}–${stats.maxElev} 公尺` : ''}。依真實資料自動整理,附海拔比較表。`;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首頁', item: Astro.site },
+        { '@type': 'ListItem', position: 2, name: title, item: Astro.url.href },
+      ],
+    },
+    {
+      '@type': 'CollectionPage',
+      name: title,
+      description,
+      url: Astro.url.href,
+      mainEntity: {
+        '@type': 'ItemList',
+        itemListElement: camps.slice(0, 20).map((c: any, i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: new URL(`/camp/${c.name}/`, Astro.site).toString(),
+          name: c.name,
+        })),
+      },
+    },
+  ],
+};
+---
+
+<Layout title={title} description={description}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)}></script>
+
+  <div class="bg-emerald-900 text-white py-14 md:py-20">
+    <div class="container mx-auto px-4 text-center">
+      <div class="text-4xl mb-3">{emoji}</div>
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-4">{title}</h1>
+      <p class="max-w-2xl mx-auto text-emerald-100/90 leading-relaxed">{lead}</p>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-12">
+    <div class="bg-stone-100 border-b border-stone-200 -mx-4 px-4 py-3 text-sm text-stone-500 mb-8">
+      <a href="/" class="hover:text-emerald-700">首頁</a> &rsaquo;
+      <span class="text-stone-800 font-medium ml-1">{title}</span>
+    </div>
+
+    <DataFacts camps={camps} />
+
+    {top3.length > 0 && (
+      <div class="my-8">
+        <h2 class="text-2xl font-bold text-stone-800 mb-4">榜首推薦</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {top3.map((c: any, i: number) => (
+            <a href={`/camp/${c.name}/`} class="block bg-white border border-stone-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-emerald-300 transition">
+              <div class="text-xs font-bold text-emerald-600 mb-1">NO.{i + 1}</div>
+              <div class="font-bold text-lg text-stone-800">{c.name}</div>
+              <div class="text-sm text-stone-500 mt-1">{c.city}{c.area}{c.elevation ? ` · 海拔 ${c.elevation}m` : ''}</div>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {camps.length > 1 && (
+      <div class="mt-10">
+        <h2 class="text-2xl font-bold text-stone-800 mb-2">完整清單（可排序）</h2>
+        <CampCompareTable camps={camps} />
+      </div>
+    )}
+
+    <div class="mt-12 text-sm text-stone-500 border-t border-stone-200 pt-6">
+      <p class="mb-2 font-medium text-stone-600">延伸探索：</p>
+      <div class="flex flex-wrap gap-2">
+        <a href="/guide/high-altitude-ranking/" class="px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition">⛰️ 高海拔排行</a>
+        <a href="/guide/firefly/" class="px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition">✨ 賞螢清單</a>
+        <a href="/guide/sakura/" class="px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition">🌸 櫻花清單</a>
+        <a href="/guide/cloud-sea/" class="px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition">☁️ 雲海清單</a>
+        <a href="/directory/" class="px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition">📖 全台索引</a>
+      </div>
+    </div>
+  </div>
+</Layout>

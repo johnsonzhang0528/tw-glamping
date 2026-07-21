@@ -1,0 +1,83 @@
+---
+// src/components/CampCompareTable.astro
+// 可排序的營區比較表 — 用真實資料(海拔/特色/評分)呈現,每頁內容不同。
+// 預設依海拔由高到低排序;點欄位標題可客戶端重排。
+import { getClimateBand } from '../utils/campData';
+import type { Camp } from '../utils/campData';
+
+interface Props {
+  camps: Camp[];
+  caption?: string;
+}
+
+const { camps, caption } = Astro.props;
+
+// 預設排序:海拔高→低
+const sorted = [...camps].sort((a, b) => (b.elevation ?? 0) - (a.elevation ?? 0));
+---
+
+<div class="my-8 not-prose">
+  {caption && <h3 class="text-lg font-bold text-stone-800 mb-3">{caption}</h3>}
+  <div class="overflow-x-auto rounded-xl border border-stone-200 shadow-sm">
+    <table class="w-full text-sm text-left js-compare-table" data-sort-dir="desc">
+      <thead class="bg-stone-50 text-stone-600 border-b border-stone-200">
+        <tr>
+          <th class="px-4 py-3 font-bold">營區</th>
+          <th class="px-4 py-3 font-bold whitespace-nowrap cursor-pointer select-none js-sort" data-key="elevation" data-type="num">
+            海拔 <span class="text-stone-400 text-xs">▼</span>
+          </th>
+          <th class="px-4 py-3 font-bold whitespace-nowrap">氣候帶</th>
+          <th class="px-4 py-3 font-bold">特色</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sorted.map((camp) => {
+          const band = getClimateBand(camp.elevation);
+          const feats: string[] = [];
+          if (camp.features?.has_glamping) feats.push('豪華露營');
+          if (camp.features?.high_altitude) feats.push('高海拔');
+          if (camp.features?.pet_friendly) feats.push('寵物友善');
+          if ((camp.tags ?? []).some((t) => t.includes('森林') || t.includes('樹林'))) feats.push('森林系');
+          return (
+            <tr class="border-b border-stone-100 hover:bg-emerald-50/40 transition-colors" data-elevation={camp.elevation ?? 0}>
+              <td class="px-4 py-3">
+                <a href={`/camp/${camp.name}/`} class="font-medium text-emerald-700 hover:underline">{camp.name}</a>
+                <span class="block text-xs text-stone-400">{camp.city}{camp.area}</span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap tabular-nums text-stone-700">{camp.elevation ?? '—'} m</td>
+              <td class="px-4 py-3 whitespace-nowrap text-stone-600 text-xs">{band.label}</td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap gap-1">
+                  {feats.map((f) => <span class="inline-block bg-stone-100 text-stone-600 text-xs px-2 py-0.5 rounded">{f}</span>)}
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs text-stone-400 mt-2">資料依海拔排序,點欄位標題可重新排序。海拔為資料庫實測值。</p>
+</div>
+
+<script>
+  // 客戶端排序:點可排序欄位標題,依 data-* 數值重排
+  document.querySelectorAll('.js-compare-table').forEach((table) => {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    table.querySelectorAll('.js-sort').forEach((th) => {
+      th.addEventListener('click', () => {
+        const attr = 'data-elevation';
+        const dir = table.getAttribute('data-sort-dir') === 'desc' ? 'asc' : 'desc';
+        table.setAttribute('data-sort-dir', dir);
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+          const av = parseFloat(a.getAttribute(attr) || '0');
+          const bv = parseFloat(b.getAttribute(attr) || '0');
+          return dir === 'desc' ? bv - av : av - bv;
+        });
+        rows.forEach((r) => tbody.appendChild(r));
+      });
+    });
+  });
+</script>

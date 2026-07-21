@@ -1,0 +1,40 @@
+---
+// src/components/DataFacts.astro
+// 真實統計條 — 用既有資料計算的數字,給 Hub 頁做資料佐證。
+import { getElevationStats } from '../utils/campData';
+import type { Camp } from '../utils/campData';
+
+interface Props {
+  camps: Camp[];
+  weatherSummary?: string | null;
+}
+
+const { camps, weatherSummary } = Astro.props;
+const s = getElevationStats(camps);
+
+// 只列有意義的統計 (pet_friendly 近乎全站皆是,不特別強調)
+const facts: { label: string; value: string }[] = [
+  { label: '收錄營區', value: `${s.count} 個` },
+];
+if (s.maxElev > 0) facts.push({ label: '海拔範圍', value: `${s.minElev}–${s.maxElev} m` });
+if (s.highAltitude > 0) facts.push({ label: '高海拔(1000m+)', value: `${s.highAltitude} 個` });
+if (s.glamping > 0) facts.push({ label: '豪華露營', value: `${s.glamping} 個` });
+if (s.forest > 0) facts.push({ label: '森林系', value: `${s.forest} 個` });
+---
+
+<div class="my-6 not-prose">
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+    {facts.map((f) => (
+      <div class="bg-white border border-stone-200 rounded-xl px-4 py-3 text-center shadow-sm">
+        <div class="text-xl md:text-2xl font-extrabold text-emerald-700 tabular-nums">{f.value}</div>
+        <div class="text-xs text-stone-500 mt-1">{f.label}</div>
+      </div>
+    ))}
+  </div>
+  {weatherSummary && (
+    <div class="mt-4 flex items-start gap-2 bg-sky-50 border border-sky-100 rounded-xl px-4 py-3 text-sm text-sky-900">
+      <span class="text-lg leading-none">🌤️</span>
+      <span>{weatherSummary}</span>
+    </div>
+  )}
+</div>

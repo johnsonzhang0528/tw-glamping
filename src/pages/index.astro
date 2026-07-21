@@ -67,17 +67,9 @@ const homeSchema = {
         "width": 112,
         "height": 112
       },
-      "sameAs": [
-        "https://www.facebook.com/outdoorcampingworld", 
-        // 預留其他社群連結
-      ],
-      "contactPoint": {
-          "@type": "ContactPoint",
-          "telephone": "+886-2-00000000",
-          "contactType": "customer service",
-          "areaServed": "TW",
-          "availableLanguage": "Traditional Chinese"
-      }
+      "areaServed": "TW"
+      // 🟢 [T5.3] 已移除未經查證的社群連結(sameAs)與佔位電話(contactPoint),
+      //          避免「不實/無法驗證資訊」的信任訊號風險。待有真實可驗證資料再補回。
     }
   ]
 };
@@ -92,7 +84,7 @@ const heroBtnIcon = isWinter ? "♨️" : "🔭";
 ---
 
 <Layout 
-	title="Outdoor Camping World 台灣站 | 終極露營指南 Since 2004"
+	title="Outdoor Camping World 台灣站 | 終極露營指南"
     omitSuffix={true}
     preloadImage="/hero-bg.webp"
 >
@@ -116,7 +108,7 @@ const heroBtnIcon = isWinter ? "♨️" : "🔭";
 
         <div class="container mx-auto px-4 py-20 md:py-32 relative z-10 text-center">
             <span class="inline-block py-1 px-3 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold tracking-wider mb-6 backdrop-blur-sm">
-                SINCE 2004 • TAIWAN EDITION
+                TAIWAN EDITION
             </span>
             <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-lg">
                 發現你的下一個<br/><span class={heroColorClass}>戶外冒險</span>

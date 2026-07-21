@@ -11,6 +11,7 @@ import productData from '../../data/products.json';
 import weatherData from '../../data/weather_forecast.json';
 
 import { getValidCampgrounds } from '../../utils/filterCamps';
+import { getClimateBand, getBestMonthsSummary, getSeasons, getDistanceToCityCenter, summarizeCampWeather, isThinCamp } from '../../utils/campData';
 
 export async function getStaticPaths() {
   // 🟢 [SEO Fix] Quality Gate: Filter out low-quality data
@@ -27,16 +28,18 @@ const { camp } = Astro.props;
 const campWeather = weatherData[camp.name] || [];
 const weatherMeta = weatherData["_metadata"] || {};
 
-// Release Date Logic (Big Bang Launch - All Pages Live)
-// 策略調整：與其分批上線，不如一次性全量釋出，建立完整的內部連結網 (Hub & Spoke Integrity)。
-// 這也符合老域名 (Aged Domain) 回歸的訊號。
-const shouldIndex = true; 
+// 🟢 [T5.4] 品質門檻:薄頁(缺描述/缺標籤/缺座標)自動 noindex,避免低品質頁拖累整站品質評分。
+// 目前資料皆通過門檻(desc≥78字、tags≥2、有座標),故所有現有營區維持 index;
+// 此為安全網,主要防止未來加入的薄資料被索引。用 noindex(非刪頁)以保留內部連結、避免 404。
+const shouldIndex = !isThinCamp(camp);
 
 // SEO Dates Strategy
 // datePublished: 使用資料庫中的原始發布時間 (release_date)，確保 "First Seen" 時間點穩定，避免每次 Build 都改變。
 // dateModified: 使用 Build Time (new Date())，代表「最近一次驗證/更新資料」的時間，這對目錄型網站是合理的 (Verified Freshness)。
 const publishedTime = camp.release_date ? new Date(camp.release_date).toISOString() : new Date().toISOString();
-const modifiedTime = new Date().toISOString();
+// 🟢 [T5.1] 誠實新鮮度:dateModified 綁真實資料管線執行時間(weather 每日更新),而非無意義的 build time
+const _wxMeta = weatherData["_metadata"] || {};
+const modifiedTime = _wxMeta.generated_at ? new Date(_wxMeta.generated_at).toISOString() : new Date().toISOString();
 
 // Affiliate Logic Helpers
 const isHighAltitude = camp.elevation > 1000;
@@ -130,47 +133,57 @@ const breadcrumbSchema = {
   ]
 };
 
-// FAQ Schema
+// 🟢 [Data-Driven] 由真實資料計算的「營地速覽」資訊 (取代模板 prose)
+const campDaily = (weatherData[camp.name]?.daily) || [];
+const climate = getClimateBand(camp.elevation);
+const bestMonths = getBestMonthsSummary(camp);
+const campSeasons = getSeasons(camp);
+const distInfo = getDistanceToCityCenter(camp);
+const campWeatherSummary = summarizeCampWeather(campDaily);
+const dataUpdatedAt = (weatherData["_metadata"]?.generated_at || camp.release_date || '').slice(0, 10);
+
+// 🟢 [Data-Driven FAQ] 只用「資料可佐證」的問答,並在頁面上可見渲染(修正過去隱形 schema 問題)
+const campFaqItems: { q: string; a: string }[] = [];
+campFaqItems.push({
+    q: `${camp.name}的海拔多高？氣候如何？`,
+    a: `${camp.name}位於海拔 ${camp.elevation} 公尺，屬${climate.label}。${climate.desc}`,
+});
+if (bestMonths) {
+    const reasons = campSeasons.map(s => s.reason).join('');
+    campFaqItems.push({
+        q: `什麼季節去${camp.name}最合適？`,
+        a: `依營區特色,推薦造訪季節為${bestMonths}。${reasons}`,
+    });
+}
+if (campWeatherSummary) {
+    campFaqItems.push({
+        q: `最近${camp.name}的天氣如何？`,
+        a: `${campWeatherSummary}（天氣資料每日自動更新，最後更新：${dataUpdatedAt}）`,
+    });
+}
+if (distInfo) {
+    campFaqItems.push({
+        q: `${camp.name}距離市區多遠？怎麼去？`,
+        a: `${camp.name}距${distInfo.centerName}直線距離約 ${distInfo.km} 公里，實際車程依山路路況而定。頁面上方地圖可直接開啟 Google 導航。`,
+    });
+}
+if (camp.features.pet_friendly) {
+    campFaqItems.push({
+        q: `${camp.name}可以帶寵物嗎？`,
+        a: `可以，${camp.name}為寵物友善營區，歡迎攜帶毛小孩同行（實際規定請以營區公告為準）。`,
+    });
+}
+
+// FAQ Schema (與可見內容完全一致)
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  "mainEntity": []
+  "mainEntity": campFaqItems.map(f => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a }
+  }))
 };
-
-// 1. Generate FAQs from Facilities
-campFacilities.forEach(fac => {
-    faqSchema.mainEntity.push({
-        "@type": "Question",
-        "name": `請問${camp.name}有${fac.label.replace('提供', '')}嗎？`,
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": `有的，${camp.name}配備有${fac.label}，提供露營者使用。`
-        }
-    });
-});
-
-// 2. Add Pet Friendly FAQ
-if (camp.features.pet_friendly) {
-    faqSchema.mainEntity.push({
-        "@type": "Question",
-        "name": `請問${camp.name}可以帶寵物嗎？`,
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "是的，這裡是寵物友善營區，歡迎攜帶毛小孩一同同樂。"
-        }
-    });
-}
-// 3. Add High Altitude FAQ
-if (camp.features.high_altitude) {
-    faqSchema.mainEntity.push({
-        "@type": "Question",
-        "name": `請問${camp.name}的海拔大約多少？`,
-        "acceptedAnswer": {
-            "@type": "Answer",
-            "text": `這個營區位於海拔 ${camp.elevation} 公尺的高山區域，景色優美且氣候涼爽。`
-        }
-    });
-}
 
 // 🟢 [SEO] Optimized Page Title Logic
 // Format: [Name] - [City][Area] | [Feature1], [Feature2] | [Year]最新路況
@@ -190,54 +203,22 @@ if (featureList.length < 2 && camp.tags.length > 0) {
 const seoTitleFeatures = featureList.slice(0, 3).join('、');
 const seoTitle = `${camp.name} - ${camp.city}${camp.area} | ${seoTitleFeatures} | ${currentYear}最新路況`;
 
-// 🟢 [SEO] Content Enrichment (Keyword Density Injector)
-// 擴寫原始描述，自然置入高權重關鍵字 (City, Area, Elevation, Features)
-const baseDesc = camp.description.replace(/\n/g, ' ');
-const keywords = [
-    `${camp.city}${camp.area}露營`,
-    camp.features.high_altitude ? `海拔${camp.elevation}公尺` : null,
-    camp.features.has_glamping ? '豪華露營(Glamping)' : '熱門露營區',
-    camp.features.pet_friendly ? '寵物友善' : null,
-    ...camp.tags.slice(0, 3)
-].filter(Boolean).join('、');
+// 🟢 [Data-Driven] Meta / Schema 描述
+// 舊版用「3 選 1 隨機開場 + 通用堆疊句 + 關鍵字塞入」造成全站同構(Google scaled-content 風險)。
+// 改為:真實 AI 描述(每頁本就不同) + 一句「真實資料事實」(氣候/季節/距離)。不再隨機、不再堆疊套語。
+const dataFactParts: string[] = [climate.desc];
+if (bestMonths) dataFactParts.push(`推薦造訪季節:${bestMonths}。`);
+if (distInfo) dataFactParts.push(`距${distInfo.centerName}約 ${distInfo.km} 公里。`);
+const dataFactSentence = dataFactParts.join('');
 
-// 🟢 [SEO Upgrade] Dynamic Content Composition
-// 不再使用單一模板，而是根據特徵 "組裝" 文章
-const introTemplates = [
-  (c) => `位於${c.city}${c.area}的【${c.name}】，是近期在社群媒體上討論度極高的熱門營地。`,
-  (c) => `如果您正在尋找${c.city}地區的優質露營區，坐落於${c.area}的【${c.name}】絕對是口袋名單之一。`,
-  (c) => `【${c.name}】擁有得天獨厚的地理位置，是探索${c.city}${c.area}自然生態的最佳基地。`
-];
-
-// 根據特徵選擇強調句
-const featureSentences = [];
-if (camp.features.has_glamping) {
-    featureSentences.push(`這裡主打豪華露營體驗，免裝備即可輕鬆入住，特別適合親子家庭或露營新手。`);
-} else {
-    featureSentences.push(`保留了最純粹的野營樂趣，讓您能親手搭建屬於自己的戶外城堡。`);
-}
-
-if (camp.features.high_altitude) {
-    featureSentences.push(`海拔 ${camp.elevation} 公尺的優勢，讓這裡即使在盛夏也能享受天然冷氣般的涼爽。`);
-}
-
-if (camp.tags.includes('螢火蟲')) {
-    featureSentences.push(`每逢四五月，這裡更是賞螢的絕佳秘境，漫天飛舞的螢火蟲將夜晚點綴得如夢似幻。`);
-}
-
-// 隨機選擇開頭，避免每頁都一樣
-const templateIndex = camp.name.length % introTemplates.length;
-const intro = introTemplates[templateIndex](camp);
-
-// 🟢 [SEO Fix] Meta Description Length Control (150-160 chars)
-// 確保描述不會過長被截斷，也不會過短被視為品質低落
-// 原始 richDescription 會用於 Schema 和頁面內容，這裡產生一個針對 Meta Tag 的精簡版
-let metaDesc = `${intro} ${featureSentences.join('')} 設施包含${keywords}。`.replace(/\s+/g, '');
+// Meta description:真實描述前段 + 海拔氣候(自然、不塞關鍵字)
+let metaDesc = `${camp.city}${camp.area}【${camp.name}】海拔${camp.elevation}m,${climate.label}。${camp.description.replace(/\s+/g, '')}`;
 if (metaDesc.length > 155) {
     metaDesc = metaDesc.substring(0, 152) + '...';
 }
 
-const richDescription = `${intro}${camp.description} ${featureSentences.join('')} 此外，營區內設有${keywords}等完善設施，是${currentYear}年值得一訪的優質營地。`;
+// Schema/頁面用的較長描述:真實描述 + 真實資料事實句
+const richDescription = `${camp.description} ${dataFactSentence}`;
 
 // 🟢 [Social SEO] Define Share Image
 // 策略優先級 (Fallback Strategy):
@@ -365,13 +346,17 @@ if (citySlug) {
   if (camp.features.high_altitude) activeTopics.push({ slug: `${citySlug}-high-altitude`, label: `${camp.city}高海拔`, desc: '' });
   if (camp.features.pet_friendly) activeTopics.push({ slug: `${citySlug}-pet-friendly`, label: `${camp.city}寵物友善`, desc: '' });
 }
+
+// 🟢 [T6.3] 內部連結:連到相關「資料資產」清單頁(強化 Hub & Spoke + 導流新 guide 頁)
+const relevantGuides: { href: string; label: string }[] = [];
+if (camp.features.high_altitude) relevantGuides.push({ href: '/guide/high-altitude-ranking/', label: '⛰️ 全台高海拔排行榜' });
+if (camp.tags.some(t => t.includes('螢火蟲'))) relevantGuides.push({ href: '/guide/firefly/', label: '✨ 全台賞螢營區清單' });
+if (camp.tags.some(t => t.includes('櫻花'))) relevantGuides.push({ href: '/guide/sakura/', label: '🌸 全台櫻花營區清單' });
+if (camp.tags.some(t => t.includes('雲海'))) relevantGuides.push({ href: '/guide/cloud-sea/', label: '☁️ 全台雲海營區清單' });
 ---
 
-<Layout title={seoTitle} description={metaDesc} image={shareImage}>
+<Layout title={seoTitle} description={metaDesc} image={shareImage} noindex={!shouldIndex}>
     <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemas)}></script>
-    
-    {/* PSEO Drip Feed Control */}
-    {!shouldIndex && <meta name="robots" content="noindex, nofollow" slot="head" />}
     
     {/* Hero Section - Mobile First Design */}
     <div class="bg-stone-100 border-b border-stone-200">
@@ -427,6 +412,28 @@ if (citySlug) {
                     <WeatherWidget forecast={campWeather} city={camp.city} updatedAt={weatherMeta.generated_at} />
                 </div>
 
+                {/* 🟢 [Data-Driven] 營地速覽:全部由真實資料計算 */}
+                <div class="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm">
+                        <div class="text-xs text-stone-500 mb-1">🏔️ 海拔・氣候</div>
+                        <div class="font-bold text-stone-800">{camp.elevation} m｜{climate.label}</div>
+                        <p class="text-xs text-stone-500 mt-1 leading-relaxed">{climate.desc}</p>
+                    </div>
+                    <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm">
+                        <div class="text-xs text-stone-500 mb-1">🗓️ 最佳造訪季節</div>
+                        <div class="font-bold text-stone-800">{bestMonths || '四季皆宜'}</div>
+                        {campWeatherSummary && <p class="text-xs text-stone-500 mt-1 leading-relaxed">{campWeatherSummary}</p>}
+                    </div>
+                    <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-sm">
+                        <div class="text-xs text-stone-500 mb-1">📍 位置・距離</div>
+                        <div class="font-bold text-stone-800">{camp.city}{camp.area}</div>
+                        {distInfo && <p class="text-xs text-stone-500 mt-1 leading-relaxed">距{distInfo.centerName}直線約 {distInfo.km} 公里</p>}
+                    </div>
+                </div>
+                {dataUpdatedAt && (
+                    <p class="text-xs text-stone-400 mb-8 -mt-4">🔄 天氣與資料最後更新：{dataUpdatedAt}（每日自動更新）</p>
+                )}
+
                 {/* Description - Enhanced Typography */}
                 <article class="prose prose-stone prose-lg md:prose-xl max-w-none mb-12 prose-headings:font-bold prose-p:text-stone-700 prose-a:text-emerald-600">
                     <h2 class="text-2xl font-bold text-stone-800 mb-4 border-l-4 border-emerald-500 pl-4">營區介紹</h2>
@@ -446,6 +453,21 @@ if (citySlug) {
                                     <a href={`/topic/${topic.slug}/`}
                                        class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-100 hover:border-emerald-300 transition-colors">
                                         {topic.label}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 🟢 [T6.3] 相關資料清單(排行/季節)內部連結 */}
+                    {relevantGuides.length > 0 && (
+                        <div class="mt-4 not-prose">
+                            <p class="text-sm text-stone-500 mb-2 font-medium">📊 延伸清單：</p>
+                            <div class="flex flex-wrap gap-2">
+                                {relevantGuides.map(g => (
+                                    <a href={g.href}
+                                       class="inline-flex items-center gap-1.5 bg-sky-50 border border-sky-200 text-sky-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-sky-100 hover:border-sky-300 transition-colors">
+                                        {g.label}
                                     </a>
                                 ))}
                             </div>

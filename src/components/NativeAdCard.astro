@@ -56,6 +56,9 @@ if (adData) {
     selectedAd = adData;
 } else if (city) {
     // 🟢 Strategy 2: Contextual Deep Linking
+    // [T4.3 SEO 界線] 露營↔衝浪(outdoorfun)是主題相鄰的跨站推薦,對使用者有意義且量小,屬正當內部網路。
+    // 務必保持:(1) 主題相關 (2) 低量、非每頁灌滿 (3) 連結帶 nofollow(見下方 <a rel>)。
+    // 切勿演變成大規模互指 / 連結農場,否則會被判定為連結操縱。
     let targetCity = city;
     let isFallback = false;
 

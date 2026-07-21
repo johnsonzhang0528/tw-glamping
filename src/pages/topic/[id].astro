@@ -3,10 +3,14 @@ import Layout from '../../layouts/Layout.astro';
 import CampgroundCard from '../../components/CampgroundCard.astro';
 import NativeAdCard from '../../components/NativeAdCard.astro';
 import GearChecklist from '../../components/GearChecklist.astro'; // 🟢 [NEW] 引入導購元件
+import DataFacts from '../../components/DataFacts.astro';
+import CampCompareTable from '../../components/CampCompareTable.astro';
 import campgrounds from '../../data/campgrounds_smart_clean.json';
+import weatherData from '../../data/weather_forecast.json';
 import { getAdRotator } from '../../utils/adManager';
 
 import { getValidCampgrounds } from '../../utils/filterCamps';
+import { getElevationStats } from '../../utils/campData';
 
 export async function getStaticPaths() {
   const allCamps = getValidCampgrounds(campgrounds);
@@ -132,6 +136,27 @@ export async function getStaticPaths() {
 const { title, subtitle, description, camps, checklistTags, checklistElevation } = Astro.props;
 const { id } = Astro.params;
 
+// 🟢 [Data-Driven] 主題頁專屬統計 + 天氣
+const stats = getElevationStats(camps);
+const weatherMap = weatherData as Record<string, any>;
+const weatherUpdatedAt = (weatherMap._metadata?.generated_at || '').slice(0, 10);
+
+// 🟢 [Data-Driven FAQ] 只用真實資料佐證
+const highestCamp = [...camps].sort((a, b) => (b.elevation ?? 0) - (a.elevation ?? 0))[0];
+const faqItems: { q: string; a: string }[] = [];
+if (camps.length > 0) {
+  faqItems.push({
+    q: `${title}目前收錄幾個營區？`,
+    a: `本站在此主題下收錄 ${camps.length} 個營區${stats.maxElev > 0 ? `，海拔範圍 ${stats.minElev}–${stats.maxElev} 公尺` : ''}。可用下方比較表依海拔排序挑選。`,
+  });
+}
+if (stats.highAltitude > 0 && highestCamp) {
+  faqItems.push({
+    q: `這些營區中海拔最高的是哪一個？`,
+    a: `海拔最高的是「${highestCamp.name}」，位於 ${highestCamp.city}${highestCamp.area ?? ''}，海拔 ${highestCamp.elevation} 公尺。`,
+  });
+}
+
 // 🟢 [Ad Logic] Cyclic Ads Strategy for SSG
 const adRotator = getAdRotator();
 
@@ -140,7 +165,10 @@ const adRotator = getAdRotator();
 // 如果您需要「排程發布 (Drip Feed)」，可以在 getStaticPaths 中傳入 releaseDate 屬性控制。
 // 目前設定：所有頁面視為已上線 (2026-01-15 起始)，並以 build 時間為最後更新日。
 const publishedTime = new Date('2026-01-15T00:00:00+08:00').toISOString(); // 網站初始上線日
-const modifiedTime = new Date().toISOString(); // 每次 Build 更新
+// 🟢 [T5.1] 誠實新鮮度:綁真實資料管線時間(weather 每日更新)而非每次 build
+const modifiedTime = weatherMap._metadata?.generated_at
+  ? new Date(weatherMap._metadata.generated_at).toISOString()
+  : new Date().toISOString();
 
 const schema = {
   "@context": "https://schema.org",
@@ -172,7 +200,15 @@ const schema = {
              "name": camp.name
              }))
         }
-    }
+    },
+    ...(faqItems.length > 0 ? [{
+        "@type": "FAQPage",
+        "mainEntity": faqItems.map(f => ({
+            "@type": "Question",
+            "name": f.q,
+            "acceptedAnswer": { "@type": "Answer", "text": f.a }
+        }))
+    }] : [])
   ]
 };
 ---
@@ -199,6 +235,9 @@ const schema = {
             
             {/* Main Content */}
             <div class="lg:col-span-8">
+                {/* 🟢 [Data-Driven] 真實統計 */}
+                <DataFacts camps={camps} />
+
                 <div class="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
                     <span class="text-stone-500 text-sm">共找到 <strong class="text-stone-800">{camps.length}</strong> 個營區</span>
                     <div class="text-sm text-stone-500">
@@ -237,6 +276,29 @@ const schema = {
                     <div class="text-center py-20 bg-stone-50 rounded-2xl border border-stone-100">
                         <p class="text-xl text-stone-400 mb-2">這裡目前還沒有資料喔</p>
                         <a href="/" class="inline-block mt-6 text-emerald-600 hover:text-emerald-700 font-medium">回首頁逛逛 &rarr;</a>
+                    </div>
+                )}
+
+                {/* 🟢 [Data-Driven] 海拔比較表(可排序) */}
+                {camps.length > 1 && (
+                    <div class="mt-12">
+                        <h2 class="text-xl font-bold text-stone-800 mb-2">海拔比較表</h2>
+                        <CampCompareTable camps={camps} />
+                    </div>
+                )}
+
+                {/* 🟢 [Data-Driven] 可見 FAQ(與 schema 一致) */}
+                {faqItems.length > 0 && (
+                    <div class="mt-12">
+                        <h2 class="text-xl font-bold text-stone-800 mb-4">常見問題</h2>
+                        <div class="space-y-4">
+                            {faqItems.map(f => (
+                                <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-sm">
+                                    <h3 class="font-bold text-stone-800 mb-2">{f.q}</h3>
+                                    <p class="text-stone-600 leading-relaxed">{f.a}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>
