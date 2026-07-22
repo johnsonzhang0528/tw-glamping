@@ -77,6 +77,11 @@ const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
                 let gtmLoaded = false;
                 const gtmId = 'G-CS5334JZT3';
 
+                // 🔧 [Fix] 全域 gtag stub —— 讓自訂事件(如 affiliate_click)能被送出。
+                // 先前 gtag 被定義在 loadGTM 內(區域作用域),導致外部 affiliate 追蹤抓不到 gtag。
+                window.dataLayer = window.dataLayer || [];
+                window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
+
                 function loadGTM() {
                     if (gtmLoaded) return;
                     
@@ -91,10 +96,8 @@ const socialImageURL = new URL(image || '/social-card.webp', Astro.url);
                     script.async = true;
                     document.head.appendChild(script);
 
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', gtmId);
+                    window.gtag('js', new Date());
+                    window.gtag('config', gtmId);
                 }
 
                 // 🟢 Listen for Cookie Acceptance (Immediate Load)
@@ -276,8 +279,8 @@ Outdoor Camping World 台灣站致力於提供最透明、最準確的露營區�
             document.addEventListener('click', function(e) {
                 const link = e.target.closest('a[data-track-affiliate]');
                 if (!link) return;
-                if (typeof gtag === 'function') {
-                    gtag('event', 'affiliate_click', {
+                if (typeof window.gtag === 'function') {
+                    window.gtag('event', 'affiliate_click', {
                         affiliate_type: link.dataset.trackAffiliate || 'unknown',
                         item_name: link.dataset.itemName || '',
                         item_price: link.dataset.itemPrice || '',
